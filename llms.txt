@@ -1,0 +1,144 @@
+# VONQ Hiring API (HAPI) Documentation
+
+> Single-API access to 2000+ job boards, social platforms, and niche channels-so ATS partners can offer job advertising as a native feature.
+
+The VONQ Hiring API (HAPI) is a REST API that lets ATS providers post vacancies across 2000+ channels through a single integration. It handles per-channel requirements, credential management, posting lifecycle, status tracking, and payments.
+
+## Base URLs
+
+- Production: https://marketplace.api.vonq.com
+- Sandbox: https://marketplace-sandbox.api.vonq.com
+
+## Authentication
+
+Two methods:
+- **Secret key** (`X-Auth-Token` header)-server-to-server, does not expire
+- **JWT** (`X-Authorization: Bearer` header)-client-side, expires in 7 days
+
+Most endpoints require customer-level auth: secret key + `X-Customer-Id`, or a JWT that embeds customer identity.
+
+## Core Concepts
+
+- **ATS**-your partner account (top-level entity)
+- **ATSUser**-a customer within your partner account, identified by customer_id. Auto-created on first use.
+- **Product**-a job advertising slot on a channel (job board). Types: Job Marketing, My Contract, CPA+, Bundle.
+- **Campaign**-a vacancy posted to one or more channels. States: in progress → online → offline.
+- **Contract**-stored credentials for a channel, enabling My Contract ordering.
+- **Posting Requirements**-channel-specific fields (facets) needed to post on a given board.
+- **Vacancy Fields**-job-level info shared across all products: title, description, location, salary, etc.
+- **Taxonomy**-standardized job titles, industries, education levels, seniority, and locations.
+- **Wallet**-stored-value payment account per ATSUser, backed by Stripe.
+
+## Typical Integration Flow
+
+1. Authenticate → GET /v3/ats/ats/me/
+2. Browse products → GET /products/search/
+3. Get posting requirements → GET /products/{id}/specs/
+4. (Optional) Validate → POST /campaigns/order?validateOnly=true
+5. Order campaign → POST /campaigns/order
+6. Track status → GET /campaigns/{id}/status or webhooks
+7. Edit/Cancel → PUT /campaigns/{id}/edit or cancellation endpoints
+
+## Documentation Sections
+
+### Getting Started
+- [Introduction](docs/01-introduction.md): What is HAPI, getting started, verify setup
+- [API Overview](docs/02-api-overview.md): Base URLs, HTTP methods, pagination, rate limits, errors, CORS
+
+### Authentication & Users
+- [Introduction](docs/guides/03-authentication-and-users/01-introduction.md): Auth methods overview
+- [Entities](docs/guides/03-authentication-and-users/entities.md): ATS/ATSUser hierarchy, partitioning strategies
+- [Authentication](docs/guides/03-authentication-and-users/authentication.md): Secret key vs JWT, token generation
+
+### Taxonomy
+- [Taxonomy & Locations](docs/guides/04-taxonomy.md): Job titles, industries, education, seniority, locations
+
+### Products
+- [Introduction](docs/guides/05-products/01-introduction.md): Product types, pricing, availability
+- [Marketplace](docs/guides/05-products/02-marketplace.md): Search, filter, product details
+- [Special Products](docs/guides/05-products/03-special-products.md): Bundles, CPA+, recommendations
+- [Posting Requirements](docs/guides/05-products/04-posting-requirements.md): Per-product specs
+- [Product Favorites](docs/guides/05-products/05.favorites.md): Save favorite products and retrieve details
+
+### Contracts
+- [Introduction](docs/guides/06-contracts/01-introduction.md): What contracts are
+- [Managing Contracts](docs/guides/06-contracts/managing-contracts.md): MOC endpoints, CRUD, groups
+- [Ordering](docs/guides/06-contracts/ordering.md): Using contracts in campaigns
+- [Posting Requirements](docs/guides/06-contracts/posting-requirements.md): Contract-specific autocomplete
+- [Notes](docs/guides/06-contracts/notes.md): OAuth, deletion risks, validation
+
+### Posting Requirements
+- [Introduction](docs/guides/07-posting-requirements/01-introduction.md): Overview
+- [Facets](docs/guides/07-posting-requirements/facets.md): All 12 types, options, display rules, validation rules
+- [Autocomplete](docs/guides/07-posting-requirements/autocomplete.md): Dynamic options, parameter sources
+- [Validation](docs/guides/07-posting-requirements/validation.md): Client and server-side validation
+- [Smartfill](docs/guides/07-posting-requirements/smartfill.md): AI-powered autofill
+
+### Campaigns
+- [Introduction](docs/guides/08-campaigns/01-introduction.md): Campaign types, lifecycle
+- [Vacancy Fields](docs/guides/08-campaigns/vacancy-fields.md): Title, description, location, salary
+- [Validation](docs/guides/08-campaigns/validation.md): Campaign validation endpoints
+- [Ordering](docs/guides/08-campaigns/ordering.md): Full ordering reference with examples
+- [Status](docs/guides/08-campaigns/status.md): Campaign/product status tracking
+- [Editing](docs/guides/08-campaigns/editing.md): Updating live campaigns
+- [Cancellation](docs/guides/08-campaigns/cancellation.md): Cancel campaigns/products
+- [Webhooks](docs/guides/08-campaigns/webhooks.md): Status notifications
+- [CPA+](docs/guides/08-campaigns/cpa.md): CPA+ within campaigns
+- [Bundles](docs/guides/08-campaigns/bundles.md): Bundle ordering
+- [Smartfill](docs/guides/08-campaigns/smartfill.md): AI vacancy field suggestions
+
+### CPA+
+- [CPA+](docs/guides/09-cpa.md): Full guide-AI screening, applications, file downloads
+
+### Direct Apply
+- [Introduction](docs/guides/10-direct-apply/01-introduction.md): Native apply on job boards
+- [Posting Requirements](docs/guides/10-direct-apply/posting-requirements.md): Enabling Direct Apply
+- [Webhooks](docs/guides/10-direct-apply/webhooks.md): Receiving applications
+- [Feedback](docs/guides/10-direct-apply/feedback.md): Sending application status updates
+
+### Screening
+- [Introduction](docs/guides/11-screening/01-introduction.md): AI-powered candidate evaluation
+- [Jobs & Applications](docs/guides/11-screening/jobs-and-applications.md): Creating jobs, managing applications
+- [Webhooks](docs/guides/11-screening/webhooks.md): Screening result notifications
+
+### Wallets & Payments
+- [Wallets & Payments](docs/guides/12-wallets-and-payments.md): Wallet management, Stripe, top-ups
+
+## Key API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| /v3/ats/ats/me/ | GET | Get partner account info |
+| /v3/ats/atsuser/me/ | GET | Get customer account info |
+| /v3/ats/users/{id}/generate-jwt-token/ | POST | Generate JWT |
+| /products/search/ | GET | Search product catalog |
+| /products/single/{product_id}/ | GET | Get product details |
+| /products/multiple/{products_ids_or_portfolio_id}/ | GET | Get multiple products, favorites, top-ordered products, or portfolio products |
+| /products/delivery-time/{products_ids}/ | GET | Get combined delivery timing |
+| /products/{id}/specs/ | GET | Get product posting requirements |
+| /products/job-titles/ | GET | Search job titles |
+| /products/industries/ | GET | List industries |
+| /products/location/search/ | GET | Search locations |
+| /taxonomy/education-levels | GET | List education levels |
+| /taxonomy/seniority | GET | List seniority levels |
+| /products/channels/mocs/ | GET | List channels supporting contracts |
+| /products/channels/mocs/{id}/ | GET | Channel details with credential fields |
+| /contracts/ | GET/POST | List/create contracts |
+| /contracts/single/{contract_id}/ | GET/PATCH | Get/update contract |
+| /contracts/{contract_id}/ | DELETE | Delete contract |
+| /igb/contracts/groups/ | GET/POST | List/create contract groups |
+| /campaigns/order | POST | Create campaign |
+| /campaigns/{id} | GET | Full campaign details |
+| /campaigns/{id}/status | GET | Lightweight status check |
+| /campaigns | GET | List campaigns |
+| /campaigns/{id}/edit | PUT | Edit campaign |
+| /campaigns/validate-campaign/ | POST | Validate campaign payload |
+| /v3/cpacampaigns/{id}/applications/ | GET | List CPA+ applications |
+| /v3/smartfill/posting-requirements/ | POST | Smartfill posting requirements |
+| /v3/smartfill/vacancy-fields/ | POST | Smartfill vacancy fields |
+| /v3/smartfill/product-search-filters/ | POST | Smartfill product search filters |
+| /v3/products/favorites/ | GET/POST | List/add product favorites |
+| /v3/products/favorites/{product_id}/ | DELETE | Remove a product favorite |
+| /v3/screening/jobs/ | POST | Create screening job |
+| /wallet/ | GET/POST | Get/create wallet |
+| /wallet/billing-portal/ | POST | Get Stripe billing portal link |

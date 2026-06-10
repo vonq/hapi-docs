@@ -1,0 +1,264 @@
+# VONQ Hiring API (HAPI)-Glossary & Ontology
+# Machine-readable domain terms for AI consumption.
+# Each term includes a definition, common aliases, disambiguation, and related API surface.
+
+terms:
+  campaign:
+    definition: A request to post a vacancy on one or more job board channels. The core entity in HAPI.
+    aka: [order, posting order]
+    not: [product, contract, screening job]
+    states: [in progress, online, offline]
+    related_endpoints:
+      - POST /campaigns/order
+      - GET /campaigns/{campaignId}
+      - GET /campaigns/{campaignId}/status
+      - GET /campaigns
+      - PUT /campaigns/{campaignId}/edit
+    docs: guides/08-campaigns/01-introduction.md
+
+  product:
+    definition: A purchasable job advertising slot on a specific channel (job board or platform).
+    aka: [job board product, advertising product]
+    not: [channel, contract, bundle]
+    subtypes:
+      - job-marketing: Pay-per-posting through VONQ. No contract needed.
+      - my-contract: Uses the customer's own channel credentials via a stored contract.
+      - cpa-plus: Cost-per-application product with AI screening. Identified by non-null `cpa` field.
+      - bundle: Curated set of products sold together at a better price. Splits into individual products during ordering.
+    key_fields:
+      - product_id: UUID identifier
+      - vonq_price: Cost to partner
+      - ratecard_price: Suggested retail price
+      - mc_enabled: Supports My Contract ordering
+      - mc_only: Can only be ordered via contract
+      - has_product_specs: Has posting requirements
+      - cpa: Non-null for CPA+ products
+      - allow_orders: false means visible but not orderable
+    related_endpoints:
+      - GET /products/search/
+      - GET /products/single/{product_id}/
+      - GET /products/multiple/{products_ids_or_portfolio_id}/
+      - GET /products/{product_id}/specs/
+    docs: guides/05-products/01-introduction.md
+
+  channel:
+    definition: The underlying job board or platform (e.g., Indeed, LinkedIn, Stepstone). A channel can offer multiple products at different pricing tiers.
+    aka: [job board, platform, publisher]
+    not: [product]
+    related_endpoints:
+      - GET /products/channels/mocs/
+      - GET /products/channels/mocs/{id}/
+    docs: guides/06-contracts/managing-contracts.md
+
+  contract:
+    definition: A stored set of encrypted credentials for a specific channel, owned by an ATSUser. Required when ordering My Contract products.
+    aka: [channel connection, my contract, MC]
+    not: [product, campaign]
+    key_fields:
+      - contract_id: UUID identifier
+      - channel_id: The channel this contract connects to
+      - credentials: Encrypted channel login credentials (masked in responses)
+      - posting_requirements: Channel-specific fields for ordering
+      - group: Contract group this belongs to
+    related_endpoints:
+      - GET /contracts/
+      - POST /contracts/
+      - GET /contracts/single/{contract_id}/
+      - PATCH /contracts/single/{contract_id}/
+      - DELETE /contracts/{contract_id}/
+    docs: guides/06-contracts/01-introduction.md
+
+  contract_group:
+    definition: An organizational container for contracts. Every ATSUser has a default group (idx 0). When ordering with multiple contracts, all must be from the same group.
+    aka: [group]
+    not: [contract]
+    constraint: All contracts in a campaign order must belong to the same group.
+    related_endpoints:
+      - GET /igb/contracts/groups/
+      - POST /igb/contracts/groups/
+    docs: guides/06-contracts/managing-contracts.md
+
+  posting_requirements:
+    definition: Channel-specific fields required to post a vacancy on a given job board. Represented as facets.
+    aka: [specs, product specs, channel requirements, facets]
+    not: [vacancy fields]
+    note: Different from vacancy fields. Vacancy fields are shared across all products in a campaign. Posting requirements are per-product and per-channel.
+    sources:
+      product: GET /products/{product_id}/specs/
+      contract: GET /contracts/single/{contract_id}/
+    docs: guides/07-posting-requirements/01-introduction.md
+
+  facet:
+    definition: A single posting requirement field. Identified by a machine name (case-sensitive), with a type that determines rendering, optional validation rules, and optional display rules.
+    types:
+      - TEXT: Single-line text input
+      - TEXTAREA: Multi-line text input
+      - HTMLAREA: Rich text editor (limited HTML tags)
+      - TEXTEXPAND: JSON-encoded array of strings
+      - SELECT: Single-select dropdown
+      - MULTIPLE: Multi-select dropdown (value is array)
+      - HIER: Hierarchical dropdown (tree structure, only leaf nodes selectable)
+      - AUTOCOMPLETE: Search-as-you-type with dynamic options
+      - DATE: Date picker (format from validation rule)
+      - STATISCH: Display-only, never submitted
+      - AREACOUNT: Numeric area/region counter
+      - QUESTIONNAIRE: Questionnaire builder for Direct Apply
+    key_fields:
+      - name: Case-sensitive machine identifier (used as key in postingRequirements)
+      - label: Human-readable display label
+      - type: Determines UI control and value format
+      - required: Whether field must be filled
+      - options: Predefined choices (may be empty if lazy-loaded)
+      - autocomplete: Non-null means options fetched dynamically
+      - display_rules: Conditional visibility based on other facet values
+      - rules: Validation constraints (maxlength, regex, date format, etc.)
+    docs: guides/07-posting-requirements/facets.md
+
+  vacancy_fields:
+    definition: Job-level information shared across all products in a campaign-title, description, location, salary, employment type, etc.
+    aka: [posting details, job details]
+    not: [posting requirements]
+    sections:
+      - recruiterInfo: Recruiter contact (id, name, email)
+      - postingDetails: Job listing content (title, description, organization, workingLocation, salary, etc.)
+      - targetGroup: Taxonomy classifications (educationLevel, seniority, industry, jobCategory)
+    docs: guides/08-campaigns/vacancy-fields.md
+
+  ats:
+    definition: The partner account-your organization's integration with HAPI. Created by VONQ during onboarding. The top-level entity for all your customers.
+    aka: [partner, partner account]
+    not: [ats_user, customer]
+    note: One ATS per integration. Has ATS-wide settings (payment model, feature flags, validation strictness).
+    related_endpoints:
+      - GET /v3/ats/ats/me/
+    docs: guides/03-authentication-and-users/entities.md
+
+  ats_user:
+    definition: A customer within your partner account. Identified by a customer_id you define. Owns campaigns, contracts, wallets, and screening jobs.
+    aka: [customer, end-user, recruiter account]
+    not: [ats, partner]
+    note: Auto-created on first use. Cannot be deleted or renamed. Most API operations require ATSUser-level authentication.
+    related_endpoints:
+      - GET /v3/ats/atsuser/me/
+      - GET /v3/ats/users/
+      - POST /v3/ats/users/
+    docs: guides/03-authentication-and-users/entities.md
+
+  secret_key:
+    definition: A static API token issued by VONQ for server-to-server authentication. Passed via X-Auth-Token header. One per environment. Does not expire.
+    aka: [api token, auth token, partner token]
+    not: [jwt]
+    docs: guides/03-authentication-and-users/authentication.md
+
+  jwt:
+    definition: A short-lived signed token for client-side authentication. Embeds both partner and customer identity. Passed via X-Authorization header. Expires after 7 days (configurable).
+    aka: [json web token, bearer token]
+    not: [secret_key]
+    related_endpoints:
+      - POST /v3/ats/users/{customer_id}/generate-jwt-token/
+    docs: guides/03-authentication-and-users/authentication.md
+
+  taxonomy:
+    definition: Standardized classification data managed by VONQ-job titles, industries, education levels, seniority, and locations.
+    components:
+      job_title:
+        definition: A specific role name (e.g., "Software Engineer"). Belongs to a parent job function.
+        endpoint: GET /products/job-titles/?text={search}
+      industry:
+        definition: A business sector (e.g., "Technology", "Healthcare").
+        endpoint: GET /products/industries/
+      education_level:
+        definition: Minimum educational attainment (e.g., "Bachelor", "Master").
+        endpoint: GET /taxonomy/education-levels
+      seniority:
+        definition: Career experience level (e.g., "Entry level", "Manager").
+        endpoint: GET /taxonomy/seniority
+      location:
+        definition: Geographic place with hierarchical context (city → region → country).
+        endpoint: GET /products/location/search/?text={search}
+    docs: guides/04-taxonomy.md
+
+  wallet:
+    definition: A stored-value account tied to a single ATSUser and a single currency. Backed by Stripe. Used for campaign payment.
+    aka: [payment balance, prepaid account]
+    note: One wallet per ATSUser, one currency per wallet. Cannot change currency after creation.
+    related_endpoints:
+      - POST /wallet
+      - GET /wallet
+      - POST /wallet/billing-portal
+    docs: guides/12-wallets-and-payments.md
+
+  direct_apply:
+    definition: Feature that lets candidates apply natively on job boards without being redirected. Applications delivered via webhook.
+    aka: [native apply, in-board apply]
+    not: [cpa_plus, screening]
+    note: Must be provisioned by account manager. Delivery modes include single multipart, split, and base64.
+    docs: guides/10-direct-apply/01-introduction.md
+
+  cpa_plus:
+    definition: Cost Per Application Plus-AI-powered hiring product where you pay per pre-screened candidate application instead of per posting.
+    aka: [CPA+, cost per application]
+    not: [screening, direct_apply]
+    note: CPA+ and Direct Apply are always different products, but CPA+ applications are delivered through the Direct Apply webhook infrastructure.
+    key_fields:
+      - cpa.hiring_goal: Target number of reviewed applications
+      - cpa.hiring_goal_unit: Currently "reviewed_applications"
+    related_endpoints:
+      - GET /v3/cpacampaigns/{hapi_campaign_id}/applications/
+      - GET /v3/cpacampaigns/{hapi_campaign_id}/applications/{application_id}/
+      - GET /v3/cpacampaigns/{hapi_campaign_id}/applications/{application_id}/attachment/
+    docs: guides/09-cpa.md
+
+  screening:
+    definition: Standalone AI-powered candidate evaluation via interactive chat. Independent from campaigns.
+    aka: [AI screening, candidate screening]
+    not: [cpa_plus]
+    note: "CPA+ includes screening automatically. Screening is a standalone service where you send candidates for evaluation yourself."
+    key_concepts:
+      screening_job: Immutable job definition with optional requirements. Created once, receives many applications.
+      application: A candidate's screening session. States-created, screened_success, screened_timeout, deleted.
+      dossier: AI-generated PDF with interview transcript, scores, and evaluation summary.
+      requirement: Screening criterion with summary, description, and question. Never shown to candidates.
+    related_endpoints:
+      - POST /v3/screening/jobs/
+      - GET /v3/screening/jobs/
+      - POST /v3/screening/jobs/{job_id}/applications/
+      - GET /v3/screening/jobs/{job_id}/applications/
+    docs: guides/11-screening/01-introduction.md
+
+  smartfill:
+    definition: AI-powered endpoint that auto-fills posting requirement values or vacancy fields based on vacancy information. Async create-then-poll pattern.
+    aka: [autofill, AI suggestions]
+    related_endpoints:
+      - POST /v3/smartfill/posting-requirements/
+      - GET /v3/smartfill/posting-requirements/{task_id}/
+      - POST /v3/smartfill/vacancy-fields/
+      - GET /v3/smartfill/vacancy-fields/{task_id}/
+      - POST /v3/smartfill/product-search-filters/
+      - GET /v3/smartfill/product-search-filters/{task_id}/
+    docs: guides/07-posting-requirements/smartfill.md
+
+  webhook:
+    definition: HTTP callback notification sent by HAPI when campaign statuses change or Direct Apply applications arrive.
+    aka: [postback, callback]
+    note: Campaign webhooks and Direct Apply webhooks are configured separately. Contact account manager to enable.
+    docs: guides/08-campaigns/webhooks.md
+
+  bundle:
+    definition: A curated set of products sold together at a better price. During ordering, split into individual products. Campaign response shows the individual products.
+    aka: [product bundle, package]
+    not: [product]
+    note: Ordered as a single product ID. After ordering, the campaign contains the individual products from the bundle.
+    docs: guides/08-campaigns/bundles.md
+
+  loose_validation:
+    definition: A query parameter (?loose=true) on the ordering endpoint that relaxes validation, making certain vacancy fields optional.
+    not: [validateOnly]
+    note: Requires `allowOmitCampaignOrderingFields` flag on account. Not allowed with My Contract products.
+    docs: guides/08-campaigns/ordering.md
+
+  display_rules:
+    definition: Conditional visibility rules on facets that show/hide a field based on the value of another facet.
+    operations: [equal, in, notempty, contains, selected_option_show_contains]
+    note: A facet hidden by display rules must be omitted from submission, even if marked required.
+    docs: guides/07-posting-requirements/facets.md

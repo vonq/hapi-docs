@@ -1,0 +1,686 @@
+# VONQ Hiring API (HAPI)-API Workflow Map
+# Machine-readable workflow topology for AI agents.
+# Captures sequencing, dependencies, and decision points that no OpenAPI spec provides.
+
+api:
+  name: VONQ Hiring API (HAPI)
+  version: v2
+  base_urls:
+    production: https://marketplace.api.vonq.com
+    sandbox: https://marketplace-sandbox.api.vonq.com
+  rate_limit: 60 requests per 60 seconds per partner
+  auth_methods:
+    secret_key:
+      header: X-Auth-Token
+      scope: server-to-server
+      expiry: never
+      customer_scoping: add X-Customer-Id header
+    jwt:
+      header: "X-Authorization: Bearer {token}"
+      scope: client-side (browser, mobile)
+      expiry: 7 days (configurable)
+      customer_scoping: embedded in token
+      generate: POST /v3/ats/users/{customer_id}/generate-jwt-token/
+
+# ─────────────────────────────────────────────────────
+# WORKFLOWS-the sequences an AI agent needs to follow
+# ─────────────────────────────────────────────────────
+
+workflows:
+
+  # ── Getting Started ──────────────────────────────────
+
+  verify_credentials:
+    description: Confirm API credentials work-the first thing to do after onboarding.
+    steps:
+      - action: Check partner identity
+        endpoint: GET /v3/ats/ats/me/
+        auth: secret_key (no X-Customer-Id)
+        returns: id, name, hapi_partner_id
+        docs: guides/03-authentication-and-users/entities.md
+
+  setup_customer:
+    description: Create or verify a customer (ATSUser) within your partner account.
+    steps:
+      - action: Create or retrieve ATSUser
+        endpoint: POST /v3/ats/users/
+        auth: secret_key (no X-Customer-Id)
+        body: { customer_id: "your-customer-id" }
+        returns: ATSUser object
+        note: Idempotent-returns existing user if customer_id already exists. Also auto-created on first X-Customer-Id usage.
+        docs: guides/03-authentication-and-users/entities.md
+      - action: Verify customer identity
+        endpoint: GET /v3/ats/atsuser/me/
+        auth: secret_key + X-Customer-Id
+        returns: id, ats, customer_id
+        docs: guides/03-authentication-and-users/entities.md
+
+  generate_jwt:
+    description: Generate a JWT for client-side API access.
+    prerequisites: [verify_credentials]
+    steps:
+      - action: Generate JWT scoped to customer
+        endpoint: POST /v3/ats/users/{customer_id}/generate-jwt-token/
+        auth: secret_key
+        returns: "{ token: string }"
+        note: Creates ATSUser if customer_id doesn't exist. Token expires in 7 days.
+        docs: guides/03-authentication-and-users/authentication.md
+      - action: Use JWT in client
+        note: "Pass as X-Authorization: Bearer {token}. No X-Auth-Token or X-Customer-Id needed."
+      - action: Regenerate when expired
+        note: Request a new JWT from your backend. The backend calls the generate endpoint again with the partner secret key.
+
+  # ── Product Discovery ────────────────────────────────
+
+  find_products:
+    description: Search the marketplace for job advertising products relevant to a vacancy.
+    prerequisites: [verify_credentials]
+    steps:
+      - action: Search job titles (for filtering)
+        endpoint: GET /products/job-titles/?text={search}
+        auth: token + X-Customer-Id or JWT
+        returns: "array of { id, name, job_function }"
+        note: Required parameter-cannot list all. Returns ~4,000 titles per language.
+        docs: guides/04-taxonomy.md
+      - action: Search locations (for filtering)
+        endpoint: GET /products/location/search/?text={search}
+        auth: token + X-Customer-Id or JWT
+        returns: locations with nested geographic hierarchy (city → region → country)
+        docs: guides/04-taxonomy.md
+      - action: Search products
+        endpoint: GET /products/search/
+        auth: token + X-Customer-Id or JWT
+        params:
+          jobTitleId: from step 1
+          includeLocationId: from step 2 (broad match)
+          exactLocationId: from step 2 (exact match)
+          industryId: from GET /products/industries/
+          limit: page size
+          offset: pagination
+        returns: paginated product list with pricing, duration, channel info
+        docs: guides/05-products/marketplace.md
+      - action: Get product details (optional)
+        endpoint: GET /products/single/{product_id}/
+        returns: full product object including pricing tiers, mc_enabled, has_product_specs, cpa
+        docs: guides/05-products/marketplace.md
+    decision_points:
+      - condition: "product.cpa != null"
+        meaning: This is a CPA+ product (pay per application)
+        see: workflows.order_cpa_campaign
+      - condition: "product.mc_enabled == true"
+        meaning: This product supports My Contract ordering
+        see: workflows.setup_contract
+      - condition: "product.has_product_specs == true"
+        meaning: This product has posting requirements to fill
+        see: workflows.fill_product_posting_requirements
+
+  get_taxonomy:
+    description: Retrieve taxonomy values for product filtering and campaign target groups.
+    steps:
+      - action: Search job titles
+        endpoint: GET /products/job-titles/?text={search}
+        returns: "{ id, name, job_function }"
+        use_in: product search (jobTitleId), campaign target group
+      - action: List industries
+        endpoint: GET /products/industries/
+        returns: "{ id, name }"
+        use_in: product search (industryId), campaign target group (vonqId)
+      - action: List education levels
+        endpoint: GET /taxonomy/education-levels
+        returns: "{ id, name[] }-multilingual array"
+        use_in: campaign target group (vonqId)
+      - action: List seniority levels
+        endpoint: GET /taxonomy/seniority
+        returns: "{ id, name[] }-multilingual array"
+        use_in: campaign target group (vonqId)
+      - action: Search locations
+        endpoint: GET /products/location/search/?text={search}
+        returns: locations with within hierarchy
+        use_in: product search (includeLocationId, exactLocationId), campaign workingLocation
+
+  # ── Posting Requirements ─────────────────────────────
+
+  fill_product_posting_requirements:
+    description: Retrieve and fill channel-specific posting requirements for a Job Marketing product.
+    prerequisites: [find_products]
+    when: product.has_product_specs == true
+    steps:
+      - action: Get product specs (facets)
+        endpoint: GET /products/{product_id}/specs/
+        auth: token + X-Customer-Id or JWT
+        returns: array of facet objects (name, type, required, options, autocomplete, rules, display_rules)
+        docs: guides/05-products/posting-requirements.md
+      - action: For each facet with autocomplete
+        endpoint: POST /products/{product_id}/specs/facets/{facet_name}/options/
+        body: "{ term: 'search text' }"
+        returns: "array of { key, label }"
+        note: Facet names are case-sensitive. Some facets need multi-term (array).
+        docs: guides/07-posting-requirements/autocomplete.md
+      - action: Evaluate display rules
+        note: "Hide facets where display_rules conditions are not met. Do NOT submit hidden facets, even if required."
+        docs: guides/07-posting-requirements/facets.md
+      - action: Validate client-side
+        note: Apply rules (maxlength, regex, date format, minitems, etc.) before submission.
+      - action: Build postingRequirements object
+        format: "{ facetName: selectedValue, ... }-flat key-value, keys must match facet name exactly"
+    facet_type_cheatsheet:
+      TEXT: "submit string"
+      TEXTAREA: "submit string with newlines"
+      HTMLAREA: "submit HTML string (limited tags)"
+      TEXTEXPAND: "submit JSON-encoded string array: '[\"a\",\"b\"]'"
+      SELECT: "submit option key string"
+      MULTIPLE: "submit array of option keys"
+      HIER: "submit leaf node key only"
+      AUTOCOMPLETE: "submit option key from autocomplete results"
+      DATE: "submit date string in format from date rule"
+      STATISCH: "never submit-display only"
+      AREACOUNT: "submit integer as string"
+      QUESTIONNAIRE: "submit stringified JSON question array"
+
+  fill_contract_posting_requirements:
+    description: Retrieve and fill posting requirements for a My Contract product.
+    prerequisites: [setup_contract]
+    steps:
+      - action: Get contract details with posting requirements
+        endpoint: GET /contracts/single/{contract_id}/
+        returns: contract object with posting_requirements array
+        docs: guides/06-contracts/posting-requirements.md
+      - action: For each facet with autocomplete
+        endpoint: POST /contracts/posting-requirements/{channel_id_or_contract_id}/{posting-requirement-name}/
+        body: "{ term: 'search text' }"
+        returns: "array of { key, label }"
+        note: Use contract_id (not channel_id) after contract is created. Credentials are implicit.
+        docs: guides/06-contracts/posting-requirements.md
+      - action: Build postingRequirements object
+        format: same as product posting requirements
+
+  # ── Contracts ────────────────────────────────────────
+
+  setup_contract:
+    description: Create a contract to use your own job board credentials for ordering.
+    prerequisites: [verify_credentials]
+    steps:
+      - action: Search for channels supporting contracts
+        endpoint: GET /products/channels/mocs/?search={channelName}
+        auth: token + X-Customer-Id or JWT
+        returns: "paginated list of { id, name, url, type, mc_enabled }"
+        docs: guides/06-contracts/managing-contracts.md
+      - action: Get channel details (credential fields + setup instructions)
+        endpoint: GET /products/channels/mocs/{id}/
+        returns: contract_credentials array, posting_requirements, setup_instructions, manual_setup_required
+        docs: guides/06-contracts/managing-contracts.md
+      - action: Handle setup instructions
+        condition: manual_setup_required == true
+        note: Show setup_instructions HTML to user. They must complete steps on the job board before proceeding.
+      - action: Render credential form
+        note: |
+          For each field in contract_credentials:
+            - url present → OAuth redirect button
+            - options present → dropdown select
+            - neither → text input
+        docs: guides/06-contracts/notes.md
+      - action: Create contract
+        endpoint: POST /contracts/
+        body:
+          channel_id: from step 1
+          credentials: "{ fieldName: value }-fields from contract_credentials"
+          credentials_validation: '"if_supported"-always safe to include'
+          followed_instructions: "true (only when manual_setup_required)"
+          alias: optional display name
+          group_id: optional (defaults to default group)
+        returns: contract object with contract_id, posting_requirements, errors
+        docs: guides/06-contracts/managing-contracts.md
+      - action: Check for errors
+        note: Empty errors array = contract ready. Non-empty = fix and retry.
+    decision_points:
+      - condition: credential field has url property
+        meaning: OAuth flow required
+        see: workflows.oauth_contract_credential
+
+  oauth_contract_credential:
+    description: Handle OAuth-based credential fields during contract setup.
+    steps:
+      - action: Build OAuth redirect URL
+        format: "{credential.url}?callbackUrl={your_callback_url}"
+      - action: Redirect user to OAuth URL
+        note: User authenticates on the job board
+      - action: Capture credential from callback
+        note: "Job board redirects to callbackUrl with ?hash={credential_value}"
+      - action: Use captured value as credential field value in POST /contracts/
+        docs: guides/06-contracts/notes.md
+
+  # ── Campaign Ordering ────────────────────────────────
+
+  order_jm_campaign:
+    description: Order a Job Marketing campaign (marketplace products, no contracts needed).
+    prerequisites: [find_products, get_taxonomy]
+    steps:
+      - action: Build vacancy fields
+        fields:
+          companyId: same as X-Customer-Id
+          recruiterInfo: "{ id, name, emailAddress }"
+          postingDetails: "{ title, description, organization, workingLocation, contactInfo, yearsOfExperience, employmentType, weeklyWorkingHours, salaryIndication, jobPageUrl, applicationUrl }"
+          targetGroup: "{ educationLevel, seniority, industry, jobCategory }-each array with single { vonqId, description }"
+        docs: guides/08-campaigns/vacancy-fields.md
+      - action: Get posting requirements (if product has them)
+        condition: product.has_product_specs == true
+        see: workflows.fill_product_posting_requirements
+      - action: Validate (optional but recommended)
+        endpoint: POST /campaigns/order?validateOnly=true
+        body: same as ordering payload
+        returns: 200 if valid, 422 with field-level errors if not
+        docs: guides/08-campaigns/validation.md
+      - action: Submit order
+        endpoint: POST /campaigns/order
+        auth: token + X-Customer-Id or JWT
+        body:
+          companyId: string
+          recruiterInfo: object
+          postingDetails: object
+          targetGroup: object
+          orderedProducts: array of product ID strings
+          orderedProductsSpecs: array (only needed for products with posting requirements or UTM)
+          campaignName: optional
+          currency: optional (default EUR)
+          labels: optional key-value pairs
+          paymentMethod: optional (ats_managed | wallet | direct_charge | purchase_order)
+          walletId: required if paymentMethod is wallet, direct_charge, or purchase_order
+          poNumber: required if paymentMethod is purchase_order
+        returns: "{ campaignId: uuid }"
+        docs: guides/08-campaigns/ordering.md
+      - action: Track status
+        see: workflows.track_campaign
+
+  order_jp_campaign:
+    description: Order a Job Post campaign using your own contracts.
+    prerequisites: [setup_contract, get_taxonomy]
+    steps:
+      - action: Build vacancy fields
+        see: workflows.order_jm_campaign (step 1)
+      - action: Get contract posting requirements
+        see: workflows.fill_contract_posting_requirements
+      - action: Submit order
+        endpoint: POST /campaigns/order
+        note: |
+          orderedProductsSpecs MUST include for each JP product:
+            - productId: the contract's product.product_id
+            - contractId: the contract UUID
+            - postingRequirements: filled facet values
+          All contracts used must belong to the same contract group.
+        docs: guides/06-contracts/ordering.md
+      - action: Track status
+        see: workflows.track_campaign
+
+  order_mixed_campaign:
+    description: Order a campaign mixing Job Marketing and Job Post products.
+    prerequisites: [find_products, setup_contract, get_taxonomy]
+    steps:
+      - action: Build vacancy fields
+        see: workflows.order_jm_campaign (step 1)
+      - action: Get posting requirements per product
+        note: |
+          - JM products with has_product_specs: use GET /products/{product_id}/specs/
+          - JP products: use GET /contracts/single/{contract_id}/ posting_requirements
+      - action: Submit order
+        endpoint: POST /campaigns/order
+        note: |
+          orderedProducts: all product IDs (JM + JP)
+          orderedProductsSpecs: entries for JP products (contractId + postingRequirements)
+                                and optionally JM products (if they have specs or UTM)
+        docs: guides/08-campaigns/ordering.md
+      - action: Track status
+        see: workflows.track_campaign
+
+  order_cpa_campaign:
+    description: Order a CPA+ campaign (pay per AI-screened application).
+    prerequisites: [find_products]
+    note: CPA+ products are identified by a non-null `cpa` field on the product object.
+    steps:
+      - action: Identify CPA+ product
+        note: "product.cpa != null → CPA+ product. cpa.hiring_goal = target reviewed applications."
+      - action: Order campaign (same as JM)
+        see: workflows.order_jm_campaign
+        note: Include CPA+ product ID in orderedProducts like any other product.
+      - action: Monitor hiring progress
+        endpoint: GET /campaigns/{campaignId}
+        field: "postings[].cpaResults.reviewed_applications vs orderedCpa.hiring_goal"
+        docs: guides/09-cpa.md
+      - action: Retrieve applications
+        see: workflows.retrieve_cpa_applications
+
+  # ── Campaign Lifecycle ───────────────────────────────
+
+  track_campaign:
+    description: Monitor campaign and product statuses after ordering.
+    steps:
+      - action: Poll status (lightweight)
+        endpoint: GET /campaigns/{campaignId}/status
+        returns: campaign status + per-product statuses
+        note: Use this for polling-smaller payload than full details.
+        docs: guides/08-campaigns/status.md
+      - action: Get full details (when needed)
+        endpoint: GET /campaigns/{campaignId}
+        returns: full campaign with vacancy fields, product statuses, jobBoardLink, clicks, deliveredOn
+        docs: guides/08-campaigns/status.md
+      - action: Or use webhooks (preferred for production)
+        note: Contact account manager to enable. Eliminates polling.
+        docs: guides/08-campaigns/webhooks.md
+    status_transitions:
+      campaign: "in progress → online → offline"
+      product: "in progress → online → offline  OR  in progress → not processed (permanent failure)"
+    key_fields:
+      - "orderedProductsSpecs[].status-per-product status"
+      - "orderedProductsSpecs[].jobBoardLink-URL to live posting (null until online)"
+      - "orderedProductsSpecs[].deliveredOn-when posting went live"
+      - "postings[].clicks-click count per product"
+      - "isEditable-whether campaign can be edited"
+
+  incremental_sync:
+    description: Fetch only campaigns that changed since your last sync.
+    steps:
+      - action: Query with modifiedOn filter
+        endpoint: GET /campaigns?modifiedOn_gte={lastSyncTimestamp}&sortBy=modifiedOn.asc&limit=50
+        note: modifiedOn updates on any product status change within the campaign.
+      - action: Process each campaign
+        note: Update local status records.
+      - action: Store timestamp of last processed campaign's modifiedOn
+        note: Use as modifiedOn_gte for next sync.
+    docs: guides/08-campaigns/status.md
+
+  edit_campaign:
+    description: Update vacancy details on a live campaign.
+    prerequisites: [track_campaign]
+    when: campaign.isEditable == true
+    steps:
+      - action: Check editability
+        endpoint: GET /campaigns/{campaignId}
+        field: isEditable
+        note: Only editable if not offline and at least one product's channel supports editing.
+      - action: Submit edit
+        endpoint: PUT /campaigns/{campaignId}/edit
+        auth: token + X-Customer-Id or JWT
+        body: same structure as ordering (vacancy fields + product specs)
+        docs: guides/08-campaigns/editing.md
+
+  cancel_campaign:
+    description: Cancel an entire campaign or individual products.
+    steps:
+      - action: Cancel entire campaign
+        endpoint: PUT /campaigns/{campaignId}/cancellation
+        docs: guides/08-campaigns/cancellation.md
+      - action: Or cancel specific product
+        endpoint: PUT /campaigns/{campaignId}/product_cancellation
+        note: Other products in the campaign remain active.
+        docs: guides/08-campaigns/cancellation.md
+
+  # ── CPA+ Applications ───────────────────────────────
+
+  retrieve_cpa_applications:
+    description: Retrieve AI-screened candidate applications from a CPA+ campaign.
+    prerequisites: [order_cpa_campaign]
+    steps:
+      - action: List applications
+        endpoint: GET /v3/cpacampaigns/{hapi_campaign_id}/applications/
+        auth: token + X-Customer-Id or JWT
+        params:
+          reviewed: "true (filter to AI-reviewed only) or false"
+        returns: "paginated { id, reviewed, name, email, phone, files, updated }"
+        docs: guides/09-cpa.md
+      - action: Get application details
+        endpoint: GET /v3/cpacampaigns/{hapi_campaign_id}/applications/{application_id}/
+        returns: single application object
+      - action: Download files
+        endpoint: GET /v3/cpacampaigns/{hapi_campaign_id}/applications/{application_id}/attachment/?filename={name}
+        returns: "{ url: temporary_signed_url }"
+        available_files:
+          - dossier.pdf: AI screening report (transcript, scores, evaluation)
+          - resume.pdf: candidate CV (PDF)
+          - resume.docx: candidate CV (Word)
+        note: URLs are temporary. Download immediately, do not store URL.
+        docs: guides/09-cpa.md
+
+  # ── Direct Apply ─────────────────────────────────────
+
+  enable_direct_apply:
+    description: Enable native apply on job boards when ordering a campaign.
+    prerequisites: [order_jm_campaign]
+    note: Must be provisioned by account manager first.
+    steps:
+      - action: Check product posting requirements for Direct Apply facets
+        endpoint: GET /products/{product_id}/specs/
+        note: |
+          Look for applicationMethod facet (some boards) or questionnaire facets (LinkedIn).
+          - Boards with applicationMethod: select "directapply" to enable
+          - Boards without: filling questionnaire facets implicitly enables it
+        docs: guides/10-direct-apply/posting-requirements.md
+      - action: Configure questionnaire (optional)
+        note: "Questionnaire value is a stringified JSON array of question objects. Question types and limits vary by board-always read from API."
+        docs: guides/10-direct-apply/posting-requirements.md
+      - action: Order campaign with Direct Apply enabled
+        see: workflows.order_jm_campaign
+      - action: Receive applications via webhook
+        note: HAPI POSTs to your configured postback URL.
+        docs: guides/10-direct-apply/webhooks.md
+      - action: Send application feedback
+        note: "Statuses: delivered, qualified, cancelled, closed_rejected, closed_hired"
+        docs: guides/10-direct-apply/feedback.md
+
+  # ── Screening ────────────────────────────────────────
+
+  run_screening:
+    description: Evaluate candidates with AI-powered screening (standalone, independent from campaigns).
+    prerequisites: [verify_credentials]
+    note: Must be enabled by account manager.
+    steps:
+      - action: Create screening job
+        endpoint: POST /v3/screening/jobs/
+        auth: token + X-Customer-Id or JWT
+        body:
+          description: job description (drives AI chat language and questions)
+          company_name: company name
+          requirements: "optional array of { summary, description, question }"
+          finalization_time_hours: "1–168 (default 168 = 7 days)"
+          public_applications: "true for HAPI-collected, false for ATS-collected"
+        returns: "job object with id, job_screening_url (if public)"
+        docs: guides/11-screening/jobs-and-applications.md
+      - action: Submit application (ATS-collected pattern)
+        endpoint: POST /v3/screening/jobs/{job_id}/applications/
+        body: "{ first_name, last_name, email, phone_number, cv (base64) }"
+        returns: "{ id, application_url }"
+        note: Redirect candidate to application_url to complete AI chat.
+        docs: guides/11-screening/jobs-and-applications.md
+      - action: Or share URL (HAPI-collected pattern)
+        note: Share job_screening_url with candidates. HAPI collects their info.
+      - action: Wait for finalization
+        note: Results ready when candidate completes chat or finalization_time_hours expires.
+      - action: Get results
+        endpoint: GET /v3/screening/jobs/{job_id}/applications/{id}/
+        returns: "application with status (screened_success | screened_timeout), score (0-100)"
+        docs: guides/11-screening/jobs-and-applications.md
+      - action: Download dossier
+        note: Available when status is screened_success. PDF with transcript, scores, evaluation.
+        docs: guides/11-screening/jobs-and-applications.md
+
+  # ── Wallets & Payments ───────────────────────────────
+
+  setup_wallet:
+    description: Create and fund a wallet for campaign payments.
+    prerequisites: [setup_customer]
+    steps:
+      - action: Create wallet
+        endpoint: POST /wallet
+        auth: token + X-Customer-Id or JWT
+        body: "{ customerName, currency }"
+        note: One wallet per ATSUser, one currency. Cannot change currency after creation.
+        docs: guides/12-wallets-and-payments.md
+      - action: Set up billing details
+        endpoint: POST /wallet/billing-portal
+        body: "{ partnerReturnUrl }"
+        returns: "{ billingPortalLink }-Stripe-hosted page, expires in 5 min"
+        note: Customer must complete billing details before top-up or purchase orders.
+        docs: guides/12-wallets-and-payments.md
+      - action: Verify billing complete
+        endpoint: GET /wallet
+        field: has_billing_details must be true
+      - action: Top up wallet
+        method: Embed payment widget iframe
+        url: "/wallet/topup.html?walletId={id}&partnerId={id}&returnUrl={url}"
+        note: "Listen for postMessage events: succeeded, processing, requires_action, canceled"
+        docs: guides/12-wallets-and-payments.md
+      - action: Check balance
+        endpoint: GET /wallet
+        field: balance.amount
+
+  # ── Smartfill ────────────────────────────────────────
+
+  use_smartfill:
+    description: AI-powered autofill for vacancy fields and posting requirements.
+    steps:
+      - action: Create smartfill request
+        endpoint: POST /v3/smartfill/posting-requirements/
+        auth: token + X-Customer-Id or JWT
+        body: "product_id (string) or contract_id (string), plus campaign vacancy context such as postingDetails, targetGroup, and recruiterInfo"
+        returns: "{ smartfill_task_id }-async job"
+        docs: guides/07-posting-requirements/smartfill.md
+      - action: Poll for results
+        endpoint: GET /v3/smartfill/posting-requirements/{task_id}/
+        note: Poll until status is complete. Returns suggested field values.
+        docs: guides/07-posting-requirements/smartfill.md
+
+# ─────────────────────────────────────────────────────
+# ENDPOINT DEPENDENCY GRAPH
+# Which endpoints must be called before others
+# ─────────────────────────────────────────────────────
+
+dependencies:
+  "POST /campaigns/order":
+    requires_before:
+      - "GET /products/search/ to get JM product IDs, or GET /contracts/single/{contract_id}/ to read product.product_id for contract products"
+      - "GET /products/{product_id}/specs/ if a JM product has posting requirements"
+      - "GET /contracts/single/{contract_id}/ for JP contract posting requirements"
+      - "GET /products/job-titles/ for targetGroup job taxonomy"
+      - "GET /taxonomy/education-levels for targetGroup"
+      - "GET /taxonomy/seniority for targetGroup"
+    optional_before:
+      - "POST /campaigns/order?validateOnly=true for dry-run validation"
+      - "POST /v3/smartfill/posting-requirements/ for AI-assisted posting requirement filling"
+    requires_after:
+      - "GET /campaigns/{campaignId}/status or webhooks to track delivery"
+
+  "POST /contracts/":
+    requires_before:
+      - "GET /products/channels/mocs/{id}/ to get credential field definitions"
+    optional_before:
+      - "GET /products/channels/mocs/?search=... to find channel ID"
+
+  "POST /v3/screening/jobs/{job_id}/applications/":
+    requires_before:
+      - "POST /v3/screening/jobs/ to create the screening job"
+
+  "POST /v3/ats/users/{id}/generate-jwt-token/":
+    requires_before: []
+    note: "Creates ATSUser automatically if customer_id doesn't exist"
+
+  "POST /wallet/billing-portal":
+    requires_before:
+      - "POST /wallet/ to create the wallet first"
+
+  "GET /v3/cpacampaigns/{hapi_campaign_id}/applications/":
+    requires_before:
+      - "POST /campaigns/order to create a campaign with a CPA+ product"
+
+# ─────────────────────────────────────────────────────
+# STATE MACHINES
+# Entity lifecycle states and transitions
+# ─────────────────────────────────────────────────────
+
+state_machines:
+  campaign:
+    states:
+      in_progress: Campaign ordered, channels processing
+      online: At least one product is live
+      offline: All products finished or cancelled
+    transitions:
+      - from: in_progress
+        to: online
+        trigger: first product goes live
+      - from: online
+        to: offline
+        trigger: all products finished/cancelled
+
+  product_in_campaign:
+    states:
+      in_progress: Being delivered to channel
+      online: Live on job board
+      offline: Expired or cancelled
+      not_processed: Permanent failure
+    transitions:
+      - from: in_progress
+        to: online
+        trigger: channel confirms posting
+      - from: in_progress
+        to: not_processed
+        trigger: delivery failed (terminal-cannot retry)
+      - from: online
+        to: offline
+        trigger: posting expired or cancelled
+
+  screening_application:
+    states:
+      created: Application submitted, waiting for candidate
+      screened_success: Candidate completed chat, results available
+      screened_timeout: Finalization expired without completion
+      deleted: Soft-deleted
+    transitions:
+      - from: created
+        to: screened_success
+        trigger: candidate completes AI chat
+      - from: created
+        to: screened_timeout
+        trigger: finalization_time_hours expires
+
+# ─────────────────────────────────────────────────────
+# COMMON PITFALLS
+# Things AI agents frequently get wrong
+# ─────────────────────────────────────────────────────
+
+pitfalls:
+  - id: auth_level_confusion
+    mistake: Making API calls without X-Customer-Id when the endpoint requires it
+    fix: Most endpoints require customer-level auth. Only a few (GET /v3/ats/ats/me/, GET /v3/ats/users/) work at partner level.
+
+  - id: facet_name_case
+    mistake: Using lowercase facet names (e.g., "jobcategory" instead of "JobCategory")
+    fix: Facet names are case-sensitive. Always use the exact name from the facet definition.
+
+  - id: product_vs_contract_specs
+    mistake: Using GET /products/{product_id}/specs/ for My Contract products
+    fix: My Contract products get posting requirements from the contract (GET /contracts/single/{contract_id}/), not the product specs endpoint.
+
+  - id: textexpand_format
+    mistake: Submitting a TEXTEXPAND value as an actual array
+    fix: "Value must be a JSON-encoded string: '[\"a\",\"b\"]' not ['a','b']"
+
+  - id: hidden_facet_submission
+    mistake: Submitting values for facets hidden by display_rules
+    fix: Omit hidden facets entirely, even if they have required=true.
+
+  - id: statisch_submission
+    mistake: Including STATISCH facet values in postingRequirements
+    fix: STATISCH is display-only. Never include it in the submission.
+
+  - id: hier_parent_selection
+    mistake: Submitting a parent node key for a HIER facet
+    fix: Only leaf nodes are selectable. A leaf is any option whose key is never another option's parent.
+
+  - id: contract_group_mismatch
+    mistake: Using contracts from different groups in one campaign
+    fix: All contracts in a campaign must belong to the same contract group.
+
+  - id: stale_taxonomy
+    mistake: Caching taxonomy IDs indefinitely
+    fix: Refresh taxonomy data daily. Campaigns referencing outdated IDs will be rejected.
+
+  - id: attachment_url_caching
+    mistake: Storing CPA+ attachment download URLs for later use
+    fix: URLs are temporary signed links. Request a fresh URL each time you need to download.
