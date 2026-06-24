@@ -87,7 +87,7 @@ Individual products can also reach a `not processed` status-a permanent failure 
 
 **Posting Requirements**-channel-specific fields that vary by product. Each job board has its own requirements (e.g., job categories, application methods, remote work options). Fetched dynamically from the API. See [Posting Requirements](../07-posting-requirements/01-introduction.md).
 
-**Loose Validation**-a query parameter (`?loose=true`) on the ordering endpoint that relaxes validation, allowing you to omit certain optional fields. Useful for quick integrations or when not all vacancy data is available. See [Ordering](./ordering.md).
+**Loose Validation**-a query parameter (`?loose=true`) on the ordering endpoint that allows configured vacancy fields to be omitted from the campaign payload. Validation still applies to the rest of the payload. Useful for quick integrations or when not all vacancy data is available. See [Ordering](./ordering.md).
 
 **Labels**-custom tags you can attach to campaigns for filtering and organization. Use labels to group campaigns by team, department, or hiring initiative, then filter with the campaign list endpoint.
 

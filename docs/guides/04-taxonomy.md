@@ -146,7 +146,7 @@ See [Campaign Ordering](./08-campaigns/ordering.md) for the full ordering workfl
 
 <!-- theme: info -->
 > ### Job title name sorting follows `Accept-Language`
-> Use `sortBy=name.asc` or `sortBy=name.desc` to sort matching job titles by localized name. The API chooses the sort language from `Accept-Language`; clients should only send these public sort values.
+> Use `sortBy=name.asc` or `sortBy=name.desc` to sort matching job titles by localized name. The API chooses the sort language from `Accept-Language`; clients should only send these supported sort values.
 
 <!-- theme: info -->
 > ### Location search

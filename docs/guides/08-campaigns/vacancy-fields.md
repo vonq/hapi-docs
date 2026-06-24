@@ -182,9 +182,9 @@ Each field is an array containing exactly **one** taxonomy reference object with
 | `educationLevel` | Loose | `GET /taxonomy/education-levels` | Minimum education level |
 | `seniority` | Loose | `GET /taxonomy/seniority` | Career experience level |
 | `industry` | Loose | `GET /products/industries/` | Business sector |
-| `jobCategory` | Loose | Not resolved through public taxonomy | Compatibility field |
+| `jobCategory` | Loose | Not resolved through taxonomy endpoints | Compatibility field |
 
-All four fields are required by default but become optional with `?loose=true`.
+All four fields are required by default but may be omitted with `?loose=true` when listed in your loose-validation settings.
 
 <!-- theme: warning -->
 > ### One Value Per Dimension
@@ -224,9 +224,9 @@ The `companyId` identifies the company posting the job. This is the same as your
 
 ## Loose Validation
 
-By default, all fields marked "Loose" in the tables above are required. Adding `?loose=true` to the ordering endpoint makes them optional, allowing you to submit a campaign without all vacancy details.
+By default, all fields marked "Loose" in the tables above are required. Adding `?loose=true` to the ordering endpoint allows configured fields to be omitted, so you can submit a campaign before all vacancy details are available.
 
-Fields affected by loose validation:
+Possible fields for loose validation:
 
 - `postingDetails.yearsOfExperience`
 - `postingDetails.workingLocation.addressLine1`
@@ -237,7 +237,7 @@ Fields affected by loose validation:
 
 <!-- theme: info -->
 > ### Loose Validation Requires Account Configuration
-> Your account must have the `allowOmitCampaignOrderingFields` flag enabled. Contact your VONQ account manager to enable loose validation.
+> Your account must be enabled for loose validation. Use `GET /v3/ats/atsuser/me/settings/` to read `settings.campaigns.loose_validation`: `marketplace.fields` applies to Marketplace orders, `job_post.fields` applies to Job Post orders, and mixed campaigns use the union of both.
 
 See [Ordering](./ordering.md) for the full ordering request and query parameters.
 

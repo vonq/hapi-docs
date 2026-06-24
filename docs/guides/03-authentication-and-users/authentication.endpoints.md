@@ -1,6 +1,6 @@
 ---
 title: Authentication - Endpoint Reference
-description: Full request/response details for public authentication endpoints.
+description: Full request/response details for authentication endpoints.
 category: guides/authentication-and-users
 ---
 
@@ -118,7 +118,17 @@ X-Customer-Id: customer-123
     "can_use_wallets": true,
     "can_pay_with_purchase_order": true,
     "can_pay_with_direct_charge": true,
-    "invoice_currency": "EUR"
+    "invoice_currency": "EUR",
+    "campaigns": {
+      "loose_validation": {
+        "marketplace": {
+          "fields": ["postingDetails.yearsOfExperience"]
+        },
+        "job_post": {
+          "fields": ["targetGroup.educationLevel"]
+        }
+      }
+    }
   },
   "payment_settings": [
     {
@@ -146,8 +156,14 @@ X-Customer-Id: customer-123
 | `can_pay_with_purchase_order` | boolean | Whether purchase order payments are enabled |
 | `can_pay_with_direct_charge` | boolean | Whether direct card charges are enabled |
 | `invoice_currency` | string | Default billing currency (e.g. `"EUR"`) |
+| `campaigns.duplicate_hash_prevention_minutes` | integer | Duplicate campaign payloads may be rejected within this window |
+| `campaigns.enable_weekly_working_minutes` | boolean | Enables minute-based working-time fields |
+| `campaigns.job_marketing_editing` | boolean | Job marketing campaigns may be editable |
+| `campaigns.validate_description_html_tags` | boolean | Vacancy description HTML is validated |
+| `campaigns.loose_validation.marketplace.fields` | array | Vacancy fields that may be omitted with `?loose=true` for Marketplace orders |
+| `campaigns.loose_validation.job_post.fields` | array | Vacancy fields that may be omitted with `?loose=true` for Job Post orders |
 
-The response includes additional internal feature flags (e.g. `smartfill`, `campaigns`, `direct_apply`, `analytics`) that are managed internally and may change without notice.
+For mixed campaigns, loose validation uses the union of `marketplace.fields` and `job_post.fields`. Empty field lists mean no fields may be omitted for that campaign type. Other feature settings (e.g. `smartfill`, `direct_apply`, `analytics`) are managed internally and may change without notice.
 
 **`payment_settings` array** - one entry per enabled currency:
 

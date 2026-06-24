@@ -45,7 +45,7 @@ difficulty: beginner
 | `name.asc` | Prefer matching titles by localized name, A to Z |
 | `name.desc` | Prefer matching titles by localized name, Z to A |
 
-For `name.asc` and `name.desc`, sorting uses the language resolved from `Accept-Language`, defaulting to the project default language. Clients should only send these public sort values.
+For `name.asc` and `name.desc`, sorting uses the language resolved from `Accept-Language`, defaulting to the project default language. Clients should only send these supported sort values.
 
 Search for job titles matching "manager":
 

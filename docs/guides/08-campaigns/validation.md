@@ -54,22 +54,22 @@ For simpler integrations, you can skip the individual validation steps and valid
 
 ## Loose Validation
 
-All validation endpoints support the `?loose=true` query parameter. When enabled, loose validation skips checks for fields that are normally required but can be omitted:
+All validation endpoints support the `?loose=true` query parameter. When enabled, only fields listed in `settings.campaigns.loose_validation` may be omitted from the validation payload. Validation still runs for all other fields.
 
-- `postingDetails.yearsOfExperience`
-- `postingDetails.workingLocation.addressLine1`
-- `targetGroup.educationLevel`
-- `targetGroup.seniority`
-- `targetGroup.industry`
-- `targetGroup.jobCategory`
+Use `GET /v3/ats/atsuser/me/settings/` to read the configured fields:
 
-This is useful when your integration does not collect all vacancy details upfront, or when you want to allow partial submissions.
+| Setting | Applies To |
+|---------|------------|
+| `settings.campaigns.loose_validation.marketplace.fields` | Marketplace orders |
+| `settings.campaigns.loose_validation.job_post.fields` | Job Post orders |
+
+Mixed campaigns use the union of both lists. Empty lists mean no fields may be omitted for that campaign type.
 
 <!-- theme: info -->
 > ### Account Configuration Required
-> Loose validation requires the `allowOmitCampaignOrderingFields` flag on your account. Contact your VONQ account manager to enable it.
+> Loose validation must be enabled for your account. Contact your VONQ account manager to enable it.
 
-See [Vacancy Fields-Loose Validation](./vacancy-fields.md#loose-validation) for more detail on which fields are affected.
+See [Vacancy Fields-Loose Validation](./vacancy-fields.md#loose-validation) for the possible field paths.
 
 ## Endpoints
 

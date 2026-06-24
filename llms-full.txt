@@ -1,5 +1,5 @@
-# VONQ Hiring API (HAPI)-Complete Documentation
-# Generated for AI consumption from the public docs/ tree.
+# VONQ Hiring API (HAPI) Documentation
+# Generated for AI consumption from the docs/ tree.
 # See llms.txt for a structured index, api-map.yaml for workflows, and glossary.yaml for domain terms.
 
 ---
@@ -21,6 +21,11 @@ difficulty: beginner
 # Introduction
 
 > Single-API access to 2000+ job boards, social platforms, and niche channels-so ATS partners can offer job advertising as a native feature without building individual integrations.
+
+<!-- theme: info -->
+> **These docs live in two places, with identical content-pick whichever fits your workflow:**
+> - **[Stoplight](https://vonq.stoplight.io/docs/hapi-docs-v2)** - rendered and searchable, with the interactive OpenAPI reference. Best for browsing and exploring.
+> - **[GitHub: `vonq/hapi-docs`](https://github.com/vonq/hapi-docs)** - the raw Markdown source. Clone it for offline reading, full-text search, or feeding into AI agents and code tools.
 
 ## What is HAPI?
 
@@ -145,6 +150,8 @@ These docs cover the REST API. HAPI Elements are production-ready, framework-agn
 ## External Resources
 
 - [OpenAPI Specification](https://vonq.stoplight.io/docs/hapi-docs-v2/e9ee9e37358b5-hapi)-full interactive API schema on Stoplight
+- [Documentation Source on GitHub](https://github.com/vonq/hapi-docs)-the same docs as a cloneable Markdown repository
+- [Changelog](./CHANGELOG.md) - notable API and documentation changes per release
 - [HAPI Elements Documentation](https://docs.elements.hapi.vonq.com/)-embeddable UI widget integration guide
 
 
@@ -337,6 +344,646 @@ Taxonomy data (job functions, education levels, seniority, industries) and produ
 - [Introduction](./01-introduction.md)-what is HAPI, getting started
 - [Authentication](./guides/03-authentication-and-users/authentication.md)-secret key vs JWT, generating tokens
 - [Entities](./guides/03-authentication-and-users/entities.md)-ATS, ATSUser, Company, Partner relationships
+
+
+---
+<!-- Source: docs/CHANGELOG.md -->
+
+# Changelog
+
+## 2026-06-11
+### Changed
+- `GET /v3/ats/atsuser/me/` now documents typed `settings.campaigns` fields instead of a free-form object: `duplicate_hash_prevention_minutes`, `enable_weekly_working_minutes`, `job_marketing_editing`, `validate_description_html_tags`, and `loose_validation` (the `job_post` / `marketplace` fields that may skip strict validation).
+
+## 2026-06-08
+### Added
+- `features` object on products (`GET /products/search/`, `/products/single/{product_id}/`, `/products/multiple/{products_ids_or_portfolio_id}/`) exposing product feature flags. Currently includes `direct_apply` (`n/a` | `optional` | `mandatory`).
+- New schemas `ProductFeatures` and `DirectApplyEnum`.
+
+## 2026-05-25
+### Changed
+- Schema examples now use deterministic placeholder UUIDs, `development@vonq.com`, and example/acme URLs instead of real-looking partner, campaign, wallet, product, and job values.
+- The schema now marks `ATSPublicSettings.ai_suggestions` as deprecated, clarifies wallet and billing-portal operation text, uses `Resource - Action` operation summaries, declares authentication for campaign takedown, and removes stale Stoplight v1 links from campaign descriptions.
+- Documentation now centralizes supported `Accept-Language` values in API Overview, link guide references to that section, and restores Wallets & Payments details from the legacy guide for direct charge ordering, billing portal expiry, payment iframe sizing, negative-balance top-ups, and refunds.
+
+## 2026-05-13
+### Removed
+- `ats_user_jwt_allow_renewal` field from `ATSSSetting`; `GET /v3/ats/atsuser/me/` now exposes only `ats_user_jwt_expiration` under `settings`.
+### Changed
+- `GET /v3/ats/atsuser/me/` now references `PublicAuthenticatedATSUser` in the schema instead of the internal `ATSUserAuthenticated` component; the documented response fields are unchanged.
+- Product endpoint descriptions were clarified for `GET /products/search/` and `GET /products/single/{product_id}/`, including the updated bulk-retrieval path `/products/multiple/{products_ids_or_portfolio_id}/`.
+
+## 2026-05-08
+### Added
+- `PATCH /campaigns/{campaignId}/edit` - sandbox-only endpoint to simulate campaign and ordered-product status transitions. Useful for exercising webhook handlers and status-driven UI without waiting for real job board responses. Blocked in production. See [Status & Lifecycle](guides/08-campaigns/status.md#sandbox-status-simulation).
+
+## 2026-05-04
+### Removed
+- `force_knockout_enabled` field on `ScreeningJobSettings` (knockout is now always enabled). Affects `POST /v3/screening/jobs/`.
+### Changed
+- `injectFavorites` and `injectTopOrdered` query parameters on `GET /products/search/` are now triggered by `offset=0` (rather than "page 1"). When enabled, the promoted products are excluded from the regular paginated result stream.
+- The schema for `GET /products/multiple/{products_ids_or_portfolio_id}/` now documents the existing paginated response envelope (`count`, `next`, `previous`, `results`, optional `facets` and `debug`) instead of a single product object.
+
+## 2026-04-30
+### Added
+- `notes` field (max 2000 characters) on `ScreeningJobInfo` for `POST /v3/screening/jobs/` and `GET /v3/screening/jobs/{id}/`.
+- `force_knockout_enabled` boolean (default `false`) on `ScreeningJobSettings` for `POST /v3/screening/jobs/`. _(Removed again on 2026-05-04 - see above.)_
+### Changed
+- `notes` on `ScreeningJobCreateData` is now bounded to 2000 characters.
+
+## 2026-04-28
+### Added
+- `sortBy` query parameter on `GET /products/job-titles/`: accepts `relevance` (default), `frequency.asc`, `frequency.desc`, `name.asc`, `name.desc`.
+### Changed
+- `channel_id` and `contract_id` in `SmartfillPostingRequirementsDetail` are now nullable, supporting HAPI Job Marketing flows without a contract.
+
+## 2026-04-22
+### Added
+- `injectFavorites` (boolean) query parameter on `GET /products/search/`: prepends the authenticated ATS user's favorite products to page 1 of the results.
+- `injectTopOrdered` query parameter on `GET /products/search/`: prepends the user's top-ordered products for a given window (`1w`, `1m`, `6m`, `12m`) to page 1.
+### Changed
+- `channel_id` and `contract_id` in `SmartfillPostingRequirementsDetail` are now read-only strings (previously required UUID-format input), allowing Smartfill use on Job Marketing without a contract.
+- `GET /products/multiple/{products_ids_or_portfolio_id}/` now rejects requests that also pass `products_ids_or_portfolio_id` as a query parameter; pass it only in the URL path.
+
+## 2026-04-15
+### Added
+- Product Favorites endpoints (ATS-user authenticated):
+  - `GET /v3/products/favorites/` - list favorite product IDs for the authenticated ATS user
+  - `POST /v3/products/favorites/` - add a product to favorites
+  - `DELETE /v3/products/favorites/{product_id}/` - remove a product from favorites
+- New schemas: `ProductFavorite`, `ProductFavoriteCreate`, `ProductFavoriteCreateRequest`.
+- `GET /products/multiple/{products_ids_or_portfolio_id}/` now also accepts:
+  - `favorites` - returns the authenticated user's favorite products
+  - `orders-top-{1w|1m|6m|12m}` - returns the user's most-ordered products for a time window
+  - a Portfolio Selector UUID - returns products belonging to a pre-configured selector
+### Changed
+- Path-parameter names were clarified in the schema with no behavioral change. The documented paths now use:
+  - `/products/multiple/{products_ids_or_portfolio_id}/`
+  - `/products/delivery-time/{products_ids}/`
+  - `/contracts/multiple/{contracts_ids}/`
+  - `/contracts/posting-requirements/{channel_id_or_contract_id}/{posting-requirement-name}/`
+  - `/igb/contracts/groups/{group_idx}/`
+  - `/v3/smartfill/posting-requirements/{task_id}/`
+  - `/v3/smartfill/product-search-filters/{task_id}/`
+  - `/v3/smartfill/vacancy-fields/{task_id}/`
+- Improved descriptions for the multiple-products endpoint (documents the new `favorites`, `orders-top-*`, and portfolio-selector inputs) and Product Favorites endpoints.
+
+## 2026-04-10
+### Added
+- Initial publication of the **v2 API schema** (HTP-3096) at `schema/build/public.json` (OpenAPI 3.0.3, ~71 paths, ~228 component schemas). Endpoint coverage now includes:
+  - **Campaigns** - listing, retrieval, ordering, status, editing, cancellation, product-cancellation, and validation (`/campaigns`, `/campaigns/{campaignId}`, `/campaigns/order`, `/campaigns/{campaignId}/edit`, `/campaigns/{campaignId}/cancellation`, `/campaigns/{campaignId}/product_cancellation`, `/campaigns/{campaignId}/status`, `/campaigns/validate-*`)
+  - **Contracts** - CRUD, listing, multiple, posting requirements, contract groups (`/contracts/...`, `/igb/contracts/groups/...`)
+  - **Products** - search, single, multiple, specs, facet options, delivery time, channel MOCs, taxonomy filters (`/products/...`, `/products/channels/mocs/...`)
+  - **Taxonomy** - education levels, seniority (`/taxonomy/education-levels`, `/taxonomy/seniority`)
+  - **ATS Users** - CRUD, JWT issuance, profile, settings (`/v3/ats/...`)
+  - **Screening** - jobs and applications, with attachments and dossiers (`/v3/screening/jobs/...`)
+  - **CPA+** - campaign applications and attachment downloads (`/v3/cpacampaigns/{hapi_campaign_id}/applications/...`)
+  - **Smartfill** - posting requirements, product-search filters, vacancy fields (`/v3/smartfill/...`)
+  - **Wallets & Payments** - wallet creation, billing portal, top-up (`/wallet/...`)
+  - **Apply / Direct Apply** - application feedback (`/v3/apply-applications/application-feedback/`)
+
+## 2026-04-02
+### Changed
+- `postingDetails.workingLocation.allowsRemoteWork` now also accepts the string `hybrid`
+
+## 2025-12-10
+### Added
+- Italian and Spanish as partially supported languages
+
+## 2025-08-21
+### Changed
+- Smartfill for posting requirements now returns standardized data types
+
+## 2025-06-04
+### Added
+- Metadata for campaigns and campaigns ordered products
+- CPA+ endpoints for applications, CPA+ info in product and ordered product
+
+## 2025-05-08
+### Added
+- Taxonomy details in the response for Smartfill Vacancy Fields
+### Changed
+- Providing unsupported image types for `postingDetails.organization.companyLogo` in "Order a new Campaign" endpoint and the campaign validation endpoints now triggers a validation error
+
+## 2025-04-23
+### Added
+- Added Smartfill endpoints for product search filters
+
+## 2025-04-05
+### Changed
+- `salaryIndication.from` and `salaryIndication.to` in the Campaign's payload now support decimal values.
+
+## 2025-03-03
+### Changed
+-  Smartfill character limit has been increased from 10,000 to 20,000 characters per context type.
+
+## 2025-02-25
+### Added
+- On demand, if the campaign is not in a cancellable state, the campaign cancellation endpoint will return a bad request response.
+
+## 2024-11-18
+### Added
+- Added `isBundle` filter to `/products/search/` endpoint
+
+## 2024-10-21
+### Added
+- Added `weeklyWorkingMinutes` as alternative to `weeklyWorkingHours` in the Campaign's `PostingDetails` object
+
+## 2024-10-11
+### Added
+- Added Smartfill endpoints.
+
+## 2024-08-14
+### Added
+- Added French as a partially supported language.
+
+## 2024-05-29
+### Changed
+- `postingDetails.salaryIndication` is no longer required.
+
+## 2024-05-07
+### Added
+- `labels` property for contract listing endpoint
+
+## 2024-03-14
+### Added
+- `hourly` as option to `postingDetails.salaryIndication.period` for `/campaigns/order` endpoint
+
+## 2024-01-17
+### Changed
+- `postingDetails.contactInfo.phoneNumber` now has a maximum length, 40 characters
+
+## 2023-10-16
+### Added
+- new channel type: `product_bundle`
+- new property for the product: `bundle_products_ids`
+
+## 2023-09-21
+### Added
+- new endpoint that allows taking individual products offline within a campaign
+
+## 2023-08-15
+### Added
+- add labels for campaign ordering and filtering
+- campaign editing
+- add posting duration days
+- expose message in facets payload
+- add autocomplete support (lazy load) for HIER and SELECT facets
+
+## 2023-06-05
+### Added
+- `direct_charge` as possible value for campaign `paymentMethod`
+- the Payment Widget can now receive a `campaignId` as parameter
+
+## 2023-06-01
+### Added
+- Allow custom posting expiry during campaign ordering for mc products
+
+## 2023-05-12
+### Changed
+- When creating a wallet, the `customerName` field is optional.
+
+## 2023-05-09
+### Added
+- `missing_billing_keys` wallet parameter
+
+## 2023-05-02
+### Added
+- product prices can be shown in AUD.
+- `currency` as optional parameter when creating a wallet.
+- `min_topup`, `max_purchase_order`, `max_outstanding_balance` wallet parameters
+
+### Removed
+The `amount` parameter of the Top-Up Iframe `/wallet/topup.html`
+
+## 2023-04-27
+### Changed
+- `statusDescription` may now contain a standardized error message.
+### Added
+- `statusSolution` and `statusRawError` fields for the `/campaigns/{campaignId}/status`, `/campaigns` and `/campaigns/{campaignId}` endpoints.
+
+## 2023-02-03
+### Changed
+- Deprecated `amount` parameter of the Top-Up Iframe `/wallet/topup.html`
+
+## 2022-10-11
+### Changed
+ - List autocomplete values for posting requirement can now receive multiple terms in payload for certain types of posting requirements
+
+## 2022-09-29
+### Added
+ - pagination parameters for Retrieve Multiple Products endpoint
+
+## 2022-09-01
+### Added
+ - campaign common fields validation
+ - campaign full payload validation
+ - campaign product posting validation
+
+### Changed
+ - error response object shape changed for contracts creation
+ - added requires property on facet options
+
+## 2022-08-18
+### Added
+- Channel and Contract channels logos
+- Autocomplete endpoint for facets and contracts
+
+### Changed
+- mc_only products can be fetched via `/products/single/{{product_id}}/` too
+- improved the response for errors during contract creation
+- removed contract_credentials_is_oauth from the channels endpoints
+- remove credentials from the posting_requirements for auto-complete facets
+
+
+## 2022-08-10
+### Added
+- Users must accept terms of service before being able to top-up a wallet
+
+## 2022-08-08
+### Changed
+- Added contracts group support
+
+
+## 2022-07-18
+### Added
+- Minimum top-up amount for wallets
+
+## 2022-06-06
+### Added
+- Allow setting an alias during contracts creation
+- Added display rules for channel facets
+- Payments
+
+
+### Changed
+- Single contract per channel limitation was removed
+
+## 2022-03-07
+### Added
+- Adding new endpoint to retrieve MC channels
+
+## 2022-02-21
+### Added
+- Adding information about products statuses to the Check campaign status response
+
+## 2021-12-01
+### Added
+- Adding support for multi-posting
+
+
+## 2021-09-09
+### Added
+- Adding flag allowsRemoteWork in campaign posting details working location
+
+## 2021-08-10
+### Added
+- Adding new productId field in campaign postings objects
+
+## 2021-06-29
+### Added
+- Adding new time to setup response field for products.
+
+## 2021-03-24
+### Added
+- Products can now be sorted by recency.
+- Salary ranges can now specify a currency.
+
+## 2021-03-15
+### Added
+- Specify salary expects integers
+
+## 2021-03-12
+### Added
+- Adding audience_group to products response
+
+## 2021-02-22
+### Added
+- Adding square and rectangle logo urls to products response
+
+## 2021-02-18
+### Added
+- Adding new multiple products detail endpoint
+
+## 2021-02-03
+### Added
+- Adding durationPeriod for each order's product
+
+## 2020-12-02
+### Added
+- Adding duration and jobBoardLink for each order's product
+
+## 2020-12-01
+### Added
+- Adding new product order endpoint
+
+## 2020-11-26
+### Added
+- Adding status and deliveredOn for each order's product
+
+## 2020-11-20
+### Remove
+- Data requirements section removed from documentation
+
+## 2020-10-26
+### Changed
+- Changed the Contact Information in Posting details from mandatory to optional
+
+## 2020-09-22
+### Added
+- Adding UTM parameters optionally for each order's product
+
+## 2020-09-21
+### Changed
+- Rate limits documented
+
+## 2020-07-08
+### Changed
+- Fixed documentation of `CampaignOrder`.`orderedProducts` from array[integer] to be array[string]
+- Changed single product [/portfolio/{productId}] endpoint's parameter `productId` to accept string instead of integer
+
+## 2020-04-06
+### Changed
+- Updated dependencies
+- Fix that SalaryIndication 'from' could be a negative number
+- Get 'cta-clicks' from Clickdata instead of unique visitors
+
+## 2020-03-30
+### Added
+- Retrieve Clickdata from Data Web Services
+- Clickdata cronjob for all campaigns
+
+### Changed
+- Simplify updating of product names from product portfolio
+
+## 2020-03-23
+### Added
+- Integration test for Campaign service
+- Domain model for Click Data
+- Add campaign performance clicks to response data
+
+### Changed
+- Convert invalid UUID to 400 errors
+- Use prefix for Redis keys
+- Add throttling back to sandbox
+
+## 2020-03-16
+### Added
+- Create API token from dashboard
+
+### Changed
+- Disable rate limiting in sandbox
+- Don't serve robots.txt
+- Default datetime for migrations so required datetime fields don't break
+- use lowercase postcode for API
+
+## 2020-03-09
+### Added
+- Add Partner name to Slack notification
+- Add API Team Partner Id to sandbox to filter internal testing
+
+### Changed
+- Coding standards updated
+- Base Docker image updated
+
+### Fixed
+- Salary Range should allow to and from to be equal
+
+## 2020-03-02
+### Added
+- Dashboard for viewing campaign statistics in the API
+- Track imported campaigns
+- Add US and Canada regions to Region taxonomy
+- Generated API tokens for US partners
+
+### Changed
+- Updated dependencies
+- Show campaign details
+- Ensure SalaryRange 'from' is less than 'to'
+- Production and Sandbox settings
+- Support sandbox campaign service for APITEAM
+
+## 2020-02-24
+### Added
+- Added request ID to the headers when dispatching to the Campaign Service
+
+### Changed
+- Updated dependencies
+
+## 2020-02-17
+### Added
+- Added more info when getting a 400 from CS
+- Added error responses to API Documentation
+
+### Changed
+- Set default timezone
+- Map the Recruiter Id in Marketplace to Recruiter ExternalID in Campaign Service
+- Map Marketplace CompanyId to CampaignService ExternalCompanyId
+- More consistent error responses
+
+### Fixes
+- Added microseconds to datadog link
+- Better handling of Campaign-Service error response
+- Fixed logic for Time To Process
+
+## 2020-02-10
+### Added
+- Added documentation about code style linter
+
+### Changed
+- Disable basic auth on /health endpoint
+- Remove Traefik configuration
+- Clean up old debug code
+
+### Fixes
+- Fix incorrect link for Datadog logs
+- Use UTC datetime everywhere
+
+## 2020-02-03
+### Added
+- Announce new orders to Marketplace API Slack channel
+- Additional information in API documentation
+- Added Cancel Campaign endpoint
+
+### Changed
+- Upgrade to PHP 7.4.2
+- The CampaignService now accepts the EmploymentType
+- Move additional variables to AWS secrets
+
+## 2020-01-27
+### Added
+- Added Campaign Details endpoint
+- Added ORM integration tests
+- Added code style checks for configuration files
+
+### Changed
+- Always return JSON for all responses
+- Updated Symfony to 5.0.3
+- Improved deployment environment setup and logging
+- Use AWS for application secrets instead of hard-coded variables
+
+### Fixes
+- Fixed wrongly mapped Taxonomy
+- Fixed incorrectly mapped serializer
+
+## 2020-01-20
+### Added
+- Multiple Employment Types
+- Retry mechanism for internal sending of orders
+- Production keys for production users
+- Campaign Status
+- Specific Campaign Status endpoint for Partners to check status of a campaign
+
+### Changed
+- Moved beta keys to sandbox environment
+- Store price per product in an order
+
+## 2020-01-13
+### Added
+- Automatically process orders from Marketplace
+
+### Fixes
+- Fixed a wrongly mapped price field
+
+## 2020-01-06
+### Added
+- Better logging of orders
+
+### Changed
+- Upgraded to latest framework version
+
+## 2019-12-30
+### Added
+- Added sandbox environment
+- Added automatic provisioning of sandbox
+- Separate data flow for production and sandbox
+
+## 2019-12-23
+### Fixes
+- An empty list of campaigns now returns the correct offset for pagination
+
+## 2019-12-16
+### Changed
+- WorkingHours no longer requires `from` field to be required
+- Recruiter Info now only has the `name` field required
+
+## 2019-12-09
+### Added
+- Use production settings on production server
+
+## 2019-12-02
+### Changed
+- Taxonomy is now correctly mapped
+
+## 2019-11-25
+### Changed
+- CampaignID is now UUID5
+
+### Fixes
+- Wrongly mapped Education Level
+- Updated framework to latest version
+
+## 2019-11-18
+### Added
+- Added totalPrice of a campaign to an ordered campaign
+- Added automatic import of the Taxonomy
+
+### Changed
+- Use actual real life data for Portfolio
+- Use actual real life data for Taxonomy
+
+## 2019-11-11
+### Added
+- Added locking mechanism for migration
+- Added automatic import of the Portfolio
+
+### Changed
+- Updated base images for application
+
+### Fixes
+- Fixes security issues from dependancy
+- Fixes migration script
+
+## 2019-11-04
+### Added
+- Added API_VERSION_ID to response to see which version of the API is used
+- Added TimeToProcess field in product output to show how long a product takes to get published
+- Made DB ready for production
+- Added automatic publishing of Documentation
+
+### Fixes
+- Fixes an issue with generating documentation
+
+## 2019-10-28
+### Added
+- Added the Changelog to the API Documentation
+
+## 2019-10-21
+### Added
+- Import functionality to use the Portfolio Service to fulfill the local Product Storage
+- Ability to import the full portfolio from another source or a single product if needed
+- Adds a DB implementation for the local Portfolio Storage
+
+### Changed
+- Updated dependencies to the latest versions
+- Improved the way the dev environment sets the db initially
+- Upgraded the Base image we use for deploy our webservices
+
+## 2019-10-21 - Portfolio Service
+### Added
+- A Build definition for the export/import script as a container
+- Product Logos now contain a generated ID
+- The initial dumps to start development on the Taxonomy for Portfolio Service
+
+### Changed
+- Updated dependencies to the latest versions
+- Updated the Taxonomy results documentation
+
+### Fixes
+- A Production error when certain files were not available after deploying
+- Export/Import script DSN parsing behaviour
+- Upgraded the Base image we use for deploy our webservices
+
+## 2019-10-14
+### Added
+- Specific tags for the different services for ease of consumption in our Logging Management Platform
+- **Added another potential Alpha Partner**
+- CI/CD pipeline reports status in Slack
+
+### Changed
+- Improved the Service deployment definition for ease of creation and modification of the service
+- Updated dependencies to the latest versions
+
+## 2019-10-14 - Portfolio Service
+### Added
+- Endpoint to export Portfolio Information to the Marketplace API
+- Specific tags for the different services for ease of consumption in our Logging Management Platform
+- Filters to avoid blacklisted products to be shown in the Portfolio Service
+
+### Changed
+- Improved the Service deployment definition for ease of creation and modification of the service
+- Portfolio entries will convert prices in GBP to EUR automatically
+- Database export/import script deployed as a container to be executed in production
+
+## 2019-10-07
+### Added
+- Support for ElasticSearch data stores
+- Monitor to check Marketplace API errors in real time
+- **Added another possible Alpha Partner to the enabled ones**
+
+### Changed
+- Upgraded the Base image we use for deploy our webservices
+- Updated dependencies to the latest versions
+
+## 2019-10-07 - Portfolio Service
+### Added
+- Deployment script for the Portfolio Service
+
+### Changed
+- Updated the MySQL we're using in dev and prod to version 8.0
+- Updated dependencies to the latest versions
+- Improved the Database export/import script for Portfolio Service
+- Improved error handling of Portfolio Service for when the application isn't started yet
 
 
 ---
@@ -904,7 +1551,7 @@ See [Campaign Ordering](./08-campaigns/ordering.md) for the full ordering workfl
 
 <!-- theme: info -->
 > ### Job title name sorting follows `Accept-Language`
-> Use `sortBy=name.asc` or `sortBy=name.desc` to sort matching job titles by localized name. The API chooses the sort language from `Accept-Language`; clients should only send these public sort values.
+> Use `sortBy=name.asc` or `sortBy=name.desc` to sort matching job titles by localized name. The API chooses the sort language from `Accept-Language`; clients should only send these supported sort values.
 
 <!-- theme: info -->
 > ### Location search
@@ -3711,7 +4358,7 @@ See [Validation - Endpoint Reference](./validation.endpoints.md) for full reques
 > **Credential errors in validate-channel-posting.** If the response includes `credentials` errors, the contract's stored credentials are invalid or incomplete. The contract needs to be updated-this is not a posting requirements issue.
 
 <!-- theme: info -->
-> **Loose validation.** Both endpoints support `?loose=true` for relaxed validation. See [Campaign Validation](../08-campaigns/validation.md) for details.
+> **Loose validation.** Both endpoints support `?loose=true`, allowing configured vacancy fields to be omitted from the validation payload. The configured fields are exposed in ATS settings; see [Campaign Validation](../08-campaigns/validation.md) for details.
 
 ## Related
 
@@ -3995,7 +4642,7 @@ Individual products can also reach a `not processed` status-a permanent failure 
 
 **Posting Requirements**-channel-specific fields that vary by product. Each job board has its own requirements (e.g., job categories, application methods, remote work options). Fetched dynamically from the API. See [Posting Requirements](../07-posting-requirements/01-introduction.md).
 
-**Loose Validation**-a query parameter (`?loose=true`) on the ordering endpoint that relaxes validation, allowing you to omit certain optional fields. Useful for quick integrations or when not all vacancy data is available. See [Ordering](./ordering.md).
+**Loose Validation**-a query parameter (`?loose=true`) on the ordering endpoint that allows configured vacancy fields to be omitted from the campaign payload. Validation still applies to the rest of the payload. Useful for quick integrations or when not all vacancy data is available. See [Ordering](./ordering.md).
 
 **Labels**-custom tags you can attach to campaigns for filtering and organization. Use labels to group campaigns by team, department, or hiring initiative, then filter with the campaign list endpoint.
 
@@ -4206,9 +4853,9 @@ Each field is an array containing exactly **one** taxonomy reference object with
 | `educationLevel` | Loose | `GET /taxonomy/education-levels` | Minimum education level |
 | `seniority` | Loose | `GET /taxonomy/seniority` | Career experience level |
 | `industry` | Loose | `GET /products/industries/` | Business sector |
-| `jobCategory` | Loose | Not resolved through public taxonomy | Compatibility field |
+| `jobCategory` | Loose | Not resolved through taxonomy endpoints | Compatibility field |
 
-All four fields are required by default but become optional with `?loose=true`.
+All four fields are required by default but may be omitted with `?loose=true` when listed in your loose-validation settings.
 
 <!-- theme: warning -->
 > ### One Value Per Dimension
@@ -4248,9 +4895,9 @@ The `companyId` identifies the company posting the job. This is the same as your
 
 ## Loose Validation
 
-By default, all fields marked "Loose" in the tables above are required. Adding `?loose=true` to the ordering endpoint makes them optional, allowing you to submit a campaign without all vacancy details.
+By default, all fields marked "Loose" in the tables above are required. Adding `?loose=true` to the ordering endpoint allows configured fields to be omitted, so you can submit a campaign before all vacancy details are available.
 
-Fields affected by loose validation:
+Possible fields for loose validation:
 
 - `postingDetails.yearsOfExperience`
 - `postingDetails.workingLocation.addressLine1`
@@ -4261,7 +4908,7 @@ Fields affected by loose validation:
 
 <!-- theme: info -->
 > ### Loose Validation Requires Account Configuration
-> Your account must have the `allowOmitCampaignOrderingFields` flag enabled. Contact your VONQ account manager to enable loose validation.
+> Your account must be enabled for loose validation. Use `GET /v3/ats/atsuser/me/settings/` to read `settings.campaigns.loose_validation`: `marketplace.fields` applies to Marketplace orders, `job_post.fields` applies to Job Post orders, and mixed campaigns use the union of both.
 
 See [Ordering](./ordering.md) for the full ordering request and query parameters.
 
@@ -4362,22 +5009,22 @@ For simpler integrations, you can skip the individual validation steps and valid
 
 ## Loose Validation
 
-All validation endpoints support the `?loose=true` query parameter. When enabled, loose validation skips checks for fields that are normally required but can be omitted:
+All validation endpoints support the `?loose=true` query parameter. When enabled, only fields listed in `settings.campaigns.loose_validation` may be omitted from the validation payload. Validation still runs for all other fields.
 
-- `postingDetails.yearsOfExperience`
-- `postingDetails.workingLocation.addressLine1`
-- `targetGroup.educationLevel`
-- `targetGroup.seniority`
-- `targetGroup.industry`
-- `targetGroup.jobCategory`
+Use `GET /v3/ats/atsuser/me/settings/` to read the configured fields:
 
-This is useful when your integration does not collect all vacancy details upfront, or when you want to allow partial submissions.
+| Setting | Applies To |
+|---------|------------|
+| `settings.campaigns.loose_validation.marketplace.fields` | Marketplace orders |
+| `settings.campaigns.loose_validation.job_post.fields` | Job Post orders |
+
+Mixed campaigns use the union of both lists. Empty lists mean no fields may be omitted for that campaign type.
 
 <!-- theme: info -->
 > ### Account Configuration Required
-> Loose validation requires the `allowOmitCampaignOrderingFields` flag on your account. Contact your VONQ account manager to enable it.
+> Loose validation must be enabled for your account. Contact your VONQ account manager to enable it.
 
-See [Vacancy Fields-Loose Validation](./vacancy-fields.md#loose-validation) for more detail on which fields are affected.
+See [Vacancy Fields-Loose Validation](./vacancy-fields.md#loose-validation) for the possible field paths.
 
 ## Endpoints
 
@@ -4589,21 +5236,22 @@ For details on wallet setup and payment flows, see [Wallets & Payments](../12-wa
 
 ## Loose Validation
 
-Adding `?loose=true` to the ordering endpoint relaxes validation, making certain vacancy fields optional:
+Adding `?loose=true` to the ordering endpoint allows vacancy fields listed in `settings.campaigns.loose_validation` to be omitted from the campaign payload. Validation still runs for all other fields.
 
-- `postingDetails.yearsOfExperience`
-- `postingDetails.workingLocation.addressLine1`
-- `targetGroup.educationLevel`
-- `targetGroup.seniority`
-- `targetGroup.industry`
-- `targetGroup.jobCategory`
+Use `GET /v3/ats/atsuser/me/settings/` to read the current configuration:
+
+| Setting | Applies To |
+|---------|------------|
+| `settings.campaigns.loose_validation.marketplace.fields` | Marketplace orders |
+| `settings.campaigns.loose_validation.job_post.fields` | Job Post orders |
+
+Mixed campaigns use the union of both lists. Empty lists mean no fields may be omitted for that campaign type.
 
 <!-- theme: warning -->
 > ### Restrictions
-> - Your account must have the `allowOmitCampaignOrderingFields` flag enabled. Contact your VONQ account manager.
-> - Loose validation is **not allowed** when any ordered product is a My Contract (MOC) product. The API returns `400` if attempted.
+> Your account must be enabled for loose validation. The API returns `400` if `?loose=true` is used before the account is enabled.
 
-See [Vacancy Fields-Loose Validation](./vacancy-fields.md#loose-validation) for the full field list.
+See [Vacancy Fields-Loose Validation](./vacancy-fields.md#loose-validation) for the possible field paths.
 
 ## Workflows
 
@@ -4879,7 +5527,7 @@ category: guides/campaigns
 endpoints:
   - PUT /campaigns/{campaignId}/edit
 prerequisites: [campaign-ordering, campaign-status]
-concepts: [campaign_editing, isEditable]
+concepts: [campaign_editing, isEditable, loose_validation]
 related: [campaign-ordering, campaign-status, campaign-cancellation]
 audience: [developer]
 difficulty: intermediate
@@ -4959,6 +5607,27 @@ These fields **must be included** in the edit payload but **must match their ori
 
 You **cannot add or remove products** from a live campaign. To stop a specific product, use cancellation instead-see [Cancellation](./cancellation.md).
 
+## Loose Validation
+
+Just like ordering, the edit endpoint supports loose validation. Adding `?loose=true` to `PUT /campaigns/{campaignId}/edit` allows vacancy fields listed in `settings.campaigns.loose_validation` to be omitted from the edit payload. Validation still runs for all other fields.
+
+This lets you edit a campaign with the same relaxed field set you used to order it-without `?loose=true`, the edit endpoint requires every field, even those you were allowed to omit at ordering time.
+
+Use `GET /v3/ats/atsuser/me/settings/` to read the current configuration:
+
+| Setting | Applies To |
+|---------|------------|
+| `settings.campaigns.loose_validation.marketplace.fields` | Marketplace orders |
+| `settings.campaigns.loose_validation.job_post.fields` | Job Post orders |
+
+The applicable list is chosen from the products in the campaign: marketplace-only edits use the marketplace list, Job Post-only edits use the job_post list, and mixed campaigns use the union of both. Empty lists mean no fields may be omitted for that campaign type.
+
+<!-- theme: warning -->
+> ### Restrictions
+> Your account must be enabled for loose validation. The API returns `400` if `?loose=true` is used before the account is enabled.
+
+See [Vacancy Fields-Loose Validation](./vacancy-fields.md#loose-validation) for the possible field paths, and [Ordering-Loose Validation](./ordering.md#loose-validation) for the equivalent behavior on the order endpoint.
+
 ## Endpoints
 
 | Method | Path | Description |
@@ -5004,7 +5673,7 @@ sequenceDiagram
 
 <!-- theme: warning -->
 > ### Validation Is Applied on Edit
-> The edit endpoint validates the payload the same way as the ordering endpoint. Both vacancy field validation and channel-specific posting requirement validation are applied. Use the [validation endpoints](./validation.md) to pre-validate changes before submitting.
+> The edit endpoint validates the payload the same way as the ordering endpoint. Both vacancy field validation and channel-specific posting requirement validation are applied-including [loose validation](#loose-validation) via `?loose=true`. Use the [validation endpoints](./validation.md) to pre-validate changes before submitting.
 
 - **The campaign stays `online` during editing**-there is no intermediate status transition. Changes are processed and pushed to job boards in the background.
 - **Products cannot be added or removed**-the `orderedProducts` array must match the original exactly. To stop a product, use [Cancellation](./cancellation.md).
@@ -7580,7 +8249,7 @@ GET /products/job-titles/?text=software+engineer
 
 <!-- theme: warning -->
 > ### Core Target Group Fields
-> For HAPI partners, populate `educationLevel`, `seniority`, and `industry`. The legacy `jobCategory` field is not resolved through public taxonomy endpoints; leave it as an empty array unless VONQ explicitly provides a value for your integration. See [Vacancy Fields - Loose Validation](../08-campaigns/vacancy-fields.md#loose-validation).
+> For HAPI partners, populate `educationLevel`, `seniority`, and `industry`. The legacy `jobCategory` field is not resolved through taxonomy endpoints; leave it as an empty array unless VONQ explicitly provides a value for your integration. See [Vacancy Fields - Loose Validation](../08-campaigns/vacancy-fields.md#loose-validation).
 
 ## Step 2: Search for Products
 
@@ -8566,9 +9235,9 @@ The vacancy fields (`postingDetails`, `targetGroup`, `recruiterInfo`) are shared
 > ### Contract Group Constraint
 > If you include multiple JP products, all their contracts must belong to the same contract group. JM products are not affected by this constraint.
 
-<!-- theme: warning -->
-> ### Loose Validation Not Allowed with MC-Only Products
-> If any product in the order is `mc_only`, you cannot use `?loose=true`. The API returns `400`.
+<!-- theme: info -->
+> ### Loose Validation for Mixed Campaigns
+> If you use `?loose=true`, HAPI combines `settings.campaigns.loose_validation.marketplace.fields` and `settings.campaigns.loose_validation.job_post.fields`. Only fields in that union may be omitted. Retrieve these settings from [GET /v3/ats/atsuser/me/settings/](../03-authentication-and-users/authentication.endpoints.md).
 
 ## Validation
 
@@ -8894,16 +9563,18 @@ difficulty: beginner
 
 If you are an AI agent building a HAPI integration, load these files in order:
 
-1. **OpenAPI schema** (`schema/build/public.json`) - exact endpoints, parameters, request/response schemas, and auth requirements. This is your primary reference for constructing HTTP requests.
-2. **`api-map.yaml`** - workflow sequencing: what to call, in what order, and what depends on what. The OpenAPI spec tells you *how* to call each endpoint; this file tells you *when* and *why*.
-3. **`glossary.yaml`** - domain terms, aliases, and disambiguation. Use this when you encounter unfamiliar terms like "MOC", "facet", or "campaign".
-4. **`llms.txt`** - concise index with concepts, endpoint table, and doc links. Good for orientation if you need narrative context beyond the schema.
+1. **OpenAPI schema** ([`schema/build/public.json`](https://github.com/vonq/hapi-docs/blob/master/schema/build/public.json)) - exact endpoints, parameters, request/response schemas, and auth requirements. This is your primary reference for constructing HTTP requests.
+2. **[`api-map.yaml`](https://github.com/vonq/hapi-docs/blob/master/docs/extra/api-map.yaml)** - workflow sequencing: what to call, in what order, and what depends on what. The OpenAPI spec tells you *how* to call each endpoint; this file tells you *when* and *why*.
+3. **[`glossary.yaml`](https://github.com/vonq/hapi-docs/blob/master/docs/extra/glossary.yaml)** - domain terms, aliases, and disambiguation. Use this when you encounter unfamiliar terms like "MOC", "facet", or "campaign".
+4. **[`llms.txt`](https://github.com/vonq/hapi-docs/blob/master/llms.txt)** - concise index with concepts, endpoint table, and doc links. Good for orientation if you need narrative context beyond the schema.
 
 ## Available Resources
 
+> **Downloading these files:** the canonical, downloadable copies live in the [`vonq/hapi-docs`](https://github.com/vonq/hapi-docs) GitHub repository. Clone the repo, or use the per-file links below to download them directly.
+
 ### OpenAPI Schema
 
-The canonical API specification, located at `schema/build/public.json`:
+The canonical API specification, available at [`schema/build/public.json`](https://github.com/vonq/hapi-docs/blob/master/schema/build/public.json):
 
 | Property | Value |
 |----------|-------|
@@ -8921,10 +9592,10 @@ These files complement the OpenAPI schema with information it cannot express. `a
 
 | File | Format | Purpose | Size |
 |------|--------|---------|------|
-| `docs/extra/api-map.yaml` | YAML | Workflow topology-step-by-step integration flows, endpoint dependencies, state machines, and common pitfalls. | ~32 KB |
-| `docs/extra/glossary.yaml` | YAML | Domain terms with definitions, aliases, disambiguation, and related endpoints. | ~13 KB |
-| `llms.txt` | Markdown | Structured index of the entire API-concepts, endpoint table, section links. Published at the docs root for automatic AI discovery. | ~8 KB |
-| `llms-full.txt` | Markdown | Complete `docs/` documentation concatenated into a single root file for context-window ingestion. | ~405 KB |
+| [`docs/extra/api-map.yaml`](https://github.com/vonq/hapi-docs/blob/master/docs/extra/api-map.yaml) | YAML | Workflow topology-step-by-step integration flows, endpoint dependencies, state machines, and common pitfalls. | ~32 KB |
+| [`docs/extra/glossary.yaml`](https://github.com/vonq/hapi-docs/blob/master/docs/extra/glossary.yaml) | YAML | Domain terms with definitions, aliases, disambiguation, and related endpoints. | ~13 KB |
+| [`llms.txt`](https://github.com/vonq/hapi-docs/blob/master/llms.txt) | Markdown | Structured index of the entire API-concepts, endpoint table, section links. Published at the docs root for automatic AI discovery. | ~8 KB |
+| [`llms-full.txt`](https://github.com/vonq/hapi-docs/blob/master/llms-full.txt) | Markdown | Complete `docs/` documentation concatenated into a single root file for context-window ingestion. | ~436 KB |
 
 ## When to Use What
 

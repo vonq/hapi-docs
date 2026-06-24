@@ -147,21 +147,22 @@ For details on wallet setup and payment flows, see [Wallets & Payments](../12-wa
 
 ## Loose Validation
 
-Adding `?loose=true` to the ordering endpoint relaxes validation, making certain vacancy fields optional:
+Adding `?loose=true` to the ordering endpoint allows vacancy fields listed in `settings.campaigns.loose_validation` to be omitted from the campaign payload. Validation still runs for all other fields.
 
-- `postingDetails.yearsOfExperience`
-- `postingDetails.workingLocation.addressLine1`
-- `targetGroup.educationLevel`
-- `targetGroup.seniority`
-- `targetGroup.industry`
-- `targetGroup.jobCategory`
+Use `GET /v3/ats/atsuser/me/settings/` to read the current configuration:
+
+| Setting | Applies To |
+|---------|------------|
+| `settings.campaigns.loose_validation.marketplace.fields` | Marketplace orders |
+| `settings.campaigns.loose_validation.job_post.fields` | Job Post orders |
+
+Mixed campaigns use the union of both lists. Empty lists mean no fields may be omitted for that campaign type.
 
 <!-- theme: warning -->
 > ### Restrictions
-> - Your account must have the `allowOmitCampaignOrderingFields` flag enabled. Contact your VONQ account manager.
-> - Loose validation is **not allowed** when any ordered product is a My Contract (MOC) product. The API returns `400` if attempted.
+> Your account must be enabled for loose validation. The API returns `400` if `?loose=true` is used before the account is enabled.
 
-See [Vacancy Fields-Loose Validation](./vacancy-fields.md#loose-validation) for the full field list.
+See [Vacancy Fields-Loose Validation](./vacancy-fields.md#loose-validation) for the possible field paths.
 
 ## Workflows
 

@@ -5,7 +5,7 @@ category: guides/campaigns
 endpoints:
   - PUT /campaigns/{campaignId}/edit
 prerequisites: [campaign-ordering, campaign-status]
-concepts: [campaign_editing, isEditable]
+concepts: [campaign_editing, isEditable, loose_validation]
 related: [campaign-ordering, campaign-status, campaign-cancellation]
 audience: [developer]
 difficulty: intermediate
@@ -85,6 +85,27 @@ These fields **must be included** in the edit payload but **must match their ori
 
 You **cannot add or remove products** from a live campaign. To stop a specific product, use cancellation instead-see [Cancellation](./cancellation.md).
 
+## Loose Validation
+
+Just like ordering, the edit endpoint supports loose validation. Adding `?loose=true` to `PUT /campaigns/{campaignId}/edit` allows vacancy fields listed in `settings.campaigns.loose_validation` to be omitted from the edit payload. Validation still runs for all other fields.
+
+This lets you edit a campaign with the same relaxed field set you used to order it-without `?loose=true`, the edit endpoint requires every field, even those you were allowed to omit at ordering time.
+
+Use `GET /v3/ats/atsuser/me/settings/` to read the current configuration:
+
+| Setting | Applies To |
+|---------|------------|
+| `settings.campaigns.loose_validation.marketplace.fields` | Marketplace orders |
+| `settings.campaigns.loose_validation.job_post.fields` | Job Post orders |
+
+The applicable list is chosen from the products in the campaign: marketplace-only edits use the marketplace list, Job Post-only edits use the job_post list, and mixed campaigns use the union of both. Empty lists mean no fields may be omitted for that campaign type.
+
+<!-- theme: warning -->
+> ### Restrictions
+> Your account must be enabled for loose validation. The API returns `400` if `?loose=true` is used before the account is enabled.
+
+See [Vacancy Fields-Loose Validation](./vacancy-fields.md#loose-validation) for the possible field paths, and [Ordering-Loose Validation](./ordering.md#loose-validation) for the equivalent behavior on the order endpoint.
+
 ## Endpoints
 
 | Method | Path | Description |
@@ -130,7 +151,7 @@ sequenceDiagram
 
 <!-- theme: warning -->
 > ### Validation Is Applied on Edit
-> The edit endpoint validates the payload the same way as the ordering endpoint. Both vacancy field validation and channel-specific posting requirement validation are applied. Use the [validation endpoints](./validation.md) to pre-validate changes before submitting.
+> The edit endpoint validates the payload the same way as the ordering endpoint. Both vacancy field validation and channel-specific posting requirement validation are applied-including [loose validation](#loose-validation) via `?loose=true`. Use the [validation endpoints](./validation.md) to pre-validate changes before submitting.
 
 - **The campaign stays `online` during editing**-there is no intermediate status transition. Changes are processed and pushed to job boards in the background.
 - **Products cannot be added or removed**-the `orderedProducts` array must match the original exactly. To stop a product, use [Cancellation](./cancellation.md).

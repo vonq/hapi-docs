@@ -24,7 +24,7 @@ category: guides/campaigns
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `validateOnly` | boolean | When `true`, runs full validation without creating the campaign. See [Validation](./validation.md). |
-| `loose` | boolean | When `true`, relaxes validation-certain vacancy fields become optional. See [Loose Validation](./ordering.md#loose-validation). |
+| `loose` | boolean | When `true`, vacancy fields listed in ATS settings may be omitted from the payload. See [Loose Validation](./ordering.md#loose-validation). |
 
 **Request Headers**
 
@@ -238,7 +238,7 @@ The `orderedProductsSpecs` error array is positional-the first object correspond
 | Status | Cause |
 |--------|-------|
 | 201 | Campaign created successfully |
-| 400 | Invalid request (e.g., loose validation without account flag, MOC product with loose) |
+| 400 | Invalid request (e.g., loose validation is not enabled for the account) |
 | 401 | Invalid or missing authentication |
 | 403 | Contract customer group mismatch |
 | 422 | Validation errors in vacancy fields or posting requirements |

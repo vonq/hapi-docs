@@ -15,6 +15,11 @@ difficulty: beginner
 
 > Single-API access to 2000+ job boards, social platforms, and niche channels-so ATS partners can offer job advertising as a native feature without building individual integrations.
 
+<!-- theme: info -->
+> **These docs live in two places, with identical content-pick whichever fits your workflow:**
+> - **[Stoplight](https://vonq.stoplight.io/docs/hapi-docs-v2)** - rendered and searchable, with the interactive OpenAPI reference. Best for browsing and exploring.
+> - **[GitHub: `vonq/hapi-docs`](https://github.com/vonq/hapi-docs)** - the raw Markdown source. Clone it for offline reading, full-text search, or feeding into AI agents and code tools.
+
 ## What is HAPI?
 
 The VONQ Hiring API (HAPI) is a single aggregation layer for global job advertising inventory. It gives ATS providers one REST API to post vacancies across 2000+ pre-contracted channels-job boards, social platforms, aggregators, diversity sites, and niche communities across 28+ countries.
@@ -138,4 +143,6 @@ These docs cover the REST API. HAPI Elements are production-ready, framework-agn
 ## External Resources
 
 - [OpenAPI Specification](https://vonq.stoplight.io/docs/hapi-docs-v2/e9ee9e37358b5-hapi)-full interactive API schema on Stoplight
+- [Documentation Source on GitHub](https://github.com/vonq/hapi-docs)-the same docs as a cloneable Markdown repository
+- [Changelog](./CHANGELOG.md) - notable API and documentation changes per release
 - [HAPI Elements Documentation](https://docs.elements.hapi.vonq.com/)-embeddable UI widget integration guide

@@ -1,10 +1,13 @@
-# VONQ Hiring API (HAPI) - Public Documentation
+# VONQ Hiring API (HAPI) Documentation
 
 > Single-API access to 2000+ job boards, social platforms, and niche channels - so ATS partners can offer job advertising as a native feature without building individual integrations.
 
-This repository hosts the public documentation for the **VONQ Hiring API (HAPI)**, including written guides, the OpenAPI schema, and machine-readable resources for AI agents and code generators.
+This repository hosts the documentation for the **VONQ Hiring API (HAPI)**, including written guides, the OpenAPI schema, and machine-readable resources for AI agents and code generators.
 
-The rendered docs are available on [Stoplight](https://vonq.stoplight.io/docs/hapi-docs-v2/e9ee9e37358b5-hapi). This repository is the underlying source.
+The same content is published in two places - pick whichever fits your workflow:
+
+- **[Stoplight](https://vonq.stoplight.io/docs/hapi-docs-v2)** - rendered and searchable, with the interactive OpenAPI reference. Best for browsing and exploring.
+- **[GitHub: `vonq/hapi-docs`](https://github.com/vonq/hapi-docs)** - this repository, the raw Markdown source. Clone it for offline reading, full-text search, or feeding into AI agents and code tools.
 
 ## Quick Start
 
@@ -45,6 +48,7 @@ The high-level layout:
 │   ├── 01-introduction.md
 │   ├── 02-api-overview.md
 │   ├── 13-machine-readable-resources.md
+│   ├── CHANGELOG.md           # Notable changes per release
 │   ├── guides/                # Per-domain guides (auth, products, campaigns, ...)
 │   └── extra/                 # Machine-readable resources for AI/tooling
 │       ├── api-map.yaml       # Workflow topology and call sequences
@@ -54,7 +58,6 @@ The high-level layout:
 │       └── public.json        # OpenAPI 3.0.3 spec (source of truth for endpoints)
 ├── llms.txt                   # LLM-friendly index for automatic AI discovery
 ├── llms-full.txt              # Generated docs/ concatenation for direct ingestion
-├── CHANGELOG.md               # Notable changes per release
 └── README.md                  # This file
 ```
 
@@ -105,7 +108,7 @@ If you spot an error, an unclear passage, or want to request additional document
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for notable changes.
+See [CHANGELOG.md](docs/CHANGELOG.md) for notable changes.
 
 ## License & Support
 

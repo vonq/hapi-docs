@@ -19,6 +19,12 @@ category: guides/campaigns
 - **Auth**: token + `X-Customer-Id` or JWT
 - **Description**: Update a live campaign's vacancy fields and posting requirements.
 
+**Query Parameters**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `loose` | boolean | When `true`, vacancy fields listed in `settings.campaigns.loose_validation` may be omitted from the edit payload-mirrors the ordering endpoint. Requires the account to be enabled for loose validation, otherwise returns `400`. See [Loose Validation](./editing.md#loose-validation). |
+
 <!-- theme: danger -->
 > ### Full Payload Required (PUT, Not PATCH)
 > This endpoint requires the **complete campaign payload**-not just the fields you want to change. Send all required fields, with non-editable fields matching their original values. Build the edit payload by fetching the current campaign with `GET /campaigns/{campaignId}`, modifying the editable fields, and stripping read-only fields before submitting.
@@ -131,10 +137,17 @@ Product list mismatch:
 }
 ```
 
+Loose validation requested but not enabled (`?loose=true`):
+```json
+{
+  "detail": "Loose validation is not enabled for this partner"
+}
+```
+
 **Errors**
 
 | Status | Cause |
 |--------|-------|
 | 202 | Edit accepted for processing |
-| 400 | Validation failed-non-editable field changed, missing required fields, or invalid values |
+| 400 | Validation failed-non-editable field changed, missing required fields, invalid values, or `?loose=true` used when the account is not enabled for loose validation |
 | 404 | Campaign not found or `X-Customer-Id` does not match |
