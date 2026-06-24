@@ -69,7 +69,7 @@ GET /products/job-titles/?text=software+engineer
 
 <!-- theme: warning -->
 > ### Core Target Group Fields
-> For HAPI partners, populate `educationLevel`, `seniority`, and `industry`. The legacy `jobCategory` field is not resolved through public taxonomy endpoints; leave it as an empty array unless VONQ explicitly provides a value for your integration. See [Vacancy Fields - Loose Validation](../08-campaigns/vacancy-fields.md#loose-validation).
+> For HAPI partners, populate `educationLevel`, `seniority`, and `industry`. The legacy `jobCategory` field is not resolved through taxonomy endpoints; leave it as an empty array unless VONQ explicitly provides a value for your integration. See [Vacancy Fields - Loose Validation](../08-campaigns/vacancy-fields.md#loose-validation).
 
 ## Step 2: Search for Products
 

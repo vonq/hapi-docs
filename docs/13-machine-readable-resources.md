@@ -18,16 +18,18 @@ difficulty: beginner
 
 If you are an AI agent building a HAPI integration, load these files in order:
 
-1. **OpenAPI schema** (`schema/build/public.json`) - exact endpoints, parameters, request/response schemas, and auth requirements. This is your primary reference for constructing HTTP requests.
-2. **`api-map.yaml`** - workflow sequencing: what to call, in what order, and what depends on what. The OpenAPI spec tells you *how* to call each endpoint; this file tells you *when* and *why*.
-3. **`glossary.yaml`** - domain terms, aliases, and disambiguation. Use this when you encounter unfamiliar terms like "MOC", "facet", or "campaign".
-4. **`llms.txt`** - concise index with concepts, endpoint table, and doc links. Good for orientation if you need narrative context beyond the schema.
+1. **OpenAPI schema** ([`schema/build/public.json`](https://github.com/vonq/hapi-docs/blob/master/schema/build/public.json)) - exact endpoints, parameters, request/response schemas, and auth requirements. This is your primary reference for constructing HTTP requests.
+2. **[`api-map.yaml`](https://github.com/vonq/hapi-docs/blob/master/docs/extra/api-map.yaml)** - workflow sequencing: what to call, in what order, and what depends on what. The OpenAPI spec tells you *how* to call each endpoint; this file tells you *when* and *why*.
+3. **[`glossary.yaml`](https://github.com/vonq/hapi-docs/blob/master/docs/extra/glossary.yaml)** - domain terms, aliases, and disambiguation. Use this when you encounter unfamiliar terms like "MOC", "facet", or "campaign".
+4. **[`llms.txt`](https://github.com/vonq/hapi-docs/blob/master/llms.txt)** - concise index with concepts, endpoint table, and doc links. Good for orientation if you need narrative context beyond the schema.
 
 ## Available Resources
 
+> **Downloading these files:** the canonical, downloadable copies live in the [`vonq/hapi-docs`](https://github.com/vonq/hapi-docs) GitHub repository. Clone the repo, or use the per-file links below to download them directly.
+
 ### OpenAPI Schema
 
-The canonical API specification, located at `schema/build/public.json`:
+The canonical API specification, available at [`schema/build/public.json`](https://github.com/vonq/hapi-docs/blob/master/schema/build/public.json):
 
 | Property | Value |
 |----------|-------|
@@ -45,10 +47,10 @@ These files complement the OpenAPI schema with information it cannot express. `a
 
 | File | Format | Purpose | Size |
 |------|--------|---------|------|
-| `docs/extra/api-map.yaml` | YAML | Workflow topology-step-by-step integration flows, endpoint dependencies, state machines, and common pitfalls. | ~32 KB |
-| `docs/extra/glossary.yaml` | YAML | Domain terms with definitions, aliases, disambiguation, and related endpoints. | ~13 KB |
-| `llms.txt` | Markdown | Structured index of the entire API-concepts, endpoint table, section links. Published at the docs root for automatic AI discovery. | ~8 KB |
-| `llms-full.txt` | Markdown | Complete `docs/` documentation concatenated into a single root file for context-window ingestion. | ~405 KB |
+| [`docs/extra/api-map.yaml`](https://github.com/vonq/hapi-docs/blob/master/docs/extra/api-map.yaml) | YAML | Workflow topology-step-by-step integration flows, endpoint dependencies, state machines, and common pitfalls. | ~32 KB |
+| [`docs/extra/glossary.yaml`](https://github.com/vonq/hapi-docs/blob/master/docs/extra/glossary.yaml) | YAML | Domain terms with definitions, aliases, disambiguation, and related endpoints. | ~13 KB |
+| [`llms.txt`](https://github.com/vonq/hapi-docs/blob/master/llms.txt) | Markdown | Structured index of the entire API-concepts, endpoint table, section links. Published at the docs root for automatic AI discovery. | ~8 KB |
+| [`llms-full.txt`](https://github.com/vonq/hapi-docs/blob/master/llms-full.txt) | Markdown | Complete `docs/` documentation concatenated into a single root file for context-window ingestion. | ~436 KB |
 
 ## When to Use What
 

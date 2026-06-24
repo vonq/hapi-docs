@@ -93,7 +93,7 @@ See [Validation - Endpoint Reference](./validation.endpoints.md) for full reques
 > **Credential errors in validate-channel-posting.** If the response includes `credentials` errors, the contract's stored credentials are invalid or incomplete. The contract needs to be updated-this is not a posting requirements issue.
 
 <!-- theme: info -->
-> **Loose validation.** Both endpoints support `?loose=true` for relaxed validation. See [Campaign Validation](../08-campaigns/validation.md) for details.
+> **Loose validation.** Both endpoints support `?loose=true`, allowing configured vacancy fields to be omitted from the validation payload. The configured fields are exposed in ATS settings; see [Campaign Validation](../08-campaigns/validation.md) for details.
 
 ## Related
 

@@ -1,28 +1,37 @@
 # Changelog
 
+## 2026-06-11
+### Changed
+- `GET /v3/ats/atsuser/me/` now documents typed `settings.campaigns` fields instead of a free-form object: `duplicate_hash_prevention_minutes`, `enable_weekly_working_minutes`, `job_marketing_editing`, `validate_description_html_tags`, and `loose_validation` (the `job_post` / `marketplace` fields that may skip strict validation).
+
+## 2026-06-08
+### Added
+- `features` object on products (`GET /products/search/`, `/products/single/{product_id}/`, `/products/multiple/{products_ids_or_portfolio_id}/`) exposing product feature flags. Currently includes `direct_apply` (`n/a` | `optional` | `mandatory`).
+- New schemas `ProductFeatures` and `DirectApplyEnum`.
+
 ## 2026-05-25
 ### Changed
-- Public schema examples now use deterministic placeholder UUIDs, `development@vonq.com`, and example/acme URLs instead of real-looking partner, campaign, wallet, product, and job values.
-- Public schema now marks `ATSPublicSettings.ai_suggestions` as deprecated, clarifies wallet and billing-portal operation text, uses `Resource - Action` operation summaries, declares authentication for campaign takedown, and removes stale Stoplight v1 links from campaign descriptions.
-- Public docs now centralize supported `Accept-Language` values in API Overview, link guide references to that section, and restore Wallets & Payments details from the legacy guide for direct charge ordering, billing portal expiry, payment iframe sizing, negative-balance top-ups, and refunds.
+- Schema examples now use deterministic placeholder UUIDs, `development@vonq.com`, and example/acme URLs instead of real-looking partner, campaign, wallet, product, and job values.
+- The schema now marks `ATSPublicSettings.ai_suggestions` as deprecated, clarifies wallet and billing-portal operation text, uses `Resource - Action` operation summaries, declares authentication for campaign takedown, and removes stale Stoplight v1 links from campaign descriptions.
+- Documentation now centralizes supported `Accept-Language` values in API Overview, link guide references to that section, and restores Wallets & Payments details from the legacy guide for direct charge ordering, billing portal expiry, payment iframe sizing, negative-balance top-ups, and refunds.
 
 ## 2026-05-13
 ### Removed
 - `ats_user_jwt_allow_renewal` field from `ATSSSetting`; `GET /v3/ats/atsuser/me/` now exposes only `ats_user_jwt_expiration` under `settings`.
 ### Changed
-- `GET /v3/ats/atsuser/me/` now references `PublicAuthenticatedATSUser` in the public schema instead of the internal `ATSUserAuthenticated` component; the documented response fields are unchanged.
+- `GET /v3/ats/atsuser/me/` now references `PublicAuthenticatedATSUser` in the schema instead of the internal `ATSUserAuthenticated` component; the documented response fields are unchanged.
 - Product endpoint descriptions were clarified for `GET /products/search/` and `GET /products/single/{product_id}/`, including the updated bulk-retrieval path `/products/multiple/{products_ids_or_portfolio_id}/`.
 
 ## 2026-05-08
 ### Added
-- `PATCH /campaigns/{campaignId}/edit` - sandbox-only endpoint to simulate campaign and ordered-product status transitions. Useful for exercising webhook handlers and status-driven UI without waiting for real job board responses. Blocked in production. See [Status & Lifecycle](docs/guides/08-campaigns/status.md#sandbox-status-simulation).
+- `PATCH /campaigns/{campaignId}/edit` - sandbox-only endpoint to simulate campaign and ordered-product status transitions. Useful for exercising webhook handlers and status-driven UI without waiting for real job board responses. Blocked in production. See [Status & Lifecycle](guides/08-campaigns/status.md#sandbox-status-simulation).
 
 ## 2026-05-04
 ### Removed
 - `force_knockout_enabled` field on `ScreeningJobSettings` (knockout is now always enabled). Affects `POST /v3/screening/jobs/`.
 ### Changed
 - `injectFavorites` and `injectTopOrdered` query parameters on `GET /products/search/` are now triggered by `offset=0` (rather than "page 1"). When enabled, the promoted products are excluded from the regular paginated result stream.
-- The public schema for `GET /products/multiple/{products_ids_or_portfolio_id}/` now documents the existing paginated response envelope (`count`, `next`, `previous`, `results`, optional `facets` and `debug`) instead of a single product object.
+- The schema for `GET /products/multiple/{products_ids_or_portfolio_id}/` now documents the existing paginated response envelope (`count`, `next`, `previous`, `results`, optional `facets` and `debug`) instead of a single product object.
 
 ## 2026-04-30
 ### Added

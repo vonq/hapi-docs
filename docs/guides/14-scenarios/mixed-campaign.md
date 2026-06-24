@@ -114,9 +114,9 @@ The vacancy fields (`postingDetails`, `targetGroup`, `recruiterInfo`) are shared
 > ### Contract Group Constraint
 > If you include multiple JP products, all their contracts must belong to the same contract group. JM products are not affected by this constraint.
 
-<!-- theme: warning -->
-> ### Loose Validation Not Allowed with MC-Only Products
-> If any product in the order is `mc_only`, you cannot use `?loose=true`. The API returns `400`.
+<!-- theme: info -->
+> ### Loose Validation for Mixed Campaigns
+> If you use `?loose=true`, HAPI combines `settings.campaigns.loose_validation.marketplace.fields` and `settings.campaigns.loose_validation.job_post.fields`. Only fields in that union may be omitted. Retrieve these settings from [GET /v3/ats/atsuser/me/settings/](../03-authentication-and-users/authentication.endpoints.md).
 
 ## Validation
 

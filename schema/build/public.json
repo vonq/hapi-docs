@@ -128,7 +128,65 @@
             "type": "boolean"
           },
           "campaigns": {
-            "additionalProperties": {},
+            "properties": {
+              "duplicate_hash_prevention_minutes": {
+                "type": "integer"
+              },
+              "enable_weekly_working_minutes": {
+                "type": "boolean"
+              },
+              "job_marketing_editing": {
+                "type": "boolean"
+              },
+              "loose_validation": {
+                "properties": {
+                  "job_post": {
+                    "properties": {
+                      "fields": {
+                        "items": {
+                          "enum": [
+                            "postingDetails.yearsOfExperience",
+                            "postingDetails.workingLocation.addressLine1",
+                            "targetGroup.educationLevel",
+                            "targetGroup.seniority",
+                            "targetGroup.industry",
+                            "targetGroup.jobCategory"
+                          ],
+                          "type": "string"
+                        },
+                        "type": "array",
+                        "uniqueItems": true
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "marketplace": {
+                    "properties": {
+                      "fields": {
+                        "items": {
+                          "enum": [
+                            "postingDetails.yearsOfExperience",
+                            "postingDetails.workingLocation.addressLine1",
+                            "targetGroup.educationLevel",
+                            "targetGroup.seniority",
+                            "targetGroup.industry",
+                            "targetGroup.jobCategory"
+                          ],
+                          "type": "string"
+                        },
+                        "type": "array",
+                        "uniqueItems": true
+                      }
+                    },
+                    "type": "object"
+                  }
+                },
+                "type": "object"
+              },
+              "validate_description_html_tags": {
+                "type": "boolean"
+              }
+            },
             "readOnly": true,
             "type": "object"
           },
@@ -6086,7 +6144,7 @@
         "type": "object"
       },
       "PublicAuthenticatedATSUser": {
-        "description": "Public schema view of the current loggedin ATSUser's information",
+        "description": "Schema view of the current logged-in ATSUser's information",
         "properties": {
           "ats": {
             "$ref": "#/components/schemas/ATS"
@@ -8379,6 +8437,14 @@
             "description": "OK"
           }
         },
+        "security": [
+          {
+            "ATSUser-APIKey": []
+          },
+          {
+            "ATSUser-JWT": []
+          }
+        ],
         "summary": "Campaigns - List",
         "tags": [
           "\u00bb Campaigns"
@@ -8585,6 +8651,14 @@
             "description": "Unprocessable Entity"
           }
         },
+        "security": [
+          {
+            "ATSUser-APIKey": []
+          },
+          {
+            "ATSUser-JWT": []
+          }
+        ],
         "summary": "Campaign - Order",
         "tags": [
           "\u00bb Campaigns"
@@ -8870,6 +8944,14 @@
             "description": "Not Found"
           }
         },
+        "security": [
+          {
+            "ATSUser-APIKey": []
+          },
+          {
+            "ATSUser-JWT": []
+          }
+        ],
         "summary": "Campaign - Retrieve",
         "tags": [
           "\u00bb Campaigns"
@@ -9138,6 +9220,17 @@
               "format": "uuid",
               "type": "string"
             }
+          },
+          {
+            "description": "allow some of the vacancy fields to be omitted",
+            "in": "query",
+            "name": "loose",
+            "schema": {
+              "enum": [
+                "true"
+              ],
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -9312,6 +9405,14 @@
             "description": "Not Found"
           }
         },
+        "security": [
+          {
+            "ATSUser-APIKey": []
+          },
+          {
+            "ATSUser-JWT": []
+          }
+        ],
         "summary": "Campaign - Update",
         "tags": [
           "\u00bb Campaigns"
@@ -9413,6 +9514,14 @@
             "headers": {}
           }
         },
+        "security": [
+          {
+            "ATSUser-APIKey": []
+          },
+          {
+            "ATSUser-JWT": []
+          }
+        ],
         "summary": "Ordered Product - Take Offline",
         "tags": [
           "\u00bb Campaigns"
@@ -9465,6 +9574,14 @@
             "description": "Not Found"
           }
         },
+        "security": [
+          {
+            "ATSUser-APIKey": []
+          },
+          {
+            "ATSUser-JWT": []
+          }
+        ],
         "summary": "Campaign Status - Check",
         "tags": [
           "\u00bb Campaigns"

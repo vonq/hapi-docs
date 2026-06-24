@@ -252,9 +252,9 @@ terms:
     docs: guides/08-campaigns/bundles.md
 
   loose_validation:
-    definition: A query parameter (?loose=true) on the ordering endpoint that relaxes validation, making certain vacancy fields optional.
+    definition: A query parameter (?loose=true) on the ordering endpoint that allows configured vacancy fields to be omitted from the campaign payload.
     not: [validateOnly]
-    note: Requires `allowOmitCampaignOrderingFields` flag on account. Not allowed with My Contract products.
+    note: Requires account enablement. Configured per product type in `settings.campaigns.loose_validation`; mixed campaigns use the union.
     docs: guides/08-campaigns/ordering.md
 
   display_rules:
