@@ -9367,6 +9367,7 @@ POST /v3/screening/jobs/
 | `data.company.name` / `data.company.logo_url` | Company branding shown in the screening chat. `logo_url` must be a publicly reachable image URL |
 | `requirements` | Optional screening criteria - **never shown to candidates**. The AI uses them internally to ask targeted questions and score answers |
 | `settings.finalization_time_hours` | How many hours a candidate has to complete the screening (1–168, default 168 = 7 days). See [Finalization & Timeout](#finalization--timeout) |
+| `settings.duration_days` | How many days the screening job stays active before it expires (1–365, default 60) |
 | `settings.webhook_url` | Override the default webhook URL for this job |
 
 The response gives you the **job ID** for all subsequent calls.
