@@ -351,6 +351,11 @@ Taxonomy data (job functions, education levels, seniority, industries) and produ
 
 # Changelog
 
+## 2026-07-07
+### Added
+- `is_favorite` boolean on products (`GET /products/search/`, `/products/single/{product_id}/`, `/products/multiple/{products_ids_or_portfolio_id}/`) indicating whether the authenticated user has favorited the product.
+- `settings.duration_days` field (integer, 1–365, default 60) on `POST /v3/screening/jobs/` and `GET /v3/screening/jobs/{id}/` - number of days the screening job stays active before it expires.
+
 ## 2026-06-11
 ### Changed
 - `GET /v3/ats/atsuser/me/` now documents typed `settings.campaigns` fields instead of a free-form object: `duplicate_hash_prevention_minutes`, `enable_weekly_working_minutes`, `job_marketing_editing`, `validate_description_html_tags`, and `loose_validation` (the `job_post` / `marketplace` fields that may skip strict validation).
