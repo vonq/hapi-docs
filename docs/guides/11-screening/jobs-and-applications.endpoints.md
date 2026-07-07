@@ -28,6 +28,7 @@ category: guides/screening
 | `requirements[].question` | string | Yes | Question the AI evaluates against (max 1,000, must be unique within the job) |
 | `settings.webhook_url` | string | No | Override account-level webhook URL |
 | `settings.finalization_time_hours` | integer | No | Hours before auto-finalization (1–168, default 168) |
+| `settings.duration_days` | integer | No | Days the screening job stays active before it expires (1–365, default 60) |
 | `settings.allow_public_applications` | boolean | No | Enable `job_screening_url` for HAPI-collected pattern (default `true`) |
 | `settings.skip_phone_validation` | boolean | No | Skip country code validation on phone numbers (default `true`) |
 | `settings.allow_duplicate_applies` | boolean | No | Allow same candidate to apply multiple times (default `true`) |

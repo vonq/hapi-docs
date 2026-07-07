@@ -480,6 +480,7 @@ workflows:
           company_name: company name
           requirements: "optional array of { summary, description, question }"
           finalization_time_hours: "1–168 (default 168 = 7 days)"
+          duration_days: "1–365 (default 60)"
           public_applications: "true for HAPI-collected, false for ATS-collected"
         returns: "job object with id, job_screening_url (if public)"
         docs: guides/11-screening/jobs-and-applications.md

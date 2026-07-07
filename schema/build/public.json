@@ -1648,6 +1648,121 @@
         ],
         "type": "string"
       },
+      "AtsListContract": {
+        "properties": {
+          "alias": {
+            "maxLength": 128,
+            "nullable": true,
+            "type": "string"
+          },
+          "channel": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Channel"
+              }
+            ],
+            "readOnly": true
+          },
+          "channel_id": {
+            "nullable": true,
+            "readOnly": true,
+            "type": "integer"
+          },
+          "class_name": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "contract_id": {
+            "maxLength": 48,
+            "type": "string"
+          },
+          "created_on": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "credits": {
+            "format": "int64",
+            "maximum": 9223372036854775807,
+            "minimum": -9223372036854775808,
+            "nullable": true,
+            "type": "integer"
+          },
+          "customer_id": {
+            "maxLength": 80,
+            "type": "string"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "expiry_date": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "group": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AtsContractGroup"
+              }
+            ],
+            "readOnly": true
+          },
+          "has_errors": {
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "igb_customer_id": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "labels": {
+            "additionalProperties": {},
+            "nullable": true,
+            "type": "object"
+          },
+          "modified_on": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "posting_duration_days": {
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "type": "integer"
+          },
+          "product": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ContractProduct"
+              }
+            ],
+            "nullable": true,
+            "readOnly": true
+          },
+          "purchase_price": {
+            "nullable": true
+          }
+        },
+        "required": [
+          "channel",
+          "channel_id",
+          "class_name",
+          "created_on",
+          "customer_id",
+          "errors",
+          "group",
+          "has_errors",
+          "igb_customer_id",
+          "modified_on",
+          "product"
+        ],
+        "type": "object"
+      },
       "AtsPurchasePrice": {
         "properties": {
           "amount": {
@@ -2056,6 +2171,64 @@
         ],
         "type": "object"
       },
+      "Channel": {
+        "properties": {
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "logo_rectangle_url": {
+            "items": {
+              "additionalProperties": {},
+              "type": "object"
+            },
+            "nullable": true,
+            "readOnly": true,
+            "type": "array"
+          },
+          "logo_square_url": {
+            "items": {
+              "additionalProperties": {},
+              "type": "object"
+            },
+            "nullable": true,
+            "readOnly": true,
+            "type": "array"
+          },
+          "logo_url": {
+            "items": {
+              "additionalProperties": {},
+              "type": "object"
+            },
+            "nullable": true,
+            "readOnly": true,
+            "type": "array"
+          },
+          "name": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "type": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "url": {
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "logo_rectangle_url",
+          "logo_square_url",
+          "logo_url",
+          "name",
+          "type",
+          "url"
+        ],
+        "type": "object"
+      },
       "Consent": {
         "properties": {
           "has_accepted_privacy_policy_and_terms": {
@@ -2070,6 +2243,28 @@
             "type": "boolean"
           }
         },
+        "type": "object"
+      },
+      "ContractProduct": {
+        "properties": {
+          "allows_edit": {
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "product_id": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "title": {
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "allows_edit",
+          "product_id",
+          "title"
+        ],
         "type": "object"
       },
       "CpaCampaignApplicationFilenameEnum": {
@@ -4778,37 +4973,6 @@
         ],
         "type": "object"
       },
-      "PaginatedContractList": {
-        "properties": {
-          "count": {
-            "example": 123,
-            "type": "integer"
-          },
-          "next": {
-            "example": "http://api.example.org/accounts/?offset=400&limit=100",
-            "format": "uri",
-            "nullable": true,
-            "type": "string"
-          },
-          "previous": {
-            "example": "http://api.example.org/accounts/?offset=200&limit=100",
-            "format": "uri",
-            "nullable": true,
-            "type": "string"
-          },
-          "results": {
-            "items": {
-              "$ref": "#/components/schemas/AtsContract"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "count",
-          "results"
-        ],
-        "type": "object"
-      },
       "PaginatedIndustryList": {
         "items": {
           "$ref": "#/components/schemas/TaxonomyIndustry"
@@ -4836,6 +5000,37 @@
           "results": {
             "items": {
               "$ref": "#/components/schemas/TaxonomyJobTitle"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "results"
+        ],
+        "type": "object"
+      },
+      "PaginatedListContractList": {
+        "properties": {
+          "count": {
+            "example": 123,
+            "type": "integer"
+          },
+          "next": {
+            "example": "http://api.example.org/accounts/?offset=400&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "previous": {
+            "example": "http://api.example.org/accounts/?offset=200&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/AtsListContract"
             },
             "type": "array"
           }
@@ -5342,6 +5537,10 @@
             "readOnly": true,
             "type": "array"
           },
+          "is_favorite": {
+            "readOnly": true,
+            "type": "boolean"
+          },
           "job_functions": {
             "items": {
               "$ref": "#/components/schemas/TaxonomyLimitedJobFunction"
@@ -5474,6 +5673,7 @@
           "features",
           "homepage",
           "industries",
+          "is_favorite",
           "job_functions",
           "locations",
           "logo_rectangle_url",
@@ -7641,6 +7841,12 @@
             "default": true,
             "type": "boolean"
           },
+          "duration_days": {
+            "default": 60,
+            "maximum": 365,
+            "minimum": 1,
+            "type": "integer"
+          },
           "finalization_time_hours": {
             "default": 168,
             "maximum": 168,
@@ -7667,6 +7873,12 @@
           "allow_public_applications": {
             "default": true,
             "type": "boolean"
+          },
+          "duration_days": {
+            "default": 60,
+            "maximum": 365,
+            "minimum": 1,
+            "type": "integer"
           },
           "finalization_time_hours": {
             "default": 168,
@@ -9682,11 +9894,20 @@
             }
           },
           {
-            "description": "Which field to use when ordering the results.",
+            "description": "Which field to use when ordering the results. Prefix a value with `-` for descending order (e.g. `-created_on`). Sort by creation date (`created_on`) or last update (`modified_on`).",
             "in": "query",
             "name": "ordering",
-            "required": false,
             "schema": {
+              "enum": [
+                "-alias",
+                "-created_on",
+                "-group__name",
+                "-modified_on",
+                "alias",
+                "created_on",
+                "group__name",
+                "modified_on"
+              ],
               "type": "string"
             }
           },
@@ -9705,7 +9926,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PaginatedContractList"
+                  "$ref": "#/components/schemas/PaginatedListContractList"
                 }
               }
             },
