@@ -72,6 +72,20 @@ The webhook payload contains the candidate's application data, questionnaire ans
 | `payload.consents` | array | Consent information provided by the candidate (optional) |
 | `payload.cpa` | object | CPA+ flag-present only for CPA+ applications (see [CPA+ Applications](#cpa-applications)) |
 
+### Field Presence
+
+Job boards differ in how much candidate data they provide. Only a minimal core is guaranteed:
+
+| Field | Presence |
+|-------|----------|
+| `payload.firstName` | Always present |
+| `payload.emailAddresses` | Always present, at least one entry |
+| `payload.lastName` | May be missing or empty-some boards deliver single-name candidates (e.g., `firstName: "Jef"` with `formattedName` but no surname) |
+| `payload.attachments` | May be missing or empty-boards can allow applications without a resume or other files |
+| All other profile fields | Optional; presence varies per job board |
+
+Do not reject applications that lack `lastName` or attachments.
+
 ### Questionnaire Answer Field Mapping
 
 | Input Type (ordering) | Webhook Type (delivery) | Description |
@@ -104,6 +118,8 @@ Each question object in the webhook:
 | `null` | Unclassified-not all job boards classify files |
 
 ## File Delivery Mode Examples
+
+In every mode, an application without files is delivered as a single `application/json` POST (the payload request shown in Mode 2), and no file requests follow. If your endpoint can only ingest `multipart/form-data`, your account manager can enable forced multipart delivery, which sends the `json` form field without file parts instead.
 
 ### Mode 1: Single Multipart Request
 

@@ -67,6 +67,8 @@ Your account manager configures one of four modes for how files are delivered wi
 
 All requests in split mode share the same `requestId`. File requests are sent only after your endpoint returns `2xx` for the payload.
 
+When an application has no files, the payload is delivered as a single `application/json` POST in every mode, and no file requests follow. If your endpoint can only ingest `multipart/form-data`, ask your account manager to enable forced multipart delivery for file-less applications.
+
 See [Direct Apply-Webhooks - Endpoint Reference](./webhooks.endpoints.md) for full examples of each mode.
 
 ## CPA+ Applications
@@ -122,6 +124,10 @@ sequenceDiagram
 <!-- theme: warning -->
 > ### Unclassified Attachments
 > Not all job boards classify file types. The `type` field in attachments may be `null`. Handle this gracefully in your processing logic.
+
+<!-- theme: warning -->
+> ### Not Every Application Has a Surname or Files
+> Some job boards deliver single-name candidates: `lastName` may be missing or empty (with `firstName` and often `formattedName` still present). Applications may also arrive without any attachments-for example, when the job board does not require a resume. Only `firstName` and `emailAddresses` are guaranteed; do not reject applications that lack `lastName` or files.
 
 <!-- theme: warning -->
 > ### No Polling Alternative

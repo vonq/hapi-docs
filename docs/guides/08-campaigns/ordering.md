@@ -156,13 +156,13 @@ Use `GET /v3/ats/atsuser/me/settings/` to read the current configuration:
 | `settings.campaigns.loose_validation.marketplace.fields` | Marketplace orders |
 | `settings.campaigns.loose_validation.job_post.fields` | Job Post orders |
 
-Mixed campaigns use the union of both lists. Empty lists mean no fields may be omitted for that campaign type.
+The applicable list is chosen from the products in the campaign: Marketplace-only campaigns use the marketplace list, Job Post-only campaigns use the job_post list, and mixed campaigns use the union of both. Empty lists mean no fields may be omitted for that campaign type.
 
 <!-- theme: warning -->
 > ### Restrictions
 > Your account must be enabled for loose validation. The API returns `400` if `?loose=true` is used before the account is enabled.
 
-See [Vacancy Fields-Loose Validation](./vacancy-fields.md#loose-validation) for the possible field paths.
+See [Vacancy Fields-Loose Validation](./vacancy-fields.md#loose-validation) for the possible field paths. The same parameter is supported on the [validation endpoints](./validation.md#loose-validation) and the [edit endpoint](./editing.md#loose-validation).
 
 ## Workflows
 
