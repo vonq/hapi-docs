@@ -21,6 +21,12 @@ category: guides/campaigns
 - **Auth**: token + `X-Customer-Id` or JWT
 - **Description**: Validates the vacancy portion of a campaign-posting details, target group, and recruiter info-independently of any products or posting requirements.
 
+**Query Parameters**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `loose` | boolean | When `true`, vacancy fields listed in `settings.campaigns.loose_validation` may be omitted from the payload-mirrors the ordering endpoint. Requires the account to be enabled for loose validation, otherwise returns `400`. See [Loose Validation](./validation.md#loose-validation). |
+
 ```http
 POST https://marketplace.api.vonq.com/campaigns/validate-vacancy-info/ HTTP/1.1
 X-Auth-Token: <your Partner token here>
@@ -121,12 +127,19 @@ Each field's errors are returned as an array of strings. Nested objects preserve
 | Status | Cause |
 |--------|-------|
 | 422 | One or more vacancy fields are invalid or missing |
+| 400 | `?loose=true` used when the account is not enabled for loose validation |
 | 401 | Invalid or missing authentication |
 
 ### POST /campaigns/validate-campaign/
 
 - **Auth**: token + `X-Customer-Id` or JWT
 - **Description**: Validates a complete campaign payload-vacancy fields, ordered products, and all per-product posting requirements-in a single call.
+
+**Query Parameters**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `loose` | boolean | When `true`, vacancy fields listed in `settings.campaigns.loose_validation` may be omitted from the payload-mirrors the ordering endpoint. Requires the account to be enabled for loose validation, otherwise returns `400`. See [Loose Validation](./validation.md#loose-validation). |
 
 The request body wraps the full campaign in a `campaign` property.
 
@@ -249,6 +262,7 @@ The error response combines vacancy-level errors and per-product errors. The `or
 | Status | Cause |
 |--------|-------|
 | 422 | One or more fields are invalid or missing |
+| 400 | `?loose=true` used when the account is not enabled for loose validation |
 | 401 | Invalid or missing authentication |
 
 ### POST /campaigns/order?validateOnly=true
@@ -263,4 +277,4 @@ X-Customer-Id: <customer-id>
 Content-Type: application/json
 ```
 
-The request body is identical to a real campaign order (see [Ordering](./ordering.md)). The error response format matches `validate-campaign`.
+The request body is identical to a real campaign order (see [Ordering](./ordering.md)). The error response format matches `validate-campaign`. The `?loose=true` query parameter is supported here as well and behaves exactly as it does on the order endpoint-see [Ordering-Loose Validation](./ordering.md#loose-validation).

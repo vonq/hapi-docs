@@ -91,20 +91,7 @@ Just like ordering, the edit endpoint supports loose validation. Adding `?loose=
 
 This lets you edit a campaign with the same relaxed field set you used to order it-without `?loose=true`, the edit endpoint requires every field, even those you were allowed to omit at ordering time.
 
-Use `GET /v3/ats/atsuser/me/settings/` to read the current configuration:
-
-| Setting | Applies To |
-|---------|------------|
-| `settings.campaigns.loose_validation.marketplace.fields` | Marketplace orders |
-| `settings.campaigns.loose_validation.job_post.fields` | Job Post orders |
-
-The applicable list is chosen from the products in the campaign: marketplace-only edits use the marketplace list, Job Post-only edits use the job_post list, and mixed campaigns use the union of both. Empty lists mean no fields may be omitted for that campaign type.
-
-<!-- theme: warning -->
-> ### Restrictions
-> Your account must be enabled for loose validation. The API returns `400` if `?loose=true` is used before the account is enabled.
-
-See [Vacancy Fields-Loose Validation](./vacancy-fields.md#loose-validation) for the possible field paths, and [Ordering-Loose Validation](./ordering.md#loose-validation) for the equivalent behavior on the order endpoint.
+Your account must be enabled for loose validation-the API returns `400` if `?loose=true` is used before it is. See [Ordering-Loose Validation](./ordering.md#loose-validation) for the settings that control which fields may be omitted, and [Vacancy Fields-Loose Validation](./vacancy-fields.md#loose-validation) for the possible field paths.
 
 ## Endpoints
 

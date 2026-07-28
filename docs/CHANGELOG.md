@@ -4,6 +4,15 @@
 ### Added
 - `is_favorite` boolean on products (`GET /products/search/`, `/products/single/{product_id}/`, `/products/multiple/{products_ids_or_portfolio_id}/`) indicating whether the authenticated user has favorited the product.
 - `settings.duration_days` field (integer, 1–365, default 60) on `POST /v3/screening/jobs/` and `GET /v3/screening/jobs/{id}/` - number of days the screening job stays active before it expires.
+### Changed
+- Direct Apply now accepts applications without a `lastName` (single-name candidates, e.g. from SEEK) and without attachments (boards may not require a resume). Webhook consumers should not assume either is present: only `firstName` and `emailAddresses` are guaranteed. See [Direct Apply-Webhooks](guides/10-direct-apply/webhooks.md).
+- Documented file-less delivery: applications without files arrive as a single `application/json` POST in every file delivery mode; forced multipart delivery can be enabled per ATS.
+
+## 2026-06-19
+### Added
+- `?loose=true` on the campaign edit endpoint (`PUT /campaigns/{campaignId}/edit`): vacancy fields listed in `settings.campaigns.loose_validation` may be omitted from the edit payload, matching the ordering endpoint (where loose validation has been available since launch). Without it, the edit endpoint requires every vacancy field-even those omitted at ordering time. Returns `400` if used before the account is enabled for loose validation. See [Campaign Editing-Loose Validation](guides/08-campaigns/editing.md#loose-validation).
+### Changed
+- Documented the `?loose=true` query parameter on the campaign validation endpoints (`POST /campaigns/validate-vacancy-info/`, `POST /campaigns/validate-campaign/`, and the `POST /campaigns/order?validateOnly=true` dry-run). When enabled for the account, vacancy fields listed in `settings.campaigns.loose_validation` may be omitted; using it without the account enabled returns `400`. See [Campaign Validation](guides/08-campaigns/validation.md#loose-validation).
 
 ## 2026-06-11
 ### Changed
