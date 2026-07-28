@@ -6672,6 +6672,14 @@ When you fetch posting requirements, the questionnaire facet looks like this:
   "sort": 5,
   "questionnaire": {
     "types": ["text", "choice", "multi-choice"],
+    "questionnaire": {
+      "ordered": true,
+      "editable": false,
+      "maxQuestions": 12,
+      "defaultRequired": true,
+      "supportsRequired": true,
+      "supportsConditions": false
+    },
     "text": {
       "question": { "maxLength": 490, "minLength": 10 }
     },
@@ -6690,9 +6698,6 @@ When you fetch posting requirements, the questionnaire facet looks like this:
         "minOccurs": 2
       },
       "question": { "maxLength": 490, "minLength": 10 }
-    },
-    "questionnaire": {
-      "maxQuestions": 12
     }
   },
   "display_rules": {
@@ -6716,10 +6721,35 @@ The `questionnaire` object tells you everything you need to build your UI:
 | `choice.question.minLength` / `maxLength` | Character limits for choice question text |
 | `choice.items.minOccurs` / `maxOccurs` | Min/max number of answer options |
 | `choice.items.item[].minLength` / `maxLength` | Character limits for each answer option |
-| `questionnaire.maxQuestions` | Maximum number of questions allowed |
+| `questionnaire.*` | Constraints and capabilities that apply to the questionnaire as a whole; see below |
 
 <!-- theme: info -->
 > The facet name varies by board. For example, LinkedIn uses `customQuestions`. Always use the `name` field from the API response.
+
+### Questionnaire-Wide Constraints
+
+The nested `questionnaire.questionnaire` object defines rules for the questionnaire as a whole. These properties are channel capabilities, so they may be omitted or have different values for different products. Only apply constraints returned by the API; do not hardcode the values from the example.
+
+| Field | Description |
+|-------|-------------|
+| `ordered` | Whether question order is significant and should be preserved |
+| `editable` | Whether the channel reports an existing questionnaire as editable |
+| `minQuestions` | Minimum total number of questions |
+| `maxQuestions` | Maximum total number of questions |
+| `maxOpenQuestions` | Maximum number of open-answer questions, such as `text` questions |
+| `maxClosedQuestions` | Maximum number of closed-answer questions; `choice` and `multi-choice` both count toward this limit |
+| `defaultRequired` | Default required state for a new question. It is relevant only when `supportsRequired` is `true`. |
+| `supportsRequired` | Whether individual questions can be marked as mandatory by using `is_required` |
+| `maxSize` | Maximum serialized questionnaire size. Measure the UTF-8 byte size of the final stringified JSON value. |
+| `supportsConditions` | Whether the channel supports conditional questions |
+
+<!-- theme: warning -->
+> ### Use the Nested Capability Object
+> `supportsRequired` and the other questionnaire-wide fields are inside the nested `questionnaire.questionnaire` object. The legacy v1 guide showed `supportsRequired` one level too high in one example.
+
+HAPI returns these capabilities from the channel and passes the questionnaire to the channel for validation. Your integration should enforce the advertised limits before submission and call `POST /campaigns/validate-questionnaire/` for authoritative validation. A property being absent does not advertise support for that capability.
+
+The questionnaire format described here does not define a portable conditional-question payload. Unless a channel-specific integration defines that format, do not emit condition data even when `supportsConditions` is `true`.
 
 ### Question Types
 
@@ -6743,6 +6773,7 @@ Each question is an object with this structure:
 | `question` | string | Yes | Question text shown to the candidate |
 | `type` | string | Yes | One of the types from the facet's `types` array |
 | `answers` | array | For `choice` / `multi-choice` | Answer options |
+| `is_required` | boolean | No | Whether the candidate must answer the question. Include only when `questionnaire.questionnaire.supportsRequired` is `true`. |
 
 Each answer option:
 
@@ -6758,7 +6789,8 @@ Example questionnaire with two questions:
   {
     "id": "q1",
     "question": "Why are you interested in this role?",
-    "type": "text"
+    "type": "text",
+    "is_required": true
   },
   {
     "id": "q2",
@@ -6772,6 +6804,8 @@ Example questionnaire with two questions:
 ]
 ```
 
+When `supportsRequired` is `true`, initialize `is_required` from `defaultRequired` if your questionnaire editor offers that default. Users may then override it per question. When `supportsRequired` is `false` or absent, omit `is_required`; do not send it as `false`.
+
 ### Stringification
 
 Because posting requirement facets are key-value pairs, the questionnaire value must be a **stringified JSON string**-not a native JSON array.
@@ -6782,7 +6816,7 @@ When submitting the questionnaire in a campaign order, wrap it with `JSON.string
 {
   "postingRequirements": {
     "applicationMethod": "directapply",
-    "questionnaire": "[{\"id\":\"q1\",\"question\":\"Why are you interested in this role?\",\"type\":\"text\"},{\"id\":\"q2\",\"question\":\"Do you have a valid work permit?\",\"type\":\"choice\",\"answers\":[{\"id\":\"yes\",\"answer\":\"Yes\"},{\"id\":\"no\",\"answer\":\"No\"}]}]"
+    "questionnaire": "[{\"id\":\"q1\",\"question\":\"Why are you interested in this role?\",\"type\":\"text\",\"is_required\":true},{\"id\":\"q2\",\"question\":\"Do you have a valid work permit?\",\"type\":\"choice\",\"answers\":[{\"id\":\"yes\",\"answer\":\"Yes\"},{\"id\":\"no\",\"answer\":\"No\"}]}]"
   }
 }
 ```
