@@ -46,7 +46,8 @@ Content-Type: application/json
     {
       "id": "q1",
       "question": "Why are you interested in this role?",
-      "type": "text"
+      "type": "text",
+      "is_required": true
     },
     {
       "id": "q2",
@@ -62,6 +63,11 @@ Content-Type: application/json
 ```
 
 For Job Marketing products, use the product ID and omit `contract_id`.
+
+Only include `is_required` when the questionnaire facet returns
+`questionnaire.questionnaire.supportsRequired: true`. See
+[Questionnaire-Wide Constraints](./posting-requirements.md#questionnaire-wide-constraints)
+for all questionnaire capabilities and limits.
 
 **Success response (200):**
 
