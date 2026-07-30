@@ -106,9 +106,9 @@ The mechanism for enabling Direct Apply differs across job boards:
 
 | Board | Direct Apply Toggle | Questionnaire Support | Notable Constraints |
 |-------|--------------------|-----------------------|---------------------|
-| Indeed | `applicationMethod` facet | `text`, `choice`, `multi-choice`, `hier`, `date`, `file`, `information` (up to 100 questions) | Conditional logic, required questions, file uploads up to 5MB |
+| Indeed | `applicationMethod` facet | `text`, `choice`, `multi-choice` (up to 100 questions) | Conditional logic, required questions, file uploads up to 5MB |
 | Seek | `applicationMethod` facet | `text`, `choice`, `multi-choice` (up to 100 questions) | Generous character limits |
-| LinkedIn | Implicit (via questionnaire) | `text`, `textarea`, `choice`, `multi-choice`, `date`, `file` (multiple facets) | Conditional logic, required questions, file uploads |
+| LinkedIn | Implicit (via questionnaire) | `text`, `textarea`, `choice` (multiple facets) | Conditional logic, required questions, file uploads |
 | Naukri | `applicationMethod` facet | `text`, `choice`, `multi-choice` (up to 10 questions, all required) | 150 character limit per question, all questions are required |
 | Infojobs | `applicationMethod` facet | `text`, `choice` (max 4 text + 8 choice = 12 questions) | Strict split: max 4 open-text + max 8 closed-choice |
 

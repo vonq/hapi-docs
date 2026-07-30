@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-07-29
+### Added
+- `hasProductSpecs` and `features` filters on `GET /products/search/`.
+
 ## 2026-07-07
 ### Added
 - `is_favorite` boolean on products (`GET /products/search/`, `/products/single/{product_id}/`, `/products/multiple/{products_ids_or_portfolio_id}/`) indicating whether the authenticated user has favorited the product.

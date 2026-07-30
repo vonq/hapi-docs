@@ -164,6 +164,8 @@ The questionnaire format described here does not define a portable conditional-q
 
 ### Question Types
 
+The facet's `types` array is the authoritative list for that board. Build your UI from it-do not hardcode a list from this page.
+
 Common question types across boards:
 
 | Type | Description | Answer Options |
@@ -172,7 +174,7 @@ Common question types across boards:
 | `choice` | Single-select | 2+ options, candidate picks one |
 | `multi-choice` | Multi-select | 2+ options, candidate picks one or more |
 
-Some boards support additional types like `date`, `file`, `hier` (hierarchical), `textarea`, or `information`. These are returned in the `types` array-build your UI to handle whatever the API returns.
+Questionnaire validation also accepts `textarea`, `date`, `file`, `hier` (hierarchical) and `information`. These are reserved and support for these types will be added as we continue expaninding Direct Apply.
 
 ### Building the Questionnaire Value
 
