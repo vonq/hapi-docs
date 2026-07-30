@@ -351,6 +351,10 @@ Taxonomy data (job functions, education levels, seniority, industries) and produ
 
 # Changelog
 
+## 2026-07-29
+### Added
+- `hasProductSpecs` and `features` filters on `GET /products/search/`.
+
 ## 2026-07-07
 ### Added
 - `is_favorite` boolean on products (`GET /products/search/`, `/products/single/{product_id}/`, `/products/multiple/{products_ids_or_portfolio_id}/`) indicating whether the authenticated user has favorited the product.
@@ -6562,9 +6566,9 @@ The mechanism for enabling Direct Apply differs across job boards:
 
 | Board | Direct Apply Toggle | Questionnaire Support | Notable Constraints |
 |-------|--------------------|-----------------------|---------------------|
-| Indeed | `applicationMethod` facet | `text`, `choice`, `multi-choice`, `hier`, `date`, `file`, `information` (up to 100 questions) | Conditional logic, required questions, file uploads up to 5MB |
+| Indeed | `applicationMethod` facet | `text`, `choice`, `multi-choice` (up to 100 questions) | Conditional logic, required questions, file uploads up to 5MB |
 | Seek | `applicationMethod` facet | `text`, `choice`, `multi-choice` (up to 100 questions) | Generous character limits |
-| LinkedIn | Implicit (via questionnaire) | `text`, `textarea`, `choice`, `multi-choice`, `date`, `file` (multiple facets) | Conditional logic, required questions, file uploads |
+| LinkedIn | Implicit (via questionnaire) | `text`, `textarea`, `choice` (multiple facets) | Conditional logic, required questions, file uploads |
 | Naukri | `applicationMethod` facet | `text`, `choice`, `multi-choice` (up to 10 questions, all required) | 150 character limit per question, all questions are required |
 | Infojobs | `applicationMethod` facet | `text`, `choice` (max 4 text + 8 choice = 12 questions) | Strict split: max 4 open-text + max 8 closed-choice |
 
@@ -6753,6 +6757,8 @@ The questionnaire format described here does not define a portable conditional-q
 
 ### Question Types
 
+The facet's `types` array is the authoritative list for that board. Build your UI from it-do not hardcode a list from this page.
+
 Common question types across boards:
 
 | Type | Description | Answer Options |
@@ -6761,7 +6767,7 @@ Common question types across boards:
 | `choice` | Single-select | 2+ options, candidate picks one |
 | `multi-choice` | Multi-select | 2+ options, candidate picks one or more |
 
-Some boards support additional types like `date`, `file`, `hier` (hierarchical), `textarea`, or `information`. These are returned in the `types` array-build your UI to handle whatever the API returns.
+Questionnaire validation also accepts `textarea`, `date`, `file`, `hier` (hierarchical) and `information`. These are reserved and support for these types will be added as we continue expaninding Direct Apply.
 
 ### Building the Questionnaire Value
 

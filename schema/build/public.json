@@ -5431,7 +5431,6 @@
         "type": "object"
       },
       "ProductFeatures": {
-        "description": "Exposes the product feature flags.",
         "properties": {
           "direct_apply": {
             "allOf": [
@@ -11567,6 +11566,38 @@
             "name": "excludeRecommended",
             "schema": {
               "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Comma-separated feature names that must all be enabled. Supported: direct_apply.",
+            "examples": {
+              "DirectApplyEnabled": {
+                "summary": "Direct apply enabled",
+                "value": "direct_apply"
+              }
+            },
+            "in": "query",
+            "name": "features",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter to products with available product specs.",
+            "examples": {
+              "WithProductSpecs": {
+                "summary": "With product specs",
+                "value": true
+              },
+              "WithoutProductSpecs": {
+                "summary": "Without product specs",
+                "value": false
+              }
+            },
+            "in": "query",
+            "name": "hasProductSpecs",
+            "schema": {
               "type": "boolean"
             }
           },
