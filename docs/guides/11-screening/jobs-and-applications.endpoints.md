@@ -226,6 +226,9 @@ This endpoint accepts two content types:
 
 Accepted attachment file extensions: `.pdf`, `.docx`, `.jpg`, `.jpeg`, `.png`, `.txt`. Remote files have a 10-second download timeout and a 10 MB size limit.
 
+<!-- theme: warning -->
+> **`remoteUrl` must be publicly reachable from the internet.** The file is downloaded by VONQ's servers, not by the client submitting the request. URLs on private networks, behind a VPN, or on `localhost` in a development environment will fail to download even if they open fine in your own browser. Use the multipart `files` upload when the file is not publicly hosted.
+
 Create an application with a remote resume file:
 
 ```http

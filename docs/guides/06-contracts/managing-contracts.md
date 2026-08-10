@@ -68,7 +68,7 @@ Key behaviors:
 - Each channel requires different credential fields. Always check the channel MOC details first.
 - The `credentials_validation: "if_supported"` option validates credentials against the channel at creation time.
 - `followed_instructions: true` is required when the channel has `manual_setup_required: true`.
-- Only `alias`, `credentials`, `labels`, `credentials_validation`, `posting_requirements_defaults`, and `posting_duration_days` can be updated after creation. All other fields are immutable.
+- Only `alias`, `credentials`, `labels`, `credentials_validation`, `posting_requirements_defaults`, and `posting_duration_days` can be updated after creation. All other fields are immutable - `group_id` is rejected with a `400`, while `credits`, `expiry_date`, and `purchase_price` are silently ignored (the `PATCH` returns `200` without applying them). See [Notes](notes.md) for details.
 
 ## Contract Groups
 

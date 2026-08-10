@@ -143,6 +143,10 @@ sequenceDiagram
 > ### Deleted Jobs
 > Creating an application on a deleted job fails. Always check job `status` before submitting applications if your workflow allows job deletion.
 
+<!-- theme: warning -->
+> ### Data Retention
+> Candidate data is removed 90 days after the screening job's campaign is closed (deleted through the API, or ended in the screening platform). After that, application payloads and notes come back empty, the attachment list is empty, and attachment downloads return `410 Gone`. Scores, stage, status and timestamps are kept. Retrieve and store anything you need in your ATS before the window closes; reopening a campaign suspends the countdown.
+
 ## Related
 
 - [Screening-Introduction](./01-introduction.md)-overview and key concepts

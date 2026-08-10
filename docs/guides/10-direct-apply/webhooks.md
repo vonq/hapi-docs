@@ -49,8 +49,8 @@ The webhook delivers a JSON payload with the candidate's application data, quest
 Key payload fields: `source` (job board identifier), `formattedName`, `questions` (questionnaire answers), `attachments` (file metadata with `filename` and `type`).
 
 <!-- theme: warning -->
-> ### Answer Types Differ from Input Types
-> Question types change between ordering and delivery: `text` → `OPEN`, `choice` → `SELECT`, `multi-choice` → `MULTISELECT`.
+> ### Question Types Are Passed Through Unchanged
+> The question `type` in the delivery is forwarded exactly as the job board sends it - it is **not** normalized by HAPI. Expect the same values used at ordering time (`text`, `choice`, `multi-choice`), and treat the field as an open string rather than a closed enum.
 
 See [Direct Apply-Webhooks - Endpoint Reference](./webhooks.endpoints.md) for the full payload schema, all field tables, attachment type reference, and file delivery mode examples.
 
@@ -118,8 +118,8 @@ sequenceDiagram
 > Use `requestId` as your idempotency key. Handle duplicate deliveries gracefully-retries send the same `requestId`.
 
 <!-- theme: warning -->
-> ### Answer Type Transformation
-> Question types change between ordering and webhook delivery: `text` becomes `OPEN`, `choice` becomes `SELECT`, `multi-choice` becomes `MULTISELECT`. Build your answer processing logic around the webhook types.
+> ### No Answer Type Transformation
+> Question types are **not** transformed between ordering and webhook delivery - the delivery carries the same `type` values you defined in the questionnaire (`text`, `choice`, `multi-choice`). Build your answer processing around those values, and tolerate unexpected strings since the field is forwarded verbatim from the job board.
 
 <!-- theme: warning -->
 > ### Unclassified Attachments

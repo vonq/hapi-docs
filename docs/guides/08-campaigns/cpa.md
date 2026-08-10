@@ -15,7 +15,11 @@ difficulty: intermediate
 
 ## Overview
 
-CPA+ products are ordered through HAPI's standard campaign ordering flow-include the CPA+ product ID in `orderedProducts` like any other product. The differences emerge after ordering: the campaign response includes CPA+-specific fields for tracking application progress, and certain campaign operations (like editing) are restricted.
+CPA+ products are ordered through HAPI's standard campaign ordering flow-include the CPA+ product ID in `orderedProducts`. The differences emerge after ordering: the campaign response includes CPA+-specific fields for tracking application progress, and certain campaign operations (like editing) are restricted.
+
+<!-- theme: warning -->
+> ### CPA+ Orders Are Single-Product
+> A campaign containing a CPA+ product cannot include any other products. Ordering a CPA+ product alongside others returns `400` with the message `"If a CPA product is ordered, only one product is allowed"`. To combine CPA+ with regular job board postings, place two separate orders.
 
 For a full introduction to CPA+-what it is, how AI screening works, application delivery, and the polling endpoints-see [CPA+](../09-cpa.md).
 

@@ -43,6 +43,15 @@ Localized results are available via the `Accept-Language` header. See [Localizat
 
 To find taxonomy IDs for search filters, see [Taxonomy & Locations](../04-taxonomy.md).
 
+Favorites and top-ordered products support two distinct search behaviors:
+
+| Goal | Favorites | Top-ordered | Pagination and filters |
+|------|-----------|-------------|------------------------|
+| Pin personal products above the normal results | `injectFavorites=true` | `injectTopOrdered=<window>` | Page 1 only; injected products do not need to match the other filters |
+| Restrict the normal result set | `favorites=true` or `favorites=false` | `topOrdered=<window>` | Every page; products must match the other filters |
+
+Choose one behavior per request. If narrowing and injection parameters are sent together, narrowing takes precedence and all injection parameters are ignored.
+
 ### Personalizing page 1: favorites & top-ordered
 
 The product search can optionally prepend the authenticated ATS user's own products to the top of the first page. Two opt-in query parameters control this:
@@ -54,17 +63,31 @@ Both parameters can be combined in the same request. When both are set, favorite
 
 Behavior notes:
 
-- **ATS users only.** The parameters are silently ignored for JMP, HAPI, and unauthenticated requests.
+- **ATS users only.** The parameters are silently ignored for requests without an authenticated ATS user.
 - **Page 1 only.** Injection applies when `offset=0`. Later offsets do not prepend injected products; keep the inject parameters on pagination requests so promoted products stay excluded from the regular result stream.
 - **Capped per source.** Each source is limited to at most 10 products (most recent for favorites, highest-count first for top-ordered). When both params are set the response injects at most 20 products (before dedup).
 - **Filters are not applied to injected products.** A favorite or top-ordered product shows up on page 1 regardless of the other filters in the query (e.g., `jobFunctionId`, `includeLocationId`). Use this to ensure the user always sees their frequently-used channels.
 - **Excluded from the main results to avoid duplicates.** An injected product that would also have matched the search is removed from the regular paginated result stream.
 - **`count` reflects the non-injected results.** The paginated response's `count` does not include the injected products. If your UI needs a total, add the injected count on the client.
+- **Injected products are not marked in the response.** There is no flag identifying which rows were injected. If your UI needs to distinguish them: at `offset=0` the number of injected rows is `results.length − min(limit, count)`, and the injected rows come first. Favorites can additionally be recognized by `is_favorite: true` - top-ordered products carry no marker at all.
 
 Example-search for products in a given job function, with the user's favorites prepended:
 
 ```http
 GET /products/search/?jobFunctionId=18&limit=24&offset=0&injectFavorites=true
+```
+
+### Narrowing by favorites & top-ordered
+
+Where the inject parameters *prepend* products to page 1, two related parameters instead *narrow* the whole result set:
+
+- `favorites=true`-only return the user's favorite products; `favorites=false`-exclude them.
+- `topOrdered=<window>`-only return the user's most-ordered products for a given time window. Accepted values: `1w`, `1m`, `6m`, `12m`.
+
+Unlike injection, narrowing applies to every page, respects all other filters in the query (e.g., `name`, `jobFunctionId`), and is reflected in the response's `count`. The two parameters combine as an intersection: `favorites=true&topOrdered=1m` returns products that are both favorited and top-ordered in the last month. They are silently ignored for requests without an authenticated ATS user and cannot be combined with `recommended`.
+
+```http
+GET /products/search/?name=indeed&favorites=true
 ```
 
 ---
@@ -217,7 +240,11 @@ graph TD
 
 <!-- theme: info -->
 > ### Pricing in multiple currencies
-> The `vonq_price` and `ratecard_price` arrays may contain entries in multiple currencies. Filter by the `currency` search parameter or select the appropriate entry from the array for your market.
+> The `vonq_price` and `ratecard_price` arrays may contain entries in multiple currencies. The `currency` search parameter narrows these price arrays to one currency - it does **not** remove products from the result set. Products without a price in the requested currency still appear; select the appropriate entry from the array for your market.
+
+<!-- theme: warning -->
+> ### Unknown search parameters are silently ignored
+> A typo in a filter name (e.g. `jobfunctionId`) does not error - the search returns `200` with that filter simply not applied. Double-check parameter spelling when a filter seems to have no effect.
 
 ## Related
 

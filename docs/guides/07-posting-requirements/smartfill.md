@@ -89,6 +89,9 @@ Note: `SELECT`, `HIER`, or `MULTIPLE` facets can at any time be transformed into
 
 When the value is an object with `key` and `label`, use `key` as the submission value and `label` as the display text.
 
+<!-- theme: warning -->
+> **Prefill objects may carry extra fields.** Some channels return additional metadata alongside `key` and `label` - for example, an option-level `show` array listing dependent facets to reveal (see [Display Rules](facets-display-rules.md)). Consume only `key` and `label` for the submission value and ignore any other fields; the extra metadata feeds the facet's own display logic, not the submitted value.
+
 ## Incremental Results
 
 Smartfill results arrive incrementally. On each poll response, check the `updated_at` timestamp-if it changed since the last poll, new facet suggestions have been added to `prefill_data`.
@@ -153,6 +156,9 @@ graph TD
 <!-- theme: warning -->
 > ### Always Handle Empty Results
 > Smartfill may return no suggestions at all if the context is insufficient or the channel's facets don't map to common vacancy fields. Your integration should always fall back to manual input gracefully-never block the user on Smartfill results.
+
+<!-- theme: info -->
+> **Tasks cannot be cancelled.** There is no cancellation endpoint - once created, a Smartfill task runs to `completed` or `errored` on the server. A "stop" control in your UI should simply stop polling (keeping any suggestions already applied); the server-side task finishes on its own.
 
 <!-- theme: info -->
 > **No rate limits currently**, but they may be introduced in the future. Implement `429` handling with retry and backoff as a precaution.

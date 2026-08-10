@@ -49,8 +49,8 @@ category: guides/campaigns
 | `currency` | string | No | Currency code (`EUR`, `USD`, `GBP`, `AUD`). Defaults to `EUR` |
 | `orderReference` | string | No | External reference for your own tracking |
 | `labels` | object | No | Key-value pairs for filtering and organization |
-| `walletId` | string (UUID) | Conditional | Wallet to charge-required when `paymentMethod` is `wallet`, `direct_charge`, or `purchase_order` |
-| `poNumber` | string | Conditional | Purchase order number-required when `paymentMethod` is `purchase_order` |
+| `walletId` | string (UUID) | Conditional | Wallet to charge-required when `paymentMethod` is `wallet`, `direct_charge`, or `purchase_order`. Must be omitted for `ats_managed` (returns `400` otherwise). |
+| `poNumber` | string | No | Optional purchase-order reference. When `paymentMethod` is `purchase_order`, this text appears on the customer's invoice. Do not include it for other payment methods. |
 | `paymentMethod` | string | No | Payment method for the campaign. Allowed values: `wallet`, `purchase_order`, `ats_managed`, `direct_charge`. Defaults to `ats_managed`. For `wallet`, `direct_charge`, and `purchase_order`, the order must contain at least one product with a price greater than `0`. See [Payment Methods](./ordering.md#payment-methods). |
 | `directApply` | object | No | Override Direct Apply webhook URL for this campaign. See [Direct Apply](../10-direct-apply/01-introduction.md). |
 
@@ -59,7 +59,7 @@ category: guides/campaigns
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `productId` | string | Yes | Must match an ID in `orderedProducts` |
-| `contractId` | string (UUID) | JP only | Contract to use for this product |
+| `contractId` | string (UUID) | JP only | Contract to use for this product. Must be omitted for JM products - a JM specs entry with a `contractId` returns `400`. |
 | `postingRequirements` | object | Conditional | Channel-specific field values as key-value pairs. Required when the selected JP contract or JM product has posting requirements. |
 | `postingRequirementsLabels` | object | No | Human-readable labels for posting requirement values |
 | `utm` | string | No | UTM tracking parameters |
@@ -238,7 +238,7 @@ The `orderedProductsSpecs` error array is positional-the first object correspond
 | Status | Cause |
 |--------|-------|
 | 201 | Campaign created successfully |
-| 400 | Invalid request (e.g., loose validation is not enabled for the account) |
+| 400 | Invalid request (e.g., loose validation is not enabled for the account, `walletId` sent with `ats_managed`, or `contractId` on a JM product) |
 | 401 | Invalid or missing authentication |
 | 403 | Contract customer group mismatch |
-| 422 | Validation errors in vacancy fields or posting requirements |
+| 422 | Validation errors in vacancy fields or posting requirements. Accounts configured with duplicate-submission prevention (off by default) also get `422` `"A campaign with the same payload was already submitted recently. Please wait before resubmitting."` when the same payload is re-sent within the configured window |

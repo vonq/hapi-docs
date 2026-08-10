@@ -27,18 +27,27 @@ Localized results are available via the `Accept-Language` header. See [Localizat
 | `industryId` | string | Industry ID. Comma-separated for multiple. |
 | `durationFrom` | integer | Minimum posting duration in days |
 | `durationTo` | integer | Maximum posting duration in days |
-| `currency` | string | ISO-4217 currency code for price filtering (e.g., `EUR`, `USD`) |
+| `currency` | string | ISO-4217 currency code (e.g., `EUR`, `USD`). Narrows each product's `vonq_price`/`ratecard_price` arrays to the given currency - it does **not** filter which products are returned. |
 | `sortBy` | string | Sort order (default: `relevant`). See sort options below. |
 | `recommended` | boolean | Only return recommended products |
 | `excludeRecommended` | boolean | Exclude recommended products |
 | `mcEnabled` | boolean | Filter for products on channels that support contracts |
 | `isBundle` | boolean | `true` for bundles only, `false` to exclude bundles |
+| `hasProductSpecs` | boolean | `true` returns only products with product-level posting requirements, `false` only products without them |
+| `features` | string | Comma-separated list of product features; every listed feature must be present (AND semantics). Currently the only allowed value is `direct_apply`. Unknown feature values return `400`. |
+| `favorites` | boolean | Narrows the results to the authenticated ATS user's favorite products; `false` excludes them. Applies to every page and combines with all other filters. Ignored for non-ATS users. See [Narrowing by favorites & top-ordered](./02-marketplace.md#narrowing-by-favorites--top-ordered). |
+| `topOrdered` | string | Narrows the results to the authenticated ATS user's most-ordered products for the given time window: `1w`, `1m`, `6m`, or `12m`. Combines with `favorites` (intersection). Ignored for non-ATS users. |
 | `injectFavorites` | boolean | **ATS users only, page 1 only.** When `true` and `offset=0`, prepends the authenticated ATS user's favorite products (most-recently-favorited first). Capped at 10 products. Keep this parameter on later pagination requests so promoted favorites stay excluded from the regular result stream. Ignored for non-ATS users. See [Personalizing page 1](./02-marketplace.md#personalizing-page-1-favorites--top-ordered). |
 | `injectTopOrdered` | string | **ATS users only, page 1 only.** When set to `1w`, `1m`, `6m`, or `12m` and `offset=0`, prepends the authenticated ATS user's most-ordered products for that time window (highest count first). Capped at 10 products. Combines with `injectFavorites` (favorites first, deduped). Keep this parameter on later pagination requests so promoted products stay excluded from the regular result stream. Ignored for non-ATS users. |
 | `limit` | integer | Results per page (default: 50) |
 | `offset` | integer | Pagination offset (default: 0) |
 
+Use either narrowing or injection for a given request. If any narrowing parameter (`favorites` or `topOrdered`) is supplied together with an injection parameter, narrowing takes precedence and injection is ignored.
+
 To find taxonomy IDs for the `jobTitleId`, `jobFunctionId`, `industryId`, `includeLocationId`, and `exactLocationId` filters, see [Taxonomy & Locations](../04-taxonomy.md).
+
+<!-- theme: warning -->
+> **Unknown query parameters are silently ignored.** A misspelled parameter name (e.g. `jobfunctionId` instead of `jobFunctionId`) does not return an error - the search simply runs without that filter and returns `200` with unfiltered results. If a filter appears to have no effect, check the parameter spelling first.
 
 **Sort Options**:
 
@@ -52,6 +61,10 @@ To find taxonomy IDs for the `jobTitleId`, `jobFunctionId`, `industryId`, `inclu
 | `created.asc` | Oldest first |
 | `list_price.desc` | Highest price first |
 | `list_price.asc` | Lowest price first |
+
+<!-- theme: info -->
+> ### Sorting Can Return Fewer Rows Than `count`
+> When you combine a text query (`name`) with any `sortBy` other than `relevant`, results that match the text only weakly are dropped from the sorted result set, while `count` still reflects the full text-match total. Expect fewer rows than `count` in this case - treat `count` as an upper bound, and paginate until an empty page rather than until `offset` reaches `count`.
 
 Search for products available in the Netherlands for the Technology industry:
 

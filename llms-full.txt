@@ -185,6 +185,8 @@ HAPI provides two environments. Each requires its own API token-credentials from
 
 Use Sandbox for development and integration testing. Contact your VONQ account manager to receive Sandbox credentials.
 
+See [Environments](02b-environments.md) for what Sandbox does and does not do-separate provisioning, portfolio sync, and how to simulate campaign lifecycles without real deliveries.
+
 <!-- theme: info -->
 > Some endpoints use a `/v3/` path prefix (e.g., `/v3/smartfill/`, `/v3/screening/`, `/v3/ats/`). This is a routing prefix, not a separate API version-all endpoints are part of the same HAPI v2 API.
 
@@ -344,6 +346,79 @@ Taxonomy data (job functions, education levels, seniority, industries) and produ
 - [Introduction](./01-introduction.md)-what is HAPI, getting started
 - [Authentication](./guides/03-authentication-and-users/authentication.md)-secret key vs JWT, generating tokens
 - [Entities](./guides/03-authentication-and-users/entities.md)-ATS, ATSUser, Company, Partner relationships
+
+
+---
+<!-- Source: docs/02b-environments.md -->
+
+---
+title: Environments
+description: Production vs Sandbox-base URLs, separate provisioning, what sandbox does and does not do, and how to test campaign lifecycles without real deliveries.
+category: getting-started
+endpoints: []
+prerequisites: [introduction, api-overview]
+concepts: [sandbox, production, environments, provisioning, status_simulation]
+related: [api-overview, authentication, campaign-status]
+audience: [developer]
+difficulty: beginner
+---
+
+# Environments
+
+> HAPI runs in two isolated environments. Knowing what Sandbox does-and deliberately does not-do will save you significant time during integration.
+
+## Base URLs
+
+| Environment | Base URL | Purpose |
+|-------------|----------|---------|
+| **Production** | `https://marketplace.api.vonq.com` | Live environment. Orders are processed and charged. |
+| **Sandbox** | `https://marketplace-sandbox.api.vonq.com` | Testing environment. Orders are accepted but never executed or charged. |
+
+## Separate Identity & Provisioning
+
+Your partner account has a **distinct identity in each environment**. Sandbox is not a mirror of your production account-it is provisioned separately by VONQ:
+
+- **Separate credentials**-you receive one secret key per environment during onboarding. A production key never authenticates against Sandbox, and vice versa.
+- **Separate data**-ATS users, customers, wallets, contracts, and campaigns exist per environment. Nothing you create in Sandbox appears in Production.
+- **Separate configuration**-account settings and webhook setup (callback URLs, custom authentication headers, loose validation, etc.) are configured per environment. If you want webhooks in both environments, they must be configured in both-ask your account manager.
+
+## Product Portfolio
+
+The Sandbox portfolio-channels and products, for both Job Marketing and Job Post-is kept in sync with Production on a **best-effort basis**. It closely mirrors Production, but do not assume exact parity: always discover products through the [marketplace search](guides/05-products/02-marketplace.md) and [contracts](guides/06-contracts/01-introduction.md) endpoints in the environment you are calling, rather than reusing identifiers across environments.
+
+## What Sandbox Does Not Do
+
+Sandbox accepts and validates your API calls exactly like Production, but there is **no campaign delivery** behind it:
+
+| Capability | Production | Sandbox |
+|------------|------------|---------|
+| Product search, taxonomy, posting requirements | ✅ | ✅ |
+| Campaign ordering + validation | ✅ | ✅ Accepted, **never executed or charged** |
+| Vacancies actually posted to job boards | ✅ | ❌ Never |
+| Campaign/product status transitions | Driven by real job-board responses | Only via [status simulation](guides/08-campaigns/status.md#sandbox-status-simulation)-otherwise campaigns stay in their initial status |
+| `PATCH /campaigns/{campaignId}/edit` status simulation | ❌ Blocked | ✅ Sandbox-only |
+| Direct Apply / Screening candidates | Real applications from job boards | ❌ No delivery means no real candidates can apply |
+
+<!-- theme: warning -->
+> ### Statuses Don't Move by Themselves in Sandbox
+> A Sandbox campaign stays in its initial status indefinitely-no job board ever confirms it. If your integration seems to "hang waiting for the campaign to go online" in Sandbox, that is expected: use the [status-simulation endpoint](guides/08-campaigns/status.md#sandbox-status-simulation) to advance it through its lifecycle.
+
+### Simulating Deliveries
+
+Beyond the self-service status-simulation endpoint, VONQ can run additional simulations in Sandbox (for example, exercising application delivery flows). These are arranged case by case-discuss your testing needs with your account manager or VONQ support.
+
+## Recommended Integration Flow
+
+1. Build and test the full order → status → webhook loop in Sandbox, using [status simulation](guides/08-campaigns/status.md#sandbox-status-simulation) to drive campaigns through their lifecycle.
+2. Verify your webhook endpoint and its authentication headers with Sandbox deliveries (remember: webhooks are configured per environment).
+3. Switch the base URL and secret key to Production. Nothing else in your integration should need to change.
+
+## Related
+
+- [API Overview](02-api-overview.md)-HTTP conventions, pagination, error handling
+- [Authentication](guides/03-authentication-and-users/authentication.md)-per-environment secret keys
+- [Status & Lifecycle](guides/08-campaigns/status.md)-sandbox status simulation reference
+- [Campaign Webhooks](guides/08-campaigns/webhooks.md)-webhook setup and authentication
 
 
 ---
@@ -1717,6 +1792,15 @@ Localized results are available via the `Accept-Language` header. See [Localizat
 
 To find taxonomy IDs for search filters, see [Taxonomy & Locations](../04-taxonomy.md).
 
+Favorites and top-ordered products support two distinct search behaviors:
+
+| Goal | Favorites | Top-ordered | Pagination and filters |
+|------|-----------|-------------|------------------------|
+| Pin personal products above the normal results | `injectFavorites=true` | `injectTopOrdered=<window>` | Page 1 only; injected products do not need to match the other filters |
+| Restrict the normal result set | `favorites=true` or `favorites=false` | `topOrdered=<window>` | Every page; products must match the other filters |
+
+Choose one behavior per request. If narrowing and injection parameters are sent together, narrowing takes precedence and all injection parameters are ignored.
+
 ### Personalizing page 1: favorites & top-ordered
 
 The product search can optionally prepend the authenticated ATS user's own products to the top of the first page. Two opt-in query parameters control this:
@@ -1728,17 +1812,31 @@ Both parameters can be combined in the same request. When both are set, favorite
 
 Behavior notes:
 
-- **ATS users only.** The parameters are silently ignored for JMP, HAPI, and unauthenticated requests.
+- **ATS users only.** The parameters are silently ignored for requests without an authenticated ATS user.
 - **Page 1 only.** Injection applies when `offset=0`. Later offsets do not prepend injected products; keep the inject parameters on pagination requests so promoted products stay excluded from the regular result stream.
 - **Capped per source.** Each source is limited to at most 10 products (most recent for favorites, highest-count first for top-ordered). When both params are set the response injects at most 20 products (before dedup).
 - **Filters are not applied to injected products.** A favorite or top-ordered product shows up on page 1 regardless of the other filters in the query (e.g., `jobFunctionId`, `includeLocationId`). Use this to ensure the user always sees their frequently-used channels.
 - **Excluded from the main results to avoid duplicates.** An injected product that would also have matched the search is removed from the regular paginated result stream.
 - **`count` reflects the non-injected results.** The paginated response's `count` does not include the injected products. If your UI needs a total, add the injected count on the client.
+- **Injected products are not marked in the response.** There is no flag identifying which rows were injected. If your UI needs to distinguish them: at `offset=0` the number of injected rows is `results.length − min(limit, count)`, and the injected rows come first. Favorites can additionally be recognized by `is_favorite: true` - top-ordered products carry no marker at all.
 
 Example-search for products in a given job function, with the user's favorites prepended:
 
 ```http
 GET /products/search/?jobFunctionId=18&limit=24&offset=0&injectFavorites=true
+```
+
+### Narrowing by favorites & top-ordered
+
+Where the inject parameters *prepend* products to page 1, two related parameters instead *narrow* the whole result set:
+
+- `favorites=true`-only return the user's favorite products; `favorites=false`-exclude them.
+- `topOrdered=<window>`-only return the user's most-ordered products for a given time window. Accepted values: `1w`, `1m`, `6m`, `12m`.
+
+Unlike injection, narrowing applies to every page, respects all other filters in the query (e.g., `name`, `jobFunctionId`), and is reflected in the response's `count`. The two parameters combine as an intersection: `favorites=true&topOrdered=1m` returns products that are both favorited and top-ordered in the last month. They are silently ignored for requests without an authenticated ATS user and cannot be combined with `recommended`.
+
+```http
+GET /products/search/?name=indeed&favorites=true
 ```
 
 ---
@@ -1891,7 +1989,11 @@ graph TD
 
 <!-- theme: info -->
 > ### Pricing in multiple currencies
-> The `vonq_price` and `ratecard_price` arrays may contain entries in multiple currencies. Filter by the `currency` search parameter or select the appropriate entry from the array for your market.
+> The `vonq_price` and `ratecard_price` arrays may contain entries in multiple currencies. The `currency` search parameter narrows these price arrays to one currency - it does **not** remove products from the result set. Products without a price in the requested currency still appear; select the appropriate entry from the array for your market.
+
+<!-- theme: warning -->
+> ### Unknown search parameters are silently ignored
+> A typo in a filter name (e.g. `jobfunctionId`) does not error - the search returns `200` with that filter simply not applied. Double-check parameter spelling when a filter seems to have no effect.
 
 ## Related
 
@@ -2237,6 +2339,8 @@ X-Customer-Id: customer-123
 
 Adding the same product more than once is idempotent: the API returns the existing favorite instead of creating a duplicate.
 
+An ATS user can have at most 50 favorite products. Adding a favorite beyond that limit returns a `400` error; remove a favorite first to free a slot. Only favorites of products still available to the user count towards the limit.
+
 ## Retrieving Product Details
 
 The favorites API returns product IDs, not full product objects. To render favorite products in a marketplace UI, call:
@@ -2251,11 +2355,12 @@ The response is the standard paginated product list. Products are ordered by mos
 
 ## Search Integration
 
-If you want favorite products pinned at the top of product search results, use `injectFavorites=true` on `GET /products/search/` with `offset=0`. This is separate from managing the favorite list:
+If you want favorite products pinned at the top of product search results, use `injectFavorites=true` on `GET /products/search/` with `offset=0`. To instead narrow a search down to favorites only (or exclude them), use `favorites=true` / `favorites=false`-narrowing applies to every page and combines with the other search filters. Both are separate from managing the favorite list:
 
 1. Use `/v3/products/favorites/` to add or remove favorite product IDs.
 2. Use `/products/multiple/favorites/` to render a favorites-only list.
 3. Use `/products/search/?injectFavorites=true` to prepend favorites to the first page of a normal search result.
+4. Use `/products/search/?favorites=true` to search within favorites only (see [Narrowing by favorites & top-ordered](./02-marketplace.md#narrowing-by-favorites--top-ordered)).
 
 ## Edge Cases
 
@@ -2408,7 +2513,7 @@ Key behaviors:
 - Each channel requires different credential fields. Always check the channel MOC details first.
 - The `credentials_validation: "if_supported"` option validates credentials against the channel at creation time.
 - `followed_instructions: true` is required when the channel has `manual_setup_required: true`.
-- Only `alias`, `credentials`, `labels`, `credentials_validation`, `posting_requirements_defaults`, and `posting_duration_days` can be updated after creation. All other fields are immutable.
+- Only `alias`, `credentials`, `labels`, `credentials_validation`, `posting_requirements_defaults`, and `posting_duration_days` can be updated after creation. All other fields are immutable - `group_id` is rejected with a `400`, while `credits`, `expiry_date`, and `purchase_price` are silently ignored (the `PATCH` returns `200` without applying them). See [Notes](notes.md) for details.
 
 ## Contract Groups
 
@@ -2914,8 +3019,13 @@ After creation, most contract fields **cannot be changed**. Only a few fields ar
 | `credentials` | `group_id` |
 | `credentials_validation` | `credits` |
 | `labels` | `expiry_date` |
-| `posting_requirements_defaults` | |
+| `posting_requirements_defaults` | `purchase_price` |
 | `posting_duration_days` | |
+
+Immutable fields fail in two different ways when included in a `PATCH`:
+
+- **`group_id`** is rejected with a `400` and the message `"Cannot change the contract group once it is set."`
+- **`credits`, `expiry_date`, and `purchase_price`** are **silently ignored** - the request returns `200` but the stored values are unchanged. Compare the response body to your request to detect this; do not treat the `200` as confirmation.
 
 Core fields like `channel_id` and `group_id` are immutable because job boards require consistent credentials and channel configuration to manage already-posted jobs. If these were changed, campaigns posted with the original settings would become unmanageable - you could not edit or take down those postings through HAPI. Credential updates should also be done carefully for the same reason.
 
@@ -3169,6 +3279,8 @@ Display-only field-informational text shown to the user. **Never submit a value 
 
 **Submit as**: Omit entirely from the `postingRequirements` object.
 
+`STATISCH` facets double as **section headings**: a `STATISCH` facet groups every facet that follows it in `sort` order, up to the next `STATISCH` facet. Render them as section titles to split long forms into logical blocks.
+
 ### AREACOUNT
 
 Numeric area/region counter. Value is an integer representing a count or quantity associated with a geographic area.
@@ -3294,7 +3406,7 @@ Display rules control whether a facet is visible based on the value of another f
 }
 ```
 
-**All conditions** in the `show` array must be true (AND logic) for the facet to be visible.
+Conditions in the `show` array generally combine with **AND** - but several conditions referencing the **same facet** form an OR group. See [Facets - Display Rules](facets-display-rules.md#evaluation-logic) for the exact evaluation algorithm.
 
 <!-- theme: warning -->
 > **Hidden facets must be omitted from the request payload.** Even if a facet has `required: true`, if it's hidden by display rules, do not submit it. Server-side validation skips hidden facets.
@@ -3327,6 +3439,7 @@ Each rule is an object with `rule` (type) and `data` (constraint value as string
 | `date` | format string | Date format (`Y-m-d` or `d.m.Y`) |
 | `email` | empty string | Must be a valid email |
 | `url` | empty string | Must be a valid URL |
+| `mimetype` | allowed MIME type(s) | The value must reference a file of the given type. A `TEXT` facet carrying a `mimetype` rule is a **file-upload field**: render a file picker and submit the URL of the uploaded file instead of free text |
 
 ### Parsing Regex Rules
 
@@ -3339,6 +3452,9 @@ Regex patterns include delimiters and flags as a single string. See [Facets - En
 
 <!-- theme: warning -->
 > **Facet names are case-sensitive.** When submitting `postingRequirements`, keys must exactly match the facet `name`. `"JobCategory"` is not the same as `"jobcategory"`.
+
+<!-- theme: warning -->
+> **`required: false` does not guarantee the field is optional at order time.** Some channels enforce facets server-side that their definitions mark `required: false` (and some facets become mandatory depending on the value of another facet). Treat `required` as a rendering hint, and always run [validate-channel-posting or validate-campaign](validation.md) before ordering - the validation response, not the `required` flag, is authoritative.
 
 <!-- theme: warning -->
 > **`sort` is a string.** Despite representing numeric order, the `sort` field on both facets and options is returned as a string. Parse as integer: `parseInt(facet.sort)`.
@@ -3354,6 +3470,9 @@ Regex patterns include delimiters and flags as a single string. See [Facets - En
 
 <!-- theme: info -->
 > **HIER-only leaf nodes are selectable.** Parent options are grouping labels. A leaf node is any option whose `key` is never referenced as another option's `parent`.
+
+<!-- theme: warning -->
+> **`_optgroup-` keys are group headers, not values.** When a channel returns grouped options, HAPI inserts container entries with synthetic keys like `_optgroup-0`; the real options reference them via `parent`. Render them as group labels (e.g., `<optgroup>`) and never submit them as a value. These containers can appear even on flat `SELECT`/`MULTIPLE` facets, not just `HIER`.
 
 ## Related
 
@@ -3407,10 +3526,18 @@ The `show` array contains one or more conditions. Each condition references anot
 
 ### Evaluation Logic
 
-**All conditions in the `show` array must be true** (AND logic) for the facet to be visible. If any single condition evaluates to false, the facet is hidden.
+Split the conditions in the `show` array into two pools:
+
+- **OR pool** - conditions whose `facet` name appears **more than once** in the `show` array (except `selected_option_show_contains` conditions).
+- **AND pool** - everything else: conditions on a facet referenced only once, plus all `selected_option_show_contains` conditions.
+
+The facet is visible when **at least one** condition in the OR pool matches (or the pool is empty) **and every** condition in the AND pool matches. A condition whose referenced facet has no value yet does not match.
+
+When every condition references a different facet - the common case - this reduces to plain AND: every condition must be true.
 
 <!-- theme: warning -->
-> The `show` array uses AND logic, not OR. Every condition must match for the facet to appear.
+> ### Repeated Facets Mean OR
+> Some channels list several conditions on the same `facet` with different `value`s, for example three `contains` rules on one facet. These mean "show when the selection is any of these values" - evaluating them with AND would make the facet impossible to display. Conditions on *different* facets still combine with AND, and `selected_option_show_contains` conditions always evaluate as AND even when their facet is repeated.
 
 ## Operators
 
@@ -3668,6 +3795,10 @@ The evaluation works like this:
 4. `"state_id"` is in `["state_id", "zip_code"]` -> visible
 5. `"department"` is **not** in `["state_id", "zip_code"]` -> hidden
 
+<!-- theme: warning -->
+> ### The parent must itself be visible
+> `selected_option_show_contains` is evaluated **recursively**: if the referenced (parent) facet is currently hidden by its own display rules, every facet depending on it through this operator is hidden too - regardless of any value the parent may still hold in your form state. Visibility chains propagate all the way up.
+
 | User selects | `state_id` | `zip_code` | `department` | `province` |
 |-------------|:---:|:---:|:---:|:---:|
 | United States | visible | visible | hidden | hidden |
@@ -3774,9 +3905,9 @@ The evaluation:
 
 3. **The dependent facet is also lazy-loaded.** `brandingId` itself has `"options": []` with autocomplete - once it becomes visible, you need a second autocomplete call to populate its dropdown. Only fetch these options when the facet is actually visible to avoid unnecessary API calls.
 
-## Multiple Conditions (AND Logic)
+## Multiple Conditions
 
-When the `show` array contains multiple conditions, **all must be true** for the facet to be visible. This allows complex visibility logic.
+When the `show` array contains multiple conditions, conditions on a facet that is referenced **more than once** combine with **OR**, and everything else combines with **AND** (see [Evaluation Logic](#evaluation-logic)). In the common case where every condition references a different facet, this means all conditions must be true.
 
 **Real-world example** - A phone number field that requires both a specific status AND supervision being requested:
 
@@ -3818,6 +3949,26 @@ This creates a two-gate visibility: the status must be one of the expected value
   }
 }
 ```
+
+### Repeated Facets - OR
+
+**Real-world example** - an attachment-related field that appears when the selected kind of application is any of several values. The user selects one kind of application at a time, so evaluating these three conditions with AND could never succeed; they form one OR pool:
+
+```json
+{
+  "display_rules": {
+    "show": [
+      { "op": "contains", "facet": "KindOfApplication", "value": "1" },
+      { "op": "contains", "facet": "KindOfApplication", "value": "4" },
+      { "op": "contains", "facet": "KindOfApplication", "value": "5" }
+    ]
+  }
+}
+```
+
+The facet is visible when `KindOfApplication` includes `"1"`, `"4"`, **or** `"5"`.
+
+The `notempty` + `selected_option_show_contains` pattern from the SEEK walkthrough above still evaluates as an AND even though both conditions reference the same facet: `selected_option_show_contains` conditions always stay in the AND pool, so the lone `notempty` condition forms the entire OR pool and both must hold.
 
 ## Implementation Guide
 
@@ -3863,41 +4014,69 @@ If the user clears `country`, both `state` and `city` should disappear. Your imp
 1. Clear `country` -> hide `state`, clear `state`'s value
 2. `state` cleared -> hide `city`, clear `city`'s value
 
+<!-- theme: info -->
+> Dependencies are not only created by `display_rules`. A facet whose [`autocomplete.parameters_source`](autocomplete.md#parameter-sources) references the changed facet is equally stale: clear its value and re-fetch its options as well, then repeat for any facets that depend on *it*.
+
 ### Pseudocode
 
 ```javascript
 function isFacetVisible(facet, formState, allFacets) {
   if (!facet.display_rules) return true;
 
-  return facet.display_rules.show.every(condition => {
-    const refValue = formState[condition.facet];
+  // Count how often each referenced facet appears in show[].
+  const counts = {};
+  for (const condition of facet.display_rules.show) {
+    counts[condition.facet] = (counts[condition.facet] || 0) + 1;
+  }
 
-    switch (condition.op) {
-      case 'equal':
-        return refValue === condition.value;
-
-      case 'in':
-        return condition.value.includes(refValue);
-
-      case 'notempty':
-        return refValue != null
-          && refValue !== ''
-          && refValue !== 0
-          && !(Array.isArray(refValue) && refValue.length === 0)
-          && !(typeof refValue === 'object' && Object.keys(refValue).length === 0);
-
-      case 'contains':
-        return Array.isArray(refValue) && refValue.includes(condition.value);
-
-      case 'selected_option_show_contains':
-        const refFacet = allFacets.find(f => f.name === condition.facet);
-        const selectedOption = refFacet?.options.find(o => o.key === refValue);
-        return selectedOption?.show?.includes(facet.name) ?? false;
-
-      default:
-        return false;
+  // Conditions on a facet referenced more than once form one OR pool;
+  // selected_option_show_contains always evaluates as AND.
+  const orPool = [];
+  const andPool = [];
+  for (const condition of facet.display_rules.show) {
+    if (counts[condition.facet] > 1 && condition.op !== 'selected_option_show_contains') {
+      orPool.push(condition);
+    } else {
+      andPool.push(condition);
     }
-  });
+  }
+
+  const matches = c => conditionMatches(c, facet, formState, allFacets);
+  return (orPool.length === 0 || orPool.some(matches)) && andPool.every(matches);
+}
+
+function conditionMatches(condition, facet, formState, allFacets) {
+  const refValue = formState[condition.facet];
+
+  switch (condition.op) {
+    case 'equal':
+      return refValue === condition.value;
+
+    case 'in':
+      return condition.value.includes(refValue);
+
+    case 'notempty':
+      return refValue != null
+        && refValue !== ''
+        && refValue !== 0
+        && !(Array.isArray(refValue) && refValue.length === 0)
+        && !(typeof refValue === 'object' && Object.keys(refValue).length === 0);
+
+    case 'contains':
+      // The referenced facet is a MULTIPLE - its value is an array of keys.
+      return Array.isArray(refValue) && refValue.includes(condition.value);
+
+    case 'selected_option_show_contains': {
+      const refFacet = allFacets.find(f => f.name === condition.facet);
+      // A hidden parent hides its children, whatever value it may still hold.
+      if (!refFacet || !isFacetVisible(refFacet, formState, allFacets)) return false;
+      const selectedOption = refFacet.options.find(o => o.key === refValue);
+      return selectedOption?.show?.includes(facet.name) ?? false;
+    }
+
+    default:
+      return false;
+  }
 }
 ```
 
@@ -4265,6 +4444,9 @@ graph TD
 <!-- theme: info -->
 > **Contract autocomplete needs credentials when using channel_id.** When the contract doesn't exist yet, pass `credentials` in the request body. Once the contract is created, use the contract UUID and omit credentials. See [Contract Posting Requirements](../06-contracts/posting-requirements.md).
 
+<!-- theme: warning -->
+> **Option keys are not stable across fetches on every channel.** Some job boards encode volatile data into option keys (for example, ad-type keys that embed current pricing), so a key you stored with a campaign may be missing from a later options fetch. When re-loading options for an existing selection - typically in an edit flow - reconcile by `key` first, then fall back to matching by `label`, and keep a complete stored `{key, label}` selection rather than discarding it just because the refreshed list no longer contains its key.
+
 <!-- theme: info -->
 > **Debounce search requests.** For search-as-you-type fields, debounce API calls (e.g., 300ms) to avoid flooding the endpoint with requests on every keystroke.
 
@@ -4482,6 +4664,9 @@ Note: `SELECT`, `HIER`, or `MULTIPLE` facets can at any time be transformed into
 
 When the value is an object with `key` and `label`, use `key` as the submission value and `label` as the display text.
 
+<!-- theme: warning -->
+> **Prefill objects may carry extra fields.** Some channels return additional metadata alongside `key` and `label` - for example, an option-level `show` array listing dependent facets to reveal (see [Display Rules](facets-display-rules.md)). Consume only `key` and `label` for the submission value and ignore any other fields; the extra metadata feeds the facet's own display logic, not the submitted value.
+
 ## Incremental Results
 
 Smartfill results arrive incrementally. On each poll response, check the `updated_at` timestamp-if it changed since the last poll, new facet suggestions have been added to `prefill_data`.
@@ -4546,6 +4731,9 @@ graph TD
 <!-- theme: warning -->
 > ### Always Handle Empty Results
 > Smartfill may return no suggestions at all if the context is insufficient or the channel's facets don't map to common vacancy fields. Your integration should always fall back to manual input gracefully-never block the user on Smartfill results.
+
+<!-- theme: info -->
+> **Tasks cannot be cancelled.** There is no cancellation endpoint - once created, a Smartfill task runs to `completed` or `errored` on the server. A "stop" control in your UI should simply stop polling (keeping any suggestions already applied); the server-side task finishes on its own.
 
 <!-- theme: info -->
 > **No rate limits currently**, but they may be introduced in the future. Implement `429` handling with retry and backoff as a precaution.
@@ -4876,8 +5064,8 @@ Each field is an array containing exactly **one** taxonomy reference object with
 All four fields are required by default but may be omitted with `?loose=true` when listed in your loose-validation settings.
 
 <!-- theme: warning -->
-> ### One Value Per Dimension
-> Each taxonomy field accepts exactly one value. Pass an array with a single object-not multiple.
+> ### Exactly One Value Per Dimension
+> Each taxonomy field is an array that must contain exactly one object - not zero, not several. Two or more entries fail validation with `"Maximum number of items is 1."`. An **empty array is not valid either**: `POST /campaigns/validate-campaign/` may let `[]` pass, but `POST /campaigns/order` rejects it with an error like `"A Target Group entity should contain an EducationLevel"`. Do not rely on an empty array as a way to skip a dimension - to omit these fields you need [loose validation](#loose-validation), and then omit the key entirely rather than sending `[]`.
 
 To look up available taxonomy values and their IDs, see [Taxonomy](../04-taxonomy.md).
 
@@ -5188,7 +5376,7 @@ Per-product configuration. Required for JP products; optional for JM products un
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `productId` | string | Yes | Must match an ID in `orderedProducts` |
-| `contractId` | string (UUID) | JP only | Contract to use for this product |
+| `contractId` | string (UUID) | JP only | Contract to use for this product. Never include it for a JM product - a JM specs entry with a `contractId` is rejected with `400`. |
 | `postingRequirements` | object | Conditional | Channel-specific field values as key-value pairs. Required when the selected JP contract or JM product has posting requirements. |
 | `postingRequirementsLabels` | object | No | Human-readable labels for posting requirement values |
 | `utm` | string | No | UTM tracking parameters |
@@ -5230,12 +5418,15 @@ You can filter on multiple labels simultaneously.
 
 | Method | Required Fields | Description |
 |--------|----------------|-------------|
-| `ats_managed` | None | Default. VONQ invoices your organization separately. |
+| `ats_managed` | None | Default. VONQ invoices your organization separately. `walletId` must not be sent. |
 | `wallet` | `walletId` | Deduct the campaign cost from a pre-funded wallet balance. See [Wallets & Payments](../12-wallets-and-payments.md). |
 | `direct_charge` | `walletId` | Charge the wallet's configured payment method directly for this campaign. No pre-funded balance is required. |
-| `purchase_order` | `poNumber` | Create a purchase order to be invoiced separately. |
+| `purchase_order` | `walletId` | Order against the wallet's purchase-order credit limits and invoice separately. `poNumber` is optional free text that appears on the invoice - it is not the required field. |
 
 For `wallet`, `direct_charge`, and `purchase_order`, the order must contain at least one product with a price greater than `0`. If `paymentMethod` is omitted, HAPI uses `ats_managed`.
+
+<!-- theme: warning -->
+> **`ats_managed` and `walletId` are mutually exclusive.** Including a `walletId` when the payment method is `ats_managed` (explicitly or by omission) returns `400` with the message `"walletId not supported in requests where payment method is ats_managed"`. Only send `walletId` with `wallet` or `direct_charge`.
 
 For details on wallet setup and payment flows, see [Wallets & Payments](../12-wallets-and-payments.md).
 
@@ -5293,7 +5484,7 @@ sequenceDiagram
 
 <!-- theme: warning -->
 > ### JM Products Usually Don't Need Specs
-> Do not include `orderedProductsSpecs` entries for JM (marketplace) products unless you are adding UTM tracking or the product has product-level posting requirements, such as Direct Apply facets. Only JP (contract-based) products require `contractId`.
+> Do not include `orderedProductsSpecs` entries for JM (marketplace) products unless you are adding UTM tracking or the product has product-level posting requirements, such as Direct Apply facets. When a JM product does need a specs entry, include `productId` and `postingRequirements` but **no `contractId`** - `contractId` on a JM entry returns `400`. Only JP (contract-based) products take a `contractId`.
 
 <!-- theme: warning -->
 > ### Contract Customer Group
@@ -5302,6 +5493,10 @@ sequenceDiagram
 <!-- theme: warning -->
 > ### postingRequirements Format
 > In `orderedProductsSpecs`, posting requirements use a flat key-value object: `{ "location": "berlin-mitte" }`. This differs from the `{ name, value }` array format used by `validate-channel-posting`. See [Validation](./validation.md).
+
+<!-- theme: warning -->
+> ### Duplicate Orders May Be Throttled
+> Accounts can be configured with duplicate-submission prevention: when enabled, submitting the exact same order payload again within the configured window returns `422` with the message `"A campaign with the same payload was already submitted recently. Please wait before resubmitting."`. The window is set per partner by your account manager (off by default). Handle this `422` gracefully - it protects against accidental double-ordering (e.g. a double-click or a client retry after a timeout). If the user genuinely wants a second identical campaign, wait out the window or change the payload (e.g. the vacancy title).
 
 - **Campaign ordering can take time**-the API processes each product's posting. Expect response times up to 30 seconds for campaigns with many products.
 - **The response is minimal**-only `campaignId` is returned. Fetch full details with `GET /campaigns/{campaignId}` after ordering.
@@ -5775,7 +5970,7 @@ Contact your VONQ account manager to enable `errorOnCancelCampaign` if you want 
 
 - **No undo**-once a campaign or product is cancelled, it cannot be reactivated. You must create a new campaign order.
 - **Campaign goes offline when all products are done**-if you cancel the last remaining `online` product via product cancellation, the campaign status transitions to `offline`.
-- **Cancellation does not guarantee refund**-whether costs are refunded depends on the product and job board. Contact your VONQ account manager for refund policies.
+- **Cancellation does not guarantee refund**-whether costs are refunded depends on the product and job board. Contact your VONQ account manager for refund policies. Refunds and proration are handled entirely outside the API: no endpoint exposes refund status or amounts, so do not poll for refund information after cancelling.
 
 ## Related
 
@@ -5817,6 +6012,10 @@ Campaign webhooks must be enabled by your VONQ account manager. To set up:
 2. **Contact your account manager**-provide your callback URL. They will configure your account to receive campaign webhook notifications.
 
 There is no self-service subscription endpoint-webhook configuration is managed by VONQ.
+
+### Authenticating Deliveries
+
+Campaign webhook requests carry no signature. To authenticate them, ask your account manager to configure **custom HTTP headers** on your webhook: any set of key-value pairs (e.g. a shared secret token) that VONQ attaches to every delivery. Validate those headers on your endpoint and reject requests without them. Without configured headers, anyone who discovers your callback URL can POST to it.
 
 ## How It Works
 
@@ -5922,7 +6121,11 @@ difficulty: intermediate
 
 ## Overview
 
-CPA+ products are ordered through HAPI's standard campaign ordering flow-include the CPA+ product ID in `orderedProducts` like any other product. The differences emerge after ordering: the campaign response includes CPA+-specific fields for tracking application progress, and certain campaign operations (like editing) are restricted.
+CPA+ products are ordered through HAPI's standard campaign ordering flow-include the CPA+ product ID in `orderedProducts`. The differences emerge after ordering: the campaign response includes CPA+-specific fields for tracking application progress, and certain campaign operations (like editing) are restricted.
+
+<!-- theme: warning -->
+> ### CPA+ Orders Are Single-Product
+> A campaign containing a CPA+ product cannot include any other products. Ordering a CPA+ product alongside others returns `400` with the message `"If a CPA product is ordered, only one product is allowed"`. To combine CPA+ with regular job board postings, place two separate orders.
 
 For a full introduction to CPA+-what it is, how AI screening works, application delivery, and the polling endpoints-see [CPA+](../09-cpa.md).
 
@@ -6969,8 +7172,8 @@ The webhook delivers a JSON payload with the candidate's application data, quest
 Key payload fields: `source` (job board identifier), `formattedName`, `questions` (questionnaire answers), `attachments` (file metadata with `filename` and `type`).
 
 <!-- theme: warning -->
-> ### Answer Types Differ from Input Types
-> Question types change between ordering and delivery: `text` → `OPEN`, `choice` → `SELECT`, `multi-choice` → `MULTISELECT`.
+> ### Question Types Are Passed Through Unchanged
+> The question `type` in the delivery is forwarded exactly as the job board sends it - it is **not** normalized by HAPI. Expect the same values used at ordering time (`text`, `choice`, `multi-choice`), and treat the field as an open string rather than a closed enum.
 
 See [Direct Apply-Webhooks - Endpoint Reference](./webhooks.endpoints.md) for the full payload schema, all field tables, attachment type reference, and file delivery mode examples.
 
@@ -7038,8 +7241,8 @@ sequenceDiagram
 > Use `requestId` as your idempotency key. Handle duplicate deliveries gracefully-retries send the same `requestId`.
 
 <!-- theme: warning -->
-> ### Answer Type Transformation
-> Question types change between ordering and webhook delivery: `text` becomes `OPEN`, `choice` becomes `SELECT`, `multi-choice` becomes `MULTISELECT`. Build your answer processing logic around the webhook types.
+> ### No Answer Type Transformation
+> Question types are **not** transformed between ordering and webhook delivery - the delivery carries the same `type` values you defined in the questionnaire (`text`, `choice`, `multi-choice`). Build your answer processing around those values, and tolerate unexpected strings since the field is forwarded verbatim from the job board.
 
 <!-- theme: warning -->
 > ### Unclassified Attachments
@@ -7408,6 +7611,10 @@ sequenceDiagram
 <!-- theme: warning -->
 > ### Deleted Jobs
 > Creating an application on a deleted job fails. Always check job `status` before submitting applications if your workflow allows job deletion.
+
+<!-- theme: warning -->
+> ### Data Retention
+> Candidate data is removed 90 days after the screening job's campaign is closed (deleted through the API, or ended in the screening platform). After that, application payloads and notes come back empty, the attachment list is empty, and attachment downloads return `410 Gone`. Scores, stage, status and timestamps are kept. Retrieve and store anything you need in your ATS before the window closes; reopening a campaign suspends the countdown.
 
 ## Related
 

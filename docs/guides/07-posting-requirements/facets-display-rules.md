@@ -38,10 +38,18 @@ The `show` array contains one or more conditions. Each condition references anot
 
 ### Evaluation Logic
 
-**All conditions in the `show` array must be true** (AND logic) for the facet to be visible. If any single condition evaluates to false, the facet is hidden.
+Split the conditions in the `show` array into two pools:
+
+- **OR pool** - conditions whose `facet` name appears **more than once** in the `show` array (except `selected_option_show_contains` conditions).
+- **AND pool** - everything else: conditions on a facet referenced only once, plus all `selected_option_show_contains` conditions.
+
+The facet is visible when **at least one** condition in the OR pool matches (or the pool is empty) **and every** condition in the AND pool matches. A condition whose referenced facet has no value yet does not match.
+
+When every condition references a different facet - the common case - this reduces to plain AND: every condition must be true.
 
 <!-- theme: warning -->
-> The `show` array uses AND logic, not OR. Every condition must match for the facet to appear.
+> ### Repeated Facets Mean OR
+> Some channels list several conditions on the same `facet` with different `value`s, for example three `contains` rules on one facet. These mean "show when the selection is any of these values" - evaluating them with AND would make the facet impossible to display. Conditions on *different* facets still combine with AND, and `selected_option_show_contains` conditions always evaluate as AND even when their facet is repeated.
 
 ## Operators
 
@@ -299,6 +307,10 @@ The evaluation works like this:
 4. `"state_id"` is in `["state_id", "zip_code"]` -> visible
 5. `"department"` is **not** in `["state_id", "zip_code"]` -> hidden
 
+<!-- theme: warning -->
+> ### The parent must itself be visible
+> `selected_option_show_contains` is evaluated **recursively**: if the referenced (parent) facet is currently hidden by its own display rules, every facet depending on it through this operator is hidden too - regardless of any value the parent may still hold in your form state. Visibility chains propagate all the way up.
+
 | User selects | `state_id` | `zip_code` | `department` | `province` |
 |-------------|:---:|:---:|:---:|:---:|
 | United States | visible | visible | hidden | hidden |
@@ -405,9 +417,9 @@ The evaluation:
 
 3. **The dependent facet is also lazy-loaded.** `brandingId` itself has `"options": []` with autocomplete - once it becomes visible, you need a second autocomplete call to populate its dropdown. Only fetch these options when the facet is actually visible to avoid unnecessary API calls.
 
-## Multiple Conditions (AND Logic)
+## Multiple Conditions
 
-When the `show` array contains multiple conditions, **all must be true** for the facet to be visible. This allows complex visibility logic.
+When the `show` array contains multiple conditions, conditions on a facet that is referenced **more than once** combine with **OR**, and everything else combines with **AND** (see [Evaluation Logic](#evaluation-logic)). In the common case where every condition references a different facet, this means all conditions must be true.
 
 **Real-world example** - A phone number field that requires both a specific status AND supervision being requested:
 
@@ -449,6 +461,26 @@ This creates a two-gate visibility: the status must be one of the expected value
   }
 }
 ```
+
+### Repeated Facets - OR
+
+**Real-world example** - an attachment-related field that appears when the selected kind of application is any of several values. The user selects one kind of application at a time, so evaluating these three conditions with AND could never succeed; they form one OR pool:
+
+```json
+{
+  "display_rules": {
+    "show": [
+      { "op": "contains", "facet": "KindOfApplication", "value": "1" },
+      { "op": "contains", "facet": "KindOfApplication", "value": "4" },
+      { "op": "contains", "facet": "KindOfApplication", "value": "5" }
+    ]
+  }
+}
+```
+
+The facet is visible when `KindOfApplication` includes `"1"`, `"4"`, **or** `"5"`.
+
+The `notempty` + `selected_option_show_contains` pattern from the SEEK walkthrough above still evaluates as an AND even though both conditions reference the same facet: `selected_option_show_contains` conditions always stay in the AND pool, so the lone `notempty` condition forms the entire OR pool and both must hold.
 
 ## Implementation Guide
 
@@ -494,41 +526,69 @@ If the user clears `country`, both `state` and `city` should disappear. Your imp
 1. Clear `country` -> hide `state`, clear `state`'s value
 2. `state` cleared -> hide `city`, clear `city`'s value
 
+<!-- theme: info -->
+> Dependencies are not only created by `display_rules`. A facet whose [`autocomplete.parameters_source`](autocomplete.md#parameter-sources) references the changed facet is equally stale: clear its value and re-fetch its options as well, then repeat for any facets that depend on *it*.
+
 ### Pseudocode
 
 ```javascript
 function isFacetVisible(facet, formState, allFacets) {
   if (!facet.display_rules) return true;
 
-  return facet.display_rules.show.every(condition => {
-    const refValue = formState[condition.facet];
+  // Count how often each referenced facet appears in show[].
+  const counts = {};
+  for (const condition of facet.display_rules.show) {
+    counts[condition.facet] = (counts[condition.facet] || 0) + 1;
+  }
 
-    switch (condition.op) {
-      case 'equal':
-        return refValue === condition.value;
-
-      case 'in':
-        return condition.value.includes(refValue);
-
-      case 'notempty':
-        return refValue != null
-          && refValue !== ''
-          && refValue !== 0
-          && !(Array.isArray(refValue) && refValue.length === 0)
-          && !(typeof refValue === 'object' && Object.keys(refValue).length === 0);
-
-      case 'contains':
-        return Array.isArray(refValue) && refValue.includes(condition.value);
-
-      case 'selected_option_show_contains':
-        const refFacet = allFacets.find(f => f.name === condition.facet);
-        const selectedOption = refFacet?.options.find(o => o.key === refValue);
-        return selectedOption?.show?.includes(facet.name) ?? false;
-
-      default:
-        return false;
+  // Conditions on a facet referenced more than once form one OR pool;
+  // selected_option_show_contains always evaluates as AND.
+  const orPool = [];
+  const andPool = [];
+  for (const condition of facet.display_rules.show) {
+    if (counts[condition.facet] > 1 && condition.op !== 'selected_option_show_contains') {
+      orPool.push(condition);
+    } else {
+      andPool.push(condition);
     }
-  });
+  }
+
+  const matches = c => conditionMatches(c, facet, formState, allFacets);
+  return (orPool.length === 0 || orPool.some(matches)) && andPool.every(matches);
+}
+
+function conditionMatches(condition, facet, formState, allFacets) {
+  const refValue = formState[condition.facet];
+
+  switch (condition.op) {
+    case 'equal':
+      return refValue === condition.value;
+
+    case 'in':
+      return condition.value.includes(refValue);
+
+    case 'notempty':
+      return refValue != null
+        && refValue !== ''
+        && refValue !== 0
+        && !(Array.isArray(refValue) && refValue.length === 0)
+        && !(typeof refValue === 'object' && Object.keys(refValue).length === 0);
+
+    case 'contains':
+      // The referenced facet is a MULTIPLE - its value is an array of keys.
+      return Array.isArray(refValue) && refValue.includes(condition.value);
+
+    case 'selected_option_show_contains': {
+      const refFacet = allFacets.find(f => f.name === condition.facet);
+      // A hidden parent hides its children, whatever value it may still hold.
+      if (!refFacet || !isFacetVisible(refFacet, formState, allFacets)) return false;
+      const selectedOption = refFacet.options.find(o => o.key === refValue);
+      return selectedOption?.show?.includes(facet.name) ?? false;
+    }
+
+    default:
+      return false;
+  }
 }
 ```
 

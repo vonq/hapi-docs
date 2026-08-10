@@ -126,6 +126,8 @@ Display-only field-informational text shown to the user. **Never submit a value 
 
 **Submit as**: Omit entirely from the `postingRequirements` object.
 
+`STATISCH` facets double as **section headings**: a `STATISCH` facet groups every facet that follows it in `sort` order, up to the next `STATISCH` facet. Render them as section titles to split long forms into logical blocks.
+
 ### AREACOUNT
 
 Numeric area/region counter. Value is an integer representing a count or quantity associated with a geographic area.
@@ -251,7 +253,7 @@ Display rules control whether a facet is visible based on the value of another f
 }
 ```
 
-**All conditions** in the `show` array must be true (AND logic) for the facet to be visible.
+Conditions in the `show` array generally combine with **AND** - but several conditions referencing the **same facet** form an OR group. See [Facets - Display Rules](facets-display-rules.md#evaluation-logic) for the exact evaluation algorithm.
 
 <!-- theme: warning -->
 > **Hidden facets must be omitted from the request payload.** Even if a facet has `required: true`, if it's hidden by display rules, do not submit it. Server-side validation skips hidden facets.
@@ -284,6 +286,7 @@ Each rule is an object with `rule` (type) and `data` (constraint value as string
 | `date` | format string | Date format (`Y-m-d` or `d.m.Y`) |
 | `email` | empty string | Must be a valid email |
 | `url` | empty string | Must be a valid URL |
+| `mimetype` | allowed MIME type(s) | The value must reference a file of the given type. A `TEXT` facet carrying a `mimetype` rule is a **file-upload field**: render a file picker and submit the URL of the uploaded file instead of free text |
 
 ### Parsing Regex Rules
 
@@ -296,6 +299,9 @@ Regex patterns include delimiters and flags as a single string. See [Facets - En
 
 <!-- theme: warning -->
 > **Facet names are case-sensitive.** When submitting `postingRequirements`, keys must exactly match the facet `name`. `"JobCategory"` is not the same as `"jobcategory"`.
+
+<!-- theme: warning -->
+> **`required: false` does not guarantee the field is optional at order time.** Some channels enforce facets server-side that their definitions mark `required: false` (and some facets become mandatory depending on the value of another facet). Treat `required` as a rendering hint, and always run [validate-channel-posting or validate-campaign](validation.md) before ordering - the validation response, not the `required` flag, is authoritative.
 
 <!-- theme: warning -->
 > **`sort` is a string.** Despite representing numeric order, the `sort` field on both facets and options is returned as a string. Parse as integer: `parseInt(facet.sort)`.
@@ -311,6 +317,9 @@ Regex patterns include delimiters and flags as a single string. See [Facets - En
 
 <!-- theme: info -->
 > **HIER-only leaf nodes are selectable.** Parent options are grouping labels. A leaf node is any option whose `key` is never referenced as another option's `parent`.
+
+<!-- theme: warning -->
+> **`_optgroup-` keys are group headers, not values.** When a channel returns grouped options, HAPI inserts container entries with synthetic keys like `_optgroup-0`; the real options reference them via `parent`. Render them as group labels (e.g., `<optgroup>`) and never submit them as a value. These containers can appear even on flat `SELECT`/`MULTIPLE` facets, not just `HIER`.
 
 ## Related
 

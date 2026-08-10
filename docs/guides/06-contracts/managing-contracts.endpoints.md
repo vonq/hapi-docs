@@ -53,6 +53,9 @@ X-Customer-Id: customer-123
 - **Auth**: token + `X-Customer-Id`, or JWT
 - **Description**: Retrieve full details for a channel, including credential field definitions, setup instructions, and posting requirements. This is the essential call before creating a contract - it tells you exactly what the user needs to provide.
 
+<!-- theme: info -->
+> Unlike the list endpoint, the detail endpoint is customer-scoped: `X-Customer-Id` is required (a partner-level token without it returns `403` "X-Customer-Id header required").
+
 **Path Parameters**:
 
 | Parameter | Type | Description |
@@ -198,6 +201,7 @@ X-Customer-Id: customer-123
       "expiry_date": null,
       "credits": null,
       "purchase_price": { "amount": 350.00, "currency": "AUD" },
+      "has_errors": false,
       "igb_customer_id": "a1b2c3d4",
       "group": {
         "id": "c5d6e7f8-a9b0-1234-ef01-345678901234",
@@ -220,6 +224,7 @@ X-Customer-Id: customer-123
 **Notes**:
 - The list endpoint returns summary objects without `credentials` or `posting_requirements`. Use `GET /contracts/single/{contract_id}/` for full details.
 - Filter by label: `?label[team]=recruiting&label[region]=emea`.
+- Contracts have no `status` field. Each list row carries a `has_errors` boolean - the health signal for the contract. When it is `true`, fetch `GET /contracts/single/{contract_id}/` and inspect the `errors` array for details (e.g. deactivated channel, invalid credentials).
 
 ---
 
@@ -237,9 +242,9 @@ X-Customer-Id: customer-123
 | `alias` | string | no | User-facing name for this contract. Defaults to the channel name. |
 | `credentials_validation` | string | no | Set to `"if_supported"` to validate credentials against the channel. |
 | `followed_instructions` | boolean | no | Set to `true` to confirm setup instructions were followed. Required when `manual_setup_required` is `true` on the channel. |
-| `posting_duration_days` | integer | no | Default posting duration in days (min: 7, max: 365). |
+| `posting_duration_days` | integer | no | Default posting duration in days (min: 7, max: 365). Pass `-1` to use the channel's default duration. |
 | `credits` | integer | no | Number of credits for this contract. |
-| `expiry_date` | datetime | no | Expiration date for this contract. |
+| `expiry_date` | datetime | no | Expiration date for this contract. Must be a full ISO 8601 datetime (e.g. `2027-06-30T00:00:00Z`) - a date-only value such as `2027-06-30` is rejected. |
 | `group_id` | string (UUID) | no | Contract group to assign to. Defaults to the default group. |
 | `purchase_price` | object | no | Purchase price - `amount` (number) and `currency` (string). |
 | `labels` | object | no | Key-value pairs for filtering (max 50 pairs, each key/value max 32 chars). |
@@ -360,6 +365,8 @@ Content-Type: application/json
 }
 ```
 
+- The one-contract-per-channel rule applies **per group**. To hold a second contract for the same channel (e.g. separate credentials per brand or business unit), first create a new [contract group](#contract-groups) and pass its `group_id` when creating the contract.
+
 ---
 
 ### GET /contracts/single/{contract_id}/
@@ -433,10 +440,14 @@ Returns a paginated list of full contract objects.
 | `credentials` | object | Updated credentials |
 | `credentials_validation` | string | Set to `"if_supported"` to validate new credentials |
 | `labels` | object | Updated labels |
+| `posting_duration_days` | integer | Updated default posting duration (min: 7, max: 365; `-1` for the channel default) |
+| `posting_requirements_defaults` | object | Updated default posting requirement values |
 
 <!-- theme: warning -->
 > ### Limited updatable fields
-> Only `alias`, `credentials`, `labels`, `credentials_validation`, and `posting_requirements_defaults` can be changed after creation. Fields like `channel_id`, `group_id`, `posting_duration_days`, `credits`, and `expiry_date` are immutable.
+> Only `alias`, `credentials`, `credentials_validation`, `labels`, `posting_duration_days`, and `posting_requirements_defaults` can be changed after creation. Other fields fall into two behaviors:
+> - **Rejected with `400`**: `group_id` - the response is `{"group_id": ["Cannot change the contract group once it is set."]}`.
+> - **Silently ignored**: `expiry_date`, `credits`, and `purchase_price` - the request returns `200` but the values are left unchanged. Do not rely on the `200` status alone; compare the response body to confirm the change was applied.
 
 Update a contract's alias and credentials:
 
@@ -476,6 +487,9 @@ DELETE https://marketplace.api.vonq.com/contracts/c1d2e3f4-a5b6-7890-abcd-ef1234
 X-Auth-Token: <your Partner token here>
 X-Customer-Id: customer-123
 ```
+
+**Notes**:
+- Deletion is synchronous - once the `204` is returned, the contract is gone. Repeating the request (or deleting an unknown contract ID) returns `404`, so a `404` on retry means the earlier delete succeeded.
 
 <!-- theme: danger -->
 > ### Deleting contracts with active campaigns
@@ -573,7 +587,7 @@ Content-Type: application/json
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `group_idx` | integer | The group index (not the UUID) |
+| `group_idx` | integer or UUID | The group index (e.g. `0`). The group's UUID `id` is also accepted. |
 
 ---
 
@@ -586,7 +600,7 @@ Content-Type: application/json
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `group_idx` | integer | The group index (not the UUID) |
+| `group_idx` | integer or UUID | The group index (e.g. `0`). The group's UUID `id` is also accepted. |
 
 **Request Body**:
 
@@ -605,7 +619,7 @@ Content-Type: application/json
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `group_idx` | integer | The group index (not the UUID) |
+| `group_idx` | integer or UUID | The group index (e.g. `0`). The group's UUID `id` is also accepted. |
 
 **Request Body**:
 
@@ -624,7 +638,7 @@ Content-Type: application/json
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `group_idx` | integer | The group index (not the UUID) |
+| `group_idx` | integer or UUID | The group index (e.g. `0`). The group's UUID `id` is also accepted. |
 
 **Response**: `204 No Content`
 
