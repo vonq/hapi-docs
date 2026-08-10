@@ -156,8 +156,13 @@ After creation, most contract fields **cannot be changed**. Only a few fields ar
 | `credentials` | `group_id` |
 | `credentials_validation` | `credits` |
 | `labels` | `expiry_date` |
-| `posting_requirements_defaults` | |
+| `posting_requirements_defaults` | `purchase_price` |
 | `posting_duration_days` | |
+
+Immutable fields fail in two different ways when included in a `PATCH`:
+
+- **`group_id`** is rejected with a `400` and the message `"Cannot change the contract group once it is set."`
+- **`credits`, `expiry_date`, and `purchase_price`** are **silently ignored** - the request returns `200` but the stored values are unchanged. Compare the response body to your request to detect this; do not treat the `200` as confirmation.
 
 Core fields like `channel_id` and `group_id` are immutable because job boards require consistent credentials and channel configuration to manage already-posted jobs. If these were changed, campaigns posted with the original settings would become unmanageable - you could not edit or take down those postings through HAPI. Credential updates should also be done carefully for the same reason.
 

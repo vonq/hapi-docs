@@ -28,6 +28,10 @@ Campaign webhooks must be enabled by your VONQ account manager. To set up:
 
 There is no self-service subscription endpoint-webhook configuration is managed by VONQ.
 
+### Authenticating Deliveries
+
+Campaign webhook requests carry no signature. To authenticate them, ask your account manager to configure **custom HTTP headers** on your webhook: any set of key-value pairs (e.g. a shared secret token) that VONQ attaches to every delivery. Validate those headers on your endpoint and reject requests without them. Without configured headers, anyone who discovers your callback URL can POST to it.
+
 ## How It Works
 
 ```mermaid

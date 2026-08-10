@@ -68,9 +68,10 @@ The response includes a `Location` header pointing to `/campaigns/{campaignId}/s
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `campaignId` | string | Yes | Must match the path parameter |
 | `productId` | string | Yes | The product to cancel-must be in `online` status |
 | `status` | string | Yes | Must be `"offline"` |
+
+The campaign is selected by the path parameter only - unlike the full-cancellation endpoint, the body does not take a `campaignId` (any `campaignId` sent in the body is ignored).
 
 ```http
 PUT https://marketplace.api.vonq.com/campaigns/e1f2a3b4-c5d6-7890-abcd-ef1234567890/product_cancellation HTTP/1.1
@@ -81,7 +82,6 @@ Content-Type: application/json
 
 ```json
 {
-  "campaignId": "e1f2a3b4-c5d6-7890-abcd-ef1234567890",
   "productId": "d6e7f8a9-b0c1-2345-f012-456789012345",
   "status": "offline"
 }

@@ -30,13 +30,13 @@ The webhook payload contains the candidate's application data, questionnaire ans
       {
         "question": "Why are you interested in this role?",
         "id": "q1",
-        "type": "OPEN",
+        "type": "text",
         "answers": [{ "answer": "I am passionate about..." }]
       },
       {
         "question": "Do you have a valid work permit?",
         "id": "q2",
-        "type": "SELECT",
+        "type": "choice",
         "answers": [{ "answer": "Yes", "id": "yes" }]
       }
     ],
@@ -86,13 +86,15 @@ Job boards differ in how much candidate data they provide. Only a minimal core i
 
 Do not reject applications that lack `lastName` or attachments.
 
-### Questionnaire Answer Field Mapping
+### Questionnaire Answer Types
 
-| Input Type (ordering) | Webhook Type (delivery) | Description |
-|----------------------|------------------------|-------------|
-| `text` | `OPEN` | Free-text answer |
-| `choice` | `SELECT` | Single-select-one answer |
-| `multi-choice` | `MULTISELECT` | Multi-select-one or more answers |
+Question `type` values are delivered exactly as defined at ordering time - HAPI does not transform them:
+
+| Type | Description |
+|------|-------------|
+| `text` | Free-text answer |
+| `choice` | Single-select-one answer |
+| `multi-choice` | Multi-select-one or more answers |
 
 Each question object in the webhook:
 
@@ -100,7 +102,7 @@ Each question object in the webhook:
 |-------|------|-------------|
 | `question` | string | The question text shown to the candidate |
 | `id` | string | The question ID you defined when creating the questionnaire |
-| `type` | string | `OPEN`, `SELECT`, or `MULTISELECT` |
+| `type` | string | Forwarded verbatim from the job board - normally `text`, `choice`, or `multi-choice`. Treat as an open string, not a closed enum. |
 | `answers` | array | Candidate's answers. Each has `answer` (text) and optionally `id` (matching the option ID you defined) |
 
 ### Attachment Types

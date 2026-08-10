@@ -209,6 +209,9 @@ X-Customer-Id: <customer-id>
 | `clicks` | integer | Number of clicks on the posting |
 | `productId` | string | Product ID |
 
+<!-- theme: info -->
+> **Join the two arrays by `productId`.** Per-product status lives in `orderedProductsSpecs[]`, while the product display `name` and click metrics live in `postings[]`. To render a per-channel row (name + status + link), match entries across the two arrays on `productId` - the arrays are not guaranteed to be in the same order.
+
 **Errors**
 
 | Status | Cause |

@@ -187,8 +187,8 @@ Each field is an array containing exactly **one** taxonomy reference object with
 All four fields are required by default but may be omitted with `?loose=true` when listed in your loose-validation settings.
 
 <!-- theme: warning -->
-> ### One Value Per Dimension
-> Each taxonomy field accepts exactly one value. Pass an array with a single object-not multiple.
+> ### Exactly One Value Per Dimension
+> Each taxonomy field is an array that must contain exactly one object - not zero, not several. Two or more entries fail validation with `"Maximum number of items is 1."`. An **empty array is not valid either**: `POST /campaigns/validate-campaign/` may let `[]` pass, but `POST /campaigns/order` rejects it with an error like `"A Target Group entity should contain an EducationLevel"`. Do not rely on an empty array as a way to skip a dimension - to omit these fields you need [loose validation](#loose-validation), and then omit the key entirely rather than sending `[]`.
 
 To look up available taxonomy values and their IDs, see [Taxonomy](../04-taxonomy.md).
 

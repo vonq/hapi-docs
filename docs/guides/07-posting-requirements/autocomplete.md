@@ -351,6 +351,9 @@ graph TD
 <!-- theme: info -->
 > **Contract autocomplete needs credentials when using channel_id.** When the contract doesn't exist yet, pass `credentials` in the request body. Once the contract is created, use the contract UUID and omit credentials. See [Contract Posting Requirements](../06-contracts/posting-requirements.md).
 
+<!-- theme: warning -->
+> **Option keys are not stable across fetches on every channel.** Some job boards encode volatile data into option keys (for example, ad-type keys that embed current pricing), so a key you stored with a campaign may be missing from a later options fetch. When re-loading options for an existing selection - typically in an edit flow - reconcile by `key` first, then fall back to matching by `label`, and keep a complete stored `{key, label}` selection rather than discarding it just because the refreshed list no longer contains its key.
+
 <!-- theme: info -->
 > **Debounce search requests.** For search-as-you-type fields, debounce API calls (e.g., 300ms) to avoid flooding the endpoint with requests on every keystroke.
 

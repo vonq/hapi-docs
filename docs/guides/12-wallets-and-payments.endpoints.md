@@ -171,9 +171,15 @@ https://marketplace.api.vonq.com/wallet/topup.html?walletId={walletId}&partnerId
 The iframe communicates via `postMessage`. Listen for events on your parent window:
 
 ```javascript
+const TRUSTED_ORIGINS = [
+  "https://marketplace.api.vonq.com",
+  // when integrating against sandbox:
+  "https://marketplace-sandbox.api.vonq.com",
+];
+
 window.addEventListener("message", (event) => {
   // Verify origin for security
-  if (event.origin !== "https://marketplace.api.vonq.com") {
+  if (!TRUSTED_ORIGINS.includes(event.origin)) {
     return;
   }
 

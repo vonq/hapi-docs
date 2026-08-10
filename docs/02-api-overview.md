@@ -25,6 +25,8 @@ HAPI provides two environments. Each requires its own API token-credentials from
 
 Use Sandbox for development and integration testing. Contact your VONQ account manager to receive Sandbox credentials.
 
+See [Environments](02b-environments.md) for what Sandbox does and does not do-separate provisioning, portfolio sync, and how to simulate campaign lifecycles without real deliveries.
+
 <!-- theme: info -->
 > Some endpoints use a `/v3/` path prefix (e.g., `/v3/smartfill/`, `/v3/screening/`, `/v3/ats/`). This is a routing prefix, not a separate API version-all endpoints are part of the same HAPI v2 API.
 

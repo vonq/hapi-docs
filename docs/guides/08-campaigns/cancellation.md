@@ -90,7 +90,7 @@ Contact your VONQ account manager to enable `errorOnCancelCampaign` if you want 
 
 - **No undo**-once a campaign or product is cancelled, it cannot be reactivated. You must create a new campaign order.
 - **Campaign goes offline when all products are done**-if you cancel the last remaining `online` product via product cancellation, the campaign status transitions to `offline`.
-- **Cancellation does not guarantee refund**-whether costs are refunded depends on the product and job board. Contact your VONQ account manager for refund policies.
+- **Cancellation does not guarantee refund**-whether costs are refunded depends on the product and job board. Contact your VONQ account manager for refund policies. Refunds and proration are handled entirely outside the API: no endpoint exposes refund status or amounts, so do not poll for refund information after cancelling.
 
 ## Related
 

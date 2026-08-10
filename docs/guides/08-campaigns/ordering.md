@@ -94,7 +94,7 @@ Per-product configuration. Required for JP products; optional for JM products un
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `productId` | string | Yes | Must match an ID in `orderedProducts` |
-| `contractId` | string (UUID) | JP only | Contract to use for this product |
+| `contractId` | string (UUID) | JP only | Contract to use for this product. Never include it for a JM product - a JM specs entry with a `contractId` is rejected with `400`. |
 | `postingRequirements` | object | Conditional | Channel-specific field values as key-value pairs. Required when the selected JP contract or JM product has posting requirements. |
 | `postingRequirementsLabels` | object | No | Human-readable labels for posting requirement values |
 | `utm` | string | No | UTM tracking parameters |
@@ -136,12 +136,15 @@ You can filter on multiple labels simultaneously.
 
 | Method | Required Fields | Description |
 |--------|----------------|-------------|
-| `ats_managed` | None | Default. VONQ invoices your organization separately. |
+| `ats_managed` | None | Default. VONQ invoices your organization separately. `walletId` must not be sent. |
 | `wallet` | `walletId` | Deduct the campaign cost from a pre-funded wallet balance. See [Wallets & Payments](../12-wallets-and-payments.md). |
 | `direct_charge` | `walletId` | Charge the wallet's configured payment method directly for this campaign. No pre-funded balance is required. |
-| `purchase_order` | `poNumber` | Create a purchase order to be invoiced separately. |
+| `purchase_order` | `walletId` | Order against the wallet's purchase-order credit limits and invoice separately. `poNumber` is optional free text that appears on the invoice - it is not the required field. |
 
 For `wallet`, `direct_charge`, and `purchase_order`, the order must contain at least one product with a price greater than `0`. If `paymentMethod` is omitted, HAPI uses `ats_managed`.
+
+<!-- theme: warning -->
+> **`ats_managed` and `walletId` are mutually exclusive.** Including a `walletId` when the payment method is `ats_managed` (explicitly or by omission) returns `400` with the message `"walletId not supported in requests where payment method is ats_managed"`. Only send `walletId` with `wallet` or `direct_charge`.
 
 For details on wallet setup and payment flows, see [Wallets & Payments](../12-wallets-and-payments.md).
 
@@ -199,7 +202,7 @@ sequenceDiagram
 
 <!-- theme: warning -->
 > ### JM Products Usually Don't Need Specs
-> Do not include `orderedProductsSpecs` entries for JM (marketplace) products unless you are adding UTM tracking or the product has product-level posting requirements, such as Direct Apply facets. Only JP (contract-based) products require `contractId`.
+> Do not include `orderedProductsSpecs` entries for JM (marketplace) products unless you are adding UTM tracking or the product has product-level posting requirements, such as Direct Apply facets. When a JM product does need a specs entry, include `productId` and `postingRequirements` but **no `contractId`** - `contractId` on a JM entry returns `400`. Only JP (contract-based) products take a `contractId`.
 
 <!-- theme: warning -->
 > ### Contract Customer Group
@@ -208,6 +211,10 @@ sequenceDiagram
 <!-- theme: warning -->
 > ### postingRequirements Format
 > In `orderedProductsSpecs`, posting requirements use a flat key-value object: `{ "location": "berlin-mitte" }`. This differs from the `{ name, value }` array format used by `validate-channel-posting`. See [Validation](./validation.md).
+
+<!-- theme: warning -->
+> ### Duplicate Orders May Be Throttled
+> Accounts can be configured with duplicate-submission prevention: when enabled, submitting the exact same order payload again within the configured window returns `422` with the message `"A campaign with the same payload was already submitted recently. Please wait before resubmitting."`. The window is set per partner by your account manager (off by default). Handle this `422` gracefully - it protects against accidental double-ordering (e.g. a double-click or a client retry after a timeout). If the user genuinely wants a second identical campaign, wait out the window or change the payload (e.g. the vacancy title).
 
 - **Campaign ordering can take time**-the API processes each product's posting. Expect response times up to 30 seconds for campaigns with many products.
 - **The response is minimal**-only `campaignId` is returned. Fetch full details with `GET /campaigns/{campaignId}` after ordering.
