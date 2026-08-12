@@ -5440,10 +5440,16 @@
             ],
             "default": "n/a",
             "readOnly": true
+          },
+          "requires_salary_indication": {
+            "default": false,
+            "readOnly": true,
+            "type": "boolean"
           }
         },
         "required": [
-          "direct_apply"
+          "direct_apply",
+          "requires_salary_indication"
         ],
         "type": "object"
       },
