@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-08-17
+### Added
+- `ordering_source` on products (`GET /products/search/`, `/products/single/{product_id}/`, `/products/multiple/{products_ids_or_portfolio_id}/`) identifying why a product was promoted to the top of the results: `favorite` (promoted by `injectFavorites`), `top_ordered` (promoted by `injectTopOrdered`), or `null` when the product was not promoted. Use it to label promoted rows without implying they match the search filters. See [Marketplace](guides/05-products/02-marketplace.md).
+
 ## 2026-07-29
 ### Added
 - `hasProductSpecs` and `features` filters on `GET /products/search/`.
