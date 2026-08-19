@@ -4830,6 +4830,29 @@
         ],
         "type": "object"
       },
+      "MocFeatures": {
+        "properties": {
+          "direct_apply": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DirectApplyEnum"
+              }
+            ],
+            "default": "n/a",
+            "readOnly": true
+          },
+          "requires_salary_indication": {
+            "default": false,
+            "readOnly": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "direct_apply",
+          "requires_salary_indication"
+        ],
+        "type": "object"
+      },
       "NullableInput": {
         "properties": {
           "name": {
@@ -4940,6 +4963,14 @@
           "productId"
         ],
         "type": "object"
+      },
+      "OrderingSourceEnum": {
+        "description": "* `favorite` - Favorited by the user\n* `top_ordered` - Most ordered by the user",
+        "enum": [
+          "favorite",
+          "top_ordered"
+        ],
+        "type": "string"
       },
       "PaginatedATSUserList": {
         "properties": {
@@ -5629,6 +5660,19 @@
             "readOnly": true,
             "type": "boolean"
           },
+          "ordering_source": {
+            "description": "Why this product was promoted to the top of the results: `favorite` for `injectFavorites`, `top_ordered` for `injectTopOrdered`. Null when not promoted.\n\n* `favorite` - Favorited by the user\n* `top_ordered` - Most ordered by the user",
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/OrderingSourceEnum"
+              },
+              {
+                "$ref": "#/components/schemas/HapiNullEnum"
+              }
+            ],
+            "readOnly": true
+          },
           "product_id": {
             "readOnly": true,
             "type": "string"
@@ -5717,6 +5761,7 @@
           "mc_enabled",
           "mc_only",
           "multiple_working_location_support",
+          "ordering_source",
           "product_id",
           "product_solution",
           "product_specs",
@@ -6061,6 +6106,14 @@
             "readOnly": true,
             "type": "array"
           },
+          "features": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MocFeatures"
+              }
+            ],
+            "readOnly": true
+          },
           "feed_url": {
             "nullable": true,
             "readOnly": true,
@@ -6140,6 +6193,7 @@
         },
         "required": [
           "contract_credentials",
+          "features",
           "feed_url",
           "id",
           "logo_rectangle_url",
@@ -6157,6 +6211,14 @@
       },
       "ProductsSpecsChannelList": {
         "properties": {
+          "features": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MocFeatures"
+              }
+            ],
+            "readOnly": true
+          },
           "id": {
             "type": "integer"
           },
@@ -6206,6 +6268,7 @@
           }
         },
         "required": [
+          "features",
           "id",
           "logo_rectangle_url",
           "logo_square_url",

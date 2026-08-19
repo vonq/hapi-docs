@@ -69,7 +69,8 @@ Behavior notes:
 - **Filters are not applied to injected products.** A favorite or top-ordered product shows up on page 1 regardless of the other filters in the query (e.g., `jobFunctionId`, `includeLocationId`). Use this to ensure the user always sees their frequently-used channels.
 - **Excluded from the main results to avoid duplicates.** An injected product that would also have matched the search is removed from the regular paginated result stream.
 - **`count` reflects the non-injected results.** The paginated response's `count` does not include the injected products. If your UI needs a total, add the injected count on the client.
-- **Injected products are not marked in the response.** There is no flag identifying which rows were injected. If your UI needs to distinguish them: at `offset=0` the number of injected rows is `results.length − min(limit, count)`, and the injected rows come first. Favorites can additionally be recognized by `is_favorite: true` - top-ordered products carry no marker at all.
+- **Injected products are marked with `ordering_source`.** Every promoted row reports why it is at the top: `favorite` when `injectFavorites` promoted it, `top_ordered` when `injectTopOrdered` did. A product promoted by both reports `favorite`. Every other product has `ordering_source: null`, including on later pages, where nothing is injected. Use this to label promoted rows rather than counting them, though the count still holds: at `offset=0` the injected rows come first and number `results.length − min(limit, count)`.
+- **Do not present promoted rows as filter matches.** Because the other filters are not applied to them, an injected product may have nothing to do with the search criteria. Label them by their `ordering_source` (for example "Saved by you" or "Frequently ordered by you") instead of implying relevance to the query.
 
 Example-search for products in a given job function, with the user's favorites prepended:
 
