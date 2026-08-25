@@ -9,7 +9,7 @@ endpoints:
   - GET /products/delivery-time/{products_ids}/
 prerequisites: [products-introduction, taxonomy]
 concepts: [product, marketplace, product_search, delivery_time]
-related: [products-introduction, special-products, product-favorites, taxonomy]
+related: [products-introduction, special-products, product-favorites, product-recommendations, taxonomy]
 audience: [developer]
 difficulty: intermediate
 ---
@@ -38,6 +38,8 @@ See [Marketplace - Endpoint Reference](./02-marketplace.endpoints.md) for full r
 ## Product Search
 
 Use `GET /products/search/` to find channels relevant to a vacancy. The endpoint accepts filters for location, job function, industry, duration, price, and more. Results are paginated and ranked by relevance.
+
+For an AI-ranked starting set, first create a [Product Recommendation](./05.recommendations.md), then pass its completed job ID as `recommendationId`. Search returns full product objects in recommendation order and rechecks their current visibility.
 
 Localized results are available via the `Accept-Language` header. See [Localization](../../02-api-overview.md#localization).
 
@@ -253,6 +255,7 @@ graph TD
 - [Special Products](./03-special-products.md)-bundles and CPA+ products
 - [Posting Requirements](./04-posting-requirements.md)-retrieving and working with product specs and facets
 - [Product Favorites](./05.favorites.md)-saving favorite products and retrieving their details
+- [Product Recommendations](./05.recommendations.md)-generating ranked product IDs from partial campaign data
 - [Taxonomy & Locations](../04-taxonomy.md)-resolving IDs for product search filters
 - [Contracts](../06-contracts/01-introduction.md)-creating contracts for My Contract products
 - [Campaign Ordering](../08-campaigns/ordering.md)-using products in campaign orders

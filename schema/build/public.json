@@ -59,6 +59,17 @@
         ],
         "type": "string"
       },
+      "ATSProductRecommendationStatusEnum": {
+        "description": "* `queued` - Queued\n* `running` - Running\n* `completed` - Completed\n* `failed` - Failed\n* `expired` - Expired",
+        "enum": [
+          "queued",
+          "running",
+          "completed",
+          "failed",
+          "expired"
+        ],
+        "type": "string"
+      },
       "ATSPublicPaymentSettings": {
         "properties": {
           "currency": {
@@ -231,6 +242,9 @@
           },
           "products": {
             "properties": {
+              "ai_recommendations_enabled": {
+                "type": "boolean"
+              },
               "he_product_filters_layout": {
                 "enum": [
                   "v1",
@@ -284,6 +298,145 @@
           "show_error_codes",
           "show_translated_messages",
           "smartfill"
+        ],
+        "type": "object"
+      },
+      "ATSRecommendationCreateRequest": {
+        "properties": {
+          "exclude_ids": {
+            "description": "Product IDs already selected by the customer. Excluded products are never sent to AI.",
+            "items": {
+              "maxLength": 36,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 100,
+            "type": "array"
+          },
+          "postingDetails": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PostingDetailsRequest"
+              }
+            ],
+            "description": "Any supported posting details may be supplied independently."
+          },
+          "targetGroup": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TargetGroupRequest"
+              }
+            ],
+            "description": "Any supported target-group fields may be supplied independently."
+          }
+        },
+        "type": "object"
+      },
+      "ATSRecommendationCreated": {
+        "properties": {
+          "created_on": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ATSProductRecommendationStatusEnum"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "ATSRecommendationDetail": {
+        "properties": {
+          "completed_on": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "created_on": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "error": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ATSRecommendationError"
+              }
+            ],
+            "nullable": true,
+            "readOnly": true
+          },
+          "id": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "product_count": {
+            "minimum": 0,
+            "readOnly": true,
+            "type": "integer"
+          },
+          "recommendations": {
+            "items": {
+              "$ref": "#/components/schemas/ATSRecommendationResult"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "started_on": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ATSProductRecommendationStatusEnum"
+          }
+        },
+        "required": [
+          "error",
+          "id",
+          "product_count",
+          "recommendations"
+        ],
+        "type": "object"
+      },
+      "ATSRecommendationError": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "ATSRecommendationResult": {
+        "properties": {
+          "product_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_id",
+          "reason",
+          "title"
         ],
         "type": "object"
       },
@@ -2379,6 +2532,36 @@
           "n/a",
           "optional",
           "mandatory"
+        ],
+        "type": "string"
+      },
+      "EducationLevelElementRequest": {
+        "properties": {
+          "description": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "vonqId": {
+            "description": "Numeric identifier represented as a string.",
+            "maxLength": 20,
+            "minLength": 1,
+            "pattern": "^\\d+$",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "EmploymentTypeEnum": {
+        "description": "* `permanent` - permanent\n* `temporary` - temporary\n* `fixed_term` - fixed_term\n* `fixed_term_with_option_for_permanent` - fixed_term_with_option_for_permanent\n* `freelance` - freelance\n* `traineeship` - traineeship\n* `internship` - internship",
+        "enum": [
+          "permanent",
+          "temporary",
+          "fixed_term",
+          "fixed_term_with_option_for_permanent",
+          "freelance",
+          "traineeship",
+          "internship"
         ],
         "type": "string"
       },
@@ -4803,6 +4986,23 @@
           null
         ]
       },
+      "IndustryElementRequest": {
+        "properties": {
+          "description": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "vonqId": {
+            "description": "Numeric identifier represented as a string.",
+            "maxLength": 20,
+            "minLength": 1,
+            "pattern": "^\\d+$",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "Input": {
         "properties": {
           "name": {
@@ -4828,6 +5028,23 @@
           "name",
           "value"
         ],
+        "type": "object"
+      },
+      "JobCategoryElementRequest": {
+        "properties": {
+          "description": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "vonqId": {
+            "description": "Numeric identifier represented as a string.",
+            "maxLength": 20,
+            "minLength": 1,
+            "pattern": "^\\d+$",
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "MocFeatures": {
@@ -5360,6 +5577,40 @@
         },
         "type": "object"
       },
+      "PostingDetailsRequest": {
+        "properties": {
+          "description": {
+            "maxLength": 65535,
+            "minLength": 1,
+            "type": "string"
+          },
+          "employmentType": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EmploymentTypeEnum"
+              },
+              {
+                "$ref": "#/components/schemas/HapiNullEnum"
+              }
+            ]
+          },
+          "title": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "workingLocation": {
+            "$ref": "#/components/schemas/WorkingLocationRequest"
+          },
+          "yearsOfExperience": {
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "ProductAudienceGroupEnum": {
         "description": "* `generic` - generic\n* `niche` - niche",
         "enum": [
@@ -5434,17 +5685,6 @@
         },
         "required": [
           "created_on",
-          "product_id"
-        ],
-        "type": "object"
-      },
-      "ProductFavoriteCreate": {
-        "properties": {
-          "product_id": {
-            "type": "string"
-          }
-        },
-        "required": [
           "product_id"
         ],
         "type": "object"
@@ -8046,6 +8286,23 @@
         ],
         "type": "object"
       },
+      "SeniorityElementRequest": {
+        "properties": {
+          "description": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "vonqId": {
+            "description": "Numeric identifier represented as a string.",
+            "maxLength": 20,
+            "minLength": 1,
+            "pattern": "^\\d+$",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "SmartfillContextRequest": {
         "properties": {
           "structured": {
@@ -8238,6 +8495,39 @@
           "status",
           "updated_at"
         ],
+        "type": "object"
+      },
+      "TargetGroupRequest": {
+        "properties": {
+          "educationLevel": {
+            "items": {
+              "$ref": "#/components/schemas/EducationLevelElementRequest"
+            },
+            "maxItems": 1,
+            "type": "array"
+          },
+          "industry": {
+            "items": {
+              "$ref": "#/components/schemas/IndustryElementRequest"
+            },
+            "maxItems": 1,
+            "type": "array"
+          },
+          "jobCategory": {
+            "items": {
+              "$ref": "#/components/schemas/JobCategoryElementRequest"
+            },
+            "maxItems": 1,
+            "type": "array"
+          },
+          "seniority": {
+            "items": {
+              "$ref": "#/components/schemas/SeniorityElementRequest"
+            },
+            "maxItems": 1,
+            "type": "array"
+          }
+        },
         "type": "object"
       },
       "TaxonomyEducationLevel": {
@@ -8600,6 +8890,56 @@
           "max_purchase_order",
           "min_topup"
         ],
+        "type": "object"
+      },
+      "WorkingLocationRequest": {
+        "properties": {
+          "addressLine1": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "addressLine2": {
+            "maxLength": 255,
+            "nullable": true,
+            "type": "string"
+          },
+          "allowsRemoteWork": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "enum": [
+                  0,
+                  1
+                ],
+                "type": "integer"
+              },
+              {
+                "enum": [
+                  "0",
+                  "1",
+                  "hybrid"
+                ],
+                "type": "string"
+              }
+            ]
+          },
+          "city": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "country": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "postcode": {
+            "maxLength": 30,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
         "type": "object"
       }
     },
@@ -11643,7 +11983,6 @@
             "in": "query",
             "name": "favorites",
             "schema": {
-              "nullable": true,
               "type": "boolean"
             }
           },
@@ -11782,6 +12121,15 @@
             }
           },
           {
+            "description": "Limit results to a completed AI recommendation owned by the authenticated ATSUser. Products retain their recommendation order.",
+            "in": "query",
+            "name": "recommendationId",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "description": "If true, returns a limited list of recommended products for types: job board, social media, publication, community.",
             "in": "query",
             "name": "recommended",
@@ -11819,11 +12167,9 @@
                 "1w",
                 "1m",
                 "6m",
-                "12m",
-                null
+                "12m"
               ],
               "minLength": 1,
-              "nullable": true,
               "type": "string"
             }
           }
@@ -12856,7 +13202,7 @@
     },
     "/v3/products/favorites/": {
       "get": {
-        "description": "Simple API to add, remove and list favorite product IDs for the authenticated ATS User.\n\nTo retrieve full product details for your favorites, use the Multiple Products endpoint with the `favorites` selector:\n`GET /products/multiple/favorites/`",
+        "description": "Manage favorite product IDs for the authenticated ATS user.\n\nTo retrieve full product details for your favorites, use the Multiple Products endpoint with the `favorites` selector: `GET /products/multiple/favorites/`.\n\nLists available favorite products, most recently added first. Saved favorites that are no longer available are omitted.",
         "operationId": "v3_products_favorites_list",
         "responses": {
           "200": {
@@ -12870,7 +13216,7 @@
                 }
               }
             },
-            "description": ""
+            "description": "Favorite product IDs and creation timestamps."
           }
         },
         "security": [
@@ -12890,7 +13236,7 @@
         ]
       },
       "post": {
-        "description": "Simple API to add, remove and list favorite product IDs for the authenticated ATS User.\n\nTo retrieve full product details for your favorites, use the Multiple Products endpoint with the `favorites` selector:\n`GET /products/multiple/favorites/`",
+        "description": "Manage favorite product IDs for the authenticated ATS user.\n\nTo retrieve full product details for your favorites, use the Multiple Products endpoint with the `favorites` selector: `GET /products/multiple/favorites/`.\n\nAdds a product to the user's favorites. A new favorite returns `201`; adding an existing favorite is idempotent and returns `200`. An ATS user can have at most 50 available favorite products. Favorites that are no longer available do not count towards this limit.",
         "operationId": "v3_products_favorites_create",
         "requestBody": {
           "content": {
@@ -12913,15 +13259,93 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
+                "examples": {
+                  "ExistingFavorite": {
+                    "summary": "Existing favorite",
+                    "value": {
+                      "created_on": "2026-05-12T10:15:00Z",
+                      "product_id": "a3e2f5d1-7c4b-4e8a-9f2d-1b3c5e7f9a0b"
+                    }
+                  }
+                },
                 "schema": {
-                  "$ref": "#/components/schemas/ProductFavoriteCreate"
+                  "$ref": "#/components/schemas/ProductFavorite"
                 }
               }
             },
-            "description": ""
+            "description": "The product was already a favorite; the existing favorite is returned."
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "FavoriteCreated": {
+                    "summary": "Favorite created",
+                    "value": {
+                      "created_on": "2026-05-12T10:15:00Z",
+                      "product_id": "a3e2f5d1-7c4b-4e8a-9f2d-1b3c5e7f9a0b"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProductFavorite"
+                }
+              }
+            },
+            "description": "Favorite created."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "FavoritesLimitReached": {
+                    "summary": "Favorites limit reached",
+                    "value": {
+                      "non_field_errors": [
+                        "You can have at most 50 favorite products."
+                      ]
+                    }
+                  },
+                  "ProductIDMissing": {
+                    "summary": "Product ID missing",
+                    "value": {
+                      "product_id": [
+                        "This field is required."
+                      ]
+                    }
+                  },
+                  "ProductNotFound": {
+                    "summary": "Product not found",
+                    "value": {
+                      "product_id": [
+                        "Product not found."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "non_field_errors": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "product_id": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The product ID is missing or unknown, or the favorites limit has been reached."
           }
         },
         "security": [
@@ -12943,7 +13367,7 @@
     },
     "/v3/products/favorites/{product_id}/": {
       "delete": {
-        "description": "Simple API to add, remove and list favorite product IDs for the authenticated ATS User.\n\nTo retrieve full product details for your favorites, use the Multiple Products endpoint with the `favorites` selector:\n`GET /products/multiple/favorites/`",
+        "description": "Manage favorite product IDs for the authenticated ATS user.\n\nTo retrieve full product details for your favorites, use the Multiple Products endpoint with the `favorites` selector: `GET /products/multiple/favorites/`.\n\nRemoves a favorite by product ID. Favorites can still be removed after the product becomes unavailable.",
         "operationId": "v3_products_favorites_destroy",
         "parameters": [
           {
@@ -12957,7 +13381,33 @@
         ],
         "responses": {
           "204": {
-            "description": "No response body"
+            "description": "Favorite removed; no response body."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "FavoriteNotFound": {
+                    "summary": "Favorite not found",
+                    "value": {
+                      "detail": "No ProductFavorite matches the given query."
+                    }
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "detail": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "detail"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The product is not a favorite of the authenticated ATS user."
           }
         },
         "security": [
@@ -12972,6 +13422,155 @@
           }
         ],
         "summary": "Product Favorite - Delete",
+        "tags": [
+          "\u00bb Products"
+        ]
+      }
+    },
+    "/v3/products/recommendations/": {
+      "post": {
+        "description": "Create an asynchronous recommendation job from partial campaign data. Every documented property is optional, but the request must contain at least one meaningful value under `postingDetails` or `targetGroup`.",
+        "operationId": "v3_products_recommendations_create",
+        "parameters": [
+          {
+            "description": "Identifies the ATS end-user. Required for Contracts functionality.",
+            "in": "header",
+            "name": "X-Customer-Id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "PartialPostingDetails": {
+                  "summary": "Partial posting details",
+                  "value": {
+                    "exclude_ids": [
+                      "2786cbe7-d1ac-52de-a967-7dc8c98836df"
+                    ],
+                    "postingDetails": {
+                      "description": "Seeking an experienced PHP developer.",
+                      "title": "Senior PHP Developer",
+                      "workingLocation": {
+                        "allowsRemoteWork": 1,
+                        "city": "London",
+                        "country": "UK"
+                      }
+                    }
+                  }
+                },
+                "PartialTargetGroup": {
+                  "summary": "Partial target group",
+                  "value": {
+                    "targetGroup": {
+                      "educationLevel": [
+                        {
+                          "description": "Bachelor / Graduate",
+                          "vonqId": "2"
+                        }
+                      ],
+                      "seniority": [
+                        {
+                          "description": "Mid-Senior level",
+                          "vonqId": "3"
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/ATSRecommendationCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ATSRecommendationCreated"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "description": "Invalid recommendation criteria."
+          },
+          "403": {
+            "description": "Recommendations are not enabled for this ATS."
+          },
+          "503": {
+            "description": "The recommendation could not be queued."
+          }
+        },
+        "security": [
+          {
+            "ATSUser-APIKey": []
+          },
+          {
+            "ATSUser-JWT": []
+          }
+        ],
+        "summary": "Product Recommendations - Create",
+        "tags": [
+          "\u00bb Products"
+        ]
+      }
+    },
+    "/v3/products/recommendations/{id}/": {
+      "get": {
+        "description": "Create and poll ATSUser-specific asynchronous AI product recommendation jobs.",
+        "operationId": "v3_products_recommendations_retrieve",
+        "parameters": [
+          {
+            "description": "Identifies the ATS end-user. Required for Contracts functionality.",
+            "in": "header",
+            "name": "X-Customer-Id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "A UUID string identifying this ATS Product Recommendation.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ATSRecommendationDetail"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "description": "Not found."
+          }
+        },
+        "security": [
+          {
+            "ATSUser-APIKey": []
+          },
+          {
+            "ATSUser-JWT": []
+          }
+        ],
+        "summary": "Product Recommendations - Retrieve",
         "tags": [
           "\u00bb Products"
         ]
