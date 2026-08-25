@@ -119,6 +119,14 @@ Each question object in the webhook:
 | `OTHER` | Other file type |
 | `null` | Unclassified-not all job boards classify files |
 
+### Attachment Filenames
+
+`payload.attachments[].filename` and the `filename` of the matching file part are always the same string, in every delivery mode. Pair each file with its attachment entry on that value, including in the split modes where the file arrives in a later request.
+
+Filenames are normalized before delivery: non-printable characters are removed and leading and trailing whitespace is trimmed. Some job boards embed invisible characters such as U+200E (left-to-right mark) in the name the candidate uploaded, so the filename you receive can differ from the original.
+
+Within one application filenames are unique, so they are safe to use as a key while processing that application. They are not unique across applications, and normalization is not a substitute for your own path handling when you store the file.
+
 ## File Delivery Mode Examples
 
 In every mode, an application without files is delivered as a single `application/json` POST (the payload request shown in Mode 2), and no file requests follow. If your endpoint can only ingest `multipart/form-data`, your account manager can enable forced multipart delivery, which sends the `json` form field without file parts instead.

@@ -75,3 +75,4 @@ Not every product in VONQ's catalog is available to every partner:
 | [Marketplace](./02-marketplace.md) | Searching, filtering, and retrieving product details-the product search endpoint, single/multiple product lookup, delivery time estimation |
 | [Special Products](./03-special-products.md) | Bundles and CPA+ products |
 | [Posting Requirements](./04-posting-requirements.md) | Product-level posting requirements (specs), facet types, and autocomplete |
+| [Product Recommendations](./05.recommendations.md) | Generate ranked suggestions from partial campaign data and retrieve them through product search |
