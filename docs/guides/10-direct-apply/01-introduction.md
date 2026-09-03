@@ -1,13 +1,26 @@
 ---
+id: direct-apply-introduction
 title: Direct Apply-Introduction
 description: Native apply on job boards-receive structured applications and files via webhook.
 category: guides/direct-apply
 endpoints: []
-prerequisites: [campaign-ordering]
-concepts: [direct_apply, application_method, questionnaire, postback_url, file_delivery_mode]
-related: [direct-apply-posting-requirements, direct-apply-webhooks, direct-apply-feedback]
-audience: [developer, manager]
+prerequisites:
+- campaign-ordering
+concepts:
+- direct_apply
+related:
+- direct-apply-posting-requirements
+- direct-apply-webhooks
+- direct-apply-feedback
+audience:
+- developer
+- manager
 difficulty: beginner
+keywords:
+- application_method
+- questionnaire
+- postback_url
+- file_delivery_mode
 ---
 
 # Direct Apply

@@ -1,13 +1,29 @@
 ---
+id: products-introduction
 title: Products-Introduction
 description: Product types (Job Marketing, My Contract, CPA+, Bundle), pricing, and availability.
 category: guides/products
 endpoints: []
-prerequisites: [authentication, taxonomy]
-concepts: [product, channel, job_marketing, my_contract, bundle, cpa_plus, posting_requirements]
-related: [marketplace, special-products, product-posting-requirements]
-audience: [developer, manager]
+prerequisites:
+- authentication
+- taxonomy
+concepts:
+- product
+- channel
+- bundle
+- cpa_plus
+- posting_requirements
+related:
+- marketplace
+- special-products
+- product-posting-requirements
+audience:
+- developer
+- manager
 difficulty: beginner
+keywords:
+- job_marketing
+- my_contract
 ---
 
 # Products

@@ -1,7 +1,13 @@
 ---
+id: campaign-cancellation-endpoints
 title: Campaign Cancellation - Endpoint Reference
 description: HTTP request/response details for campaign and product cancellation endpoints.
 category: guides/campaigns
+related:
+- campaign-cancellation
+endpoints:
+- PUT /campaigns/{campaignId}/cancellation
+- PUT /campaigns/{campaignId}/product_cancellation
 ---
 
 > For conceptual overview, see [Campaign Cancellation](./cancellation.md).

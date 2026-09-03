@@ -1,13 +1,28 @@
 ---
+id: screening-introduction
 title: Screening-Introduction
 description: AI-powered candidate evaluation via interactive chat-overview, integration patterns, key concepts.
 category: guides/screening
 endpoints: []
-prerequisites: [authentication]
-concepts: [screening, screening_job, application, requirement, dossier, finalization, screening_score]
-related: [screening-jobs-and-applications, screening-webhooks, cpa]
-audience: [developer, manager]
+prerequisites:
+- authentication
+concepts:
+- screening
+related:
+- screening-jobs-and-applications
+- screening-webhooks
+- cpa
+audience:
+- developer
+- manager
 difficulty: beginner
+keywords:
+- screening_job
+- application
+- requirement
+- dossier
+- finalization
+- screening_score
 ---
 
 # Screening
@@ -50,6 +65,7 @@ graph LR
 
 Key behaviors:
 
+- Shortly after job creation, the AI expands your requirements into the final screening set. `requirements_ready_at` marks when the job's `requirements` list is updated to the final version, and an opt-in [job event webhook](./webhooks.md#job-events) can notify you.
 - If a candidate returns to the same `application_url`, they resume from where they left off.
 - `finalization_time_hours` (1–168, default 168 = 7 days) controls when applications expire. An additional buffer accommodates candidates who are mid-conversation when the timer runs out.
 - Requirements are never shown to candidates. The AI uses them internally to guide questions and evaluate answers.

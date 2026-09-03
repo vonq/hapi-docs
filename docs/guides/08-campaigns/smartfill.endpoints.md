@@ -1,7 +1,15 @@
 ---
+id: campaign-smartfill-endpoints
 title: Campaign Smartfill - Endpoint Reference
 description: HTTP request/response details for the Smartfill vacancy fields and product search filter endpoints.
 category: guides/campaigns
+related:
+- campaign-smartfill
+endpoints:
+- POST /v3/smartfill/vacancy-fields/
+- GET /v3/smartfill/vacancy-fields/{task_id}/
+- POST /v3/smartfill/product-search-filters/
+- GET /v3/smartfill/product-search-filters/{task_id}/
 ---
 
 > For conceptual overview, see [Campaign Smartfill](./smartfill.md).

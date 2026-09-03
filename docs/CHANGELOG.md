@@ -1,8 +1,32 @@
+---
+id: changelog
+title: Changelog
+description: Chronological record of public HAPI documentation and API changes.
+category: resources
+---
+
 # Changelog
+
+## 2026-09-01
+### Added
+- `PATCH /v3/screening/jobs/{id}/requirements/` and `PATCH /v3/screening/jobs/{id}/interview-questions/` - reword a job's requirements and interview questions once `requirements_ready_at` is set. Send only the entries you are changing, each with its `id`; omitted entries and fields keep their stored values, so entries cannot be added or removed. Only applications created after the change are assessed against the updated wording. See [Screening-Jobs & Applications](guides/11-screening/jobs-and-applications.md).
+### Changed
+- `requirements[].source` now reads `"customer"` for requirements you edited as well as ones you supplied at job creation; `"ai"` means AI-generated and untouched.
+
+## 2026-08-27
+### Added
+- `notifications` object on `POST /campaigns/order`. Set `notifications.webhookUrl` to override the account-level campaign webhook callback URL for that campaign only. New schema `CampaignNotifications`. See [Campaign Webhooks-Per-Campaign Webhook URL](guides/08-campaigns/webhooks.md#per-campaign-webhook-url).
 
 ## 2026-08-17
 ### Added
 - `ordering_source` on products (`GET /products/search/`, `/products/single/{product_id}/`, `/products/multiple/{products_ids_or_portfolio_id}/`) identifying why a product was promoted to the top of the results: `favorite` (promoted by `injectFavorites`), `top_ordered` (promoted by `injectTopOrdered`), or `null` when the product was not promoted. Use it to label promoted rows without implying they match the search filters. See [Marketplace](guides/05-products/02-marketplace.md).
+
+## 2026-08-11
+### Added
+- Opt-in **job event webhooks** for screening (`type: "job_event"`). First event: `ai_requirements_ready`, sent once the AI finishes expanding a job's screening requirements. See [Screening-Webhooks](guides/11-screening/webhooks.md#job-events).
+- `requirements` (list of `id`, `summary`, `description`, `question`, `source`) and `requirements_ready_at` on `GET /v3/screening/jobs/{id}/`.
+- `interview_questions` (list of `id`, `question`, `requirement_summary`) on `GET /v3/screening/jobs/{id}/` and on the `ai_requirements_ready` job event payload - the questions the AI interview agent asks, available at the same time as the final `requirements`. Empty for jobs where the interview agent is disabled.
+- `requirements_ready` boolean filter on `GET /v3/screening/jobs/`.
 
 ## 2026-07-29
 ### Added

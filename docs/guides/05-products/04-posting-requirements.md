@@ -1,15 +1,27 @@
 ---
+id: product-posting-requirements
 title: Product Posting Requirements
 description: Retrieve and fill channel-specific posting requirements (specs) for Job Marketing products.
 category: guides/products
 endpoints:
-  - GET /products/{product_id}/specs/
-  - POST /products/{product_id}/specs/facets/{facet_name}/options/
-prerequisites: [products-introduction, facets]
-concepts: [posting_requirements, facet, autocomplete, product_specs]
-related: [facets, autocomplete, contract-posting-requirements]
-audience: [developer]
+- GET /products/{product_id}/specs/
+- POST /products/{product_id}/specs/facets/{facet_name}/options/
+prerequisites:
+- products-introduction
+- facets
+concepts:
+- posting_requirements
+- facet
+related:
+- facets
+- autocomplete
+- contract-posting-requirements
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- autocomplete
+- product_specs
 ---
 
 # Product Posting Requirements

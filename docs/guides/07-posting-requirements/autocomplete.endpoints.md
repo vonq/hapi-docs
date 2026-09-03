@@ -1,7 +1,13 @@
 ---
+id: autocomplete-endpoints
 title: Autocomplete & Lazy-Loaded Options - Endpoint Reference
 description: HTTP request/response details for autocomplete endpoints-product options, product data, and contract autocomplete.
 category: guides/posting-requirements
+related:
+- autocomplete
+endpoints:
+- POST /products/{product_id}/specs/facets/{facet_name}/options/
+- POST /contracts/posting-requirements/{channel_id_or_contract_id}/{posting-requirement-name}/
 ---
 
 > For conceptual overview, see [Autocomplete & Lazy-Loaded Options](./autocomplete.md).

@@ -1,16 +1,26 @@
 ---
+id: campaign-validation
 title: Campaign Validation
 description: Validate campaign payload before ordering-validateOnly parameter, validate-campaign endpoint, error formats.
 category: guides/campaigns
 endpoints:
-  - POST /campaigns/order?validateOnly=true
-  - POST /campaigns/validate-campaign/
-  - POST /campaigns/validate-channel-posting/
-prerequisites: [campaign-ordering]
-concepts: [validation, validateOnly, validate_campaign, validate_channel_posting]
-related: [campaign-ordering, posting-requirements-validation]
-audience: [developer]
+- POST /campaigns/order
+- POST /campaigns/validate-vacancy-info/
+- POST /campaigns/validate-campaign/
+- POST /campaigns/validate-channel-posting/
+prerequisites:
+- campaign-ordering
+related:
+- campaign-ordering
+- posting-requirements-validation
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- validation
+- validateOnly
+- validate_campaign
+- validate_channel_posting
 ---
 
 # Validation

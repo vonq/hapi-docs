@@ -1,12 +1,21 @@
 ---
+id: authentication-introduction
 title: Authentication & Users-Introduction
 description: Two authentication methods and two entity levels-overview and decision diagram.
 category: guides/authentication-and-users
 endpoints: []
-prerequisites: [introduction]
-concepts: [ats, ats_user, secret_key, jwt]
-related: [entities, authentication]
-audience: [developer]
+prerequisites:
+- introduction
+concepts:
+- ats
+- ats_user
+- secret_key
+- jwt
+related:
+- entities
+- authentication
+audience:
+- developer
 difficulty: beginner
 ---
 

@@ -1,7 +1,12 @@
 ---
+id: special-products-endpoints
 title: Special Products - Endpoint Reference
 description: Full request/response details for bundle filtering and CPA+ discovery.
 category: guides/products
+related:
+- special-products
+endpoints:
+- GET /products/search/
 ---
 
 > For conceptual overview, see [Special Products](./03-special-products.md).

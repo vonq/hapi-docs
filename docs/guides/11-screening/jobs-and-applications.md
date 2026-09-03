@@ -1,21 +1,36 @@
 ---
+id: screening-jobs-and-applications
 title: Screening-Jobs & Applications
 description: Create screening jobs, submit applications, manage candidates, download dossier PDFs.
 category: guides/screening
 endpoints:
-  - POST /v3/screening/jobs/
-  - GET /v3/screening/jobs/
-  - GET /v3/screening/jobs/{id}/
-  - DELETE /v3/screening/jobs/{id}/
-  - POST /v3/screening/jobs/{job_id}/applications/
-  - GET /v3/screening/jobs/{job_id}/applications/
-  - GET /v3/screening/jobs/{job_id}/applications/{id}/
-  - DELETE /v3/screening/jobs/{job_id}/applications/{id}/
-prerequisites: [screening-introduction]
-concepts: [screening_job, application, dossier, finalization_time_hours, application_status]
-related: [screening-introduction, screening-webhooks]
-audience: [developer]
+- POST /v3/screening/jobs/
+- GET /v3/screening/jobs/
+- GET /v3/screening/jobs/{id}/
+- PATCH /v3/screening/jobs/{id}/requirements/
+- PATCH /v3/screening/jobs/{id}/interview-questions/
+- DELETE /v3/screening/jobs/{id}/
+- POST /v3/screening/jobs/{job_id}/applications/
+- GET /v3/screening/jobs/{job_id}/applications/
+- GET /v3/screening/jobs/{job_id}/applications/{id}/
+- DELETE /v3/screening/jobs/{job_id}/applications/{id}/
+- GET /v3/screening/jobs/{job_id}/applications/{id}/attachments/
+- GET /v3/screening/jobs/{job_id}/applications/{id}/attachments/{file_type}/
+prerequisites:
+- screening-introduction
+related:
+- screening-introduction
+- screening-webhooks
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- screening_job
+- application
+- interview_question
+- dossier
+- finalization_time_hours
+- application_status
 ---
 
 # Jobs & Applications
@@ -24,7 +39,7 @@ difficulty: intermediate
 
 ## Overview
 
-A **screening job** defines what you are hiring for-the title, description, company info, and evaluation requirements. Once created, a job is immutable: you cannot update it, only soft-delete it.
+A **screening job** defines what you are hiring for-the title, description, company info, and evaluation requirements. The job's own content is fixed once created: you cannot change the title, description or company, only soft-delete the job. The wording of its requirements and interview questions _can_ be edited once the AI has finished preparing them.
 
 An **application** represents a single candidate screening session tied to a job. You submit the candidate's contact details and resume, the candidate completes the screening flow, and HAPI returns an enriched dossier with scores and parsed data.
 
@@ -33,6 +48,9 @@ For background on how screening fits into HAPI, see [Screening-Introduction](./0
 ## Key Concepts
 
 - **Requirements**-criteria the AI uses to evaluate candidates. Requirements are _not_ shown to candidates. Each requirement has a `question` (required) and optional `summary` and `description`.
+- **Screening requirements**-shortly after job creation, the AI expands your requirements into the final set (it may add AI-generated requirements). Once ready, `requirements_ready_at` is set and the job's `requirements` list is updated to the final version. Opt-in [job event webhooks](./webhooks.md#job-events) can notify you when this happens.
+- **Editing questions**-once `requirements_ready_at` is set, you can reword the requirements and interview questions to be more specific, stricter, or to fix a typo. Send only the entries you are changing, each with its `id`; omitted entries and omitted fields are left untouched, so entries cannot be added or removed. Only applications created after the change are assessed against the updated wording-candidates who already went through screening are not re-assessed.
+- **Interview questions**-the questions the AI interview agent asks during the screening conversation. They are generated from your requirements and become available on the job at the same time as the final `requirements`, in the job's `interview_questions` list. Jobs with the interview agent disabled return an empty list.
 - **Finalization**-the point at which screening completes and the dossier becomes available. Controlled by `finalization_time_hours` (default: 168 hours / 7 days).
 - **Dossier**-the enriched candidate profile available after successful screening. Includes `screened_payload` (same shape as `initial_payload`, enriched) and `screened_files`.
 - **Attachments**-optional files submitted with an application (e.g. resume, cover letter). Accepted extensions: `.pdf`, `.docx`, `.jpg`, `.jpeg`, `.png`, `.txt`. Upload directly via `multipart/form-data` (`files`) or reference remote URLs via JSON (`remote_files`, 10 MB / 10-second download limit). Every entry in `initial_payload.attachments` must correspond to an uploaded or remote file, and vice versa.
@@ -44,8 +62,10 @@ For background on how screening fits into HAPI, see [Screening-Introduction](./0
 | Endpoint | Description |
 |----------|-------------|
 | `POST /v3/screening/jobs/` | Create a screening job with title, description, company info, requirements, and settings |
-| `GET /v3/screening/jobs/` | List screening jobs (paginated) |
-| `GET /v3/screening/jobs/{id}/` | Retrieve full job details including `data`, `requirements`, and `settings` |
+| `GET /v3/screening/jobs/` | List screening jobs (paginated), filterable by `status` and `requirements_ready` |
+| `GET /v3/screening/jobs/{id}/` | Retrieve full job details including `data`, `requirements`, `interview_questions`, and `settings` |
+| `PATCH /v3/screening/jobs/{id}/requirements/` | Edit the wording of the job's requirements |
+| `PATCH /v3/screening/jobs/{id}/interview-questions/` | Edit the wording of the job's interview questions |
 | `DELETE /v3/screening/jobs/{id}/` | Soft-delete a screening job |
 | `POST /v3/screening/jobs/{job_id}/applications/` | Create a candidate screening application (supports multipart upload or remote file URLs) |
 | `GET /v3/screening/jobs/{job_id}/applications/` | List applications with filtering by `status`, `screened_stage`, `is_external_application`, and sorting |

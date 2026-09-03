@@ -1,17 +1,31 @@
 ---
+id: marketplace
 title: Marketplace
 description: Search, filter, and retrieve product details-product search endpoint, single/multiple lookup, delivery time.
 category: guides/products
 endpoints:
-  - GET /products/search/
-  - GET /products/single/{product_id}/
-  - GET /products/multiple/{products_ids_or_portfolio_id}/
-  - GET /products/delivery-time/{products_ids}/
-prerequisites: [products-introduction, taxonomy]
-concepts: [product, marketplace, product_search, delivery_time]
-related: [products-introduction, special-products, product-favorites, product-recommendations, taxonomy]
-audience: [developer]
+- GET /products/search/
+- GET /products/single/{product_id}/
+- GET /products/multiple/{products_ids_or_portfolio_id}/
+- GET /products/delivery-time/{products_ids}/
+prerequisites:
+- products-introduction
+- taxonomy
+concepts:
+- product
+related:
+- products-introduction
+- special-products
+- product-favorites
+- product-recommendations
+- taxonomy
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- marketplace
+- product_search
+- delivery_time
 ---
 
 # Marketplace

@@ -1,15 +1,24 @@
 ---
+id: posting-requirements-smartfill
 title: Smartfill
 description: AI-powered autofill for posting requirements-async create-then-poll pattern.
 category: guides/posting-requirements
 endpoints:
-  - POST /v3/smartfill/posting-requirements/
-  - GET /v3/smartfill/posting-requirements/{task_id}/
-prerequisites: [facets]
-concepts: [smartfill, ai_suggestions, async_polling]
-related: [facets, campaign-smartfill]
-audience: [developer]
+- POST /v3/smartfill/posting-requirements/
+- GET /v3/smartfill/posting-requirements/{task_id}/
+prerequisites:
+- facets
+concepts:
+- smartfill
+related:
+- facets
+- campaign-smartfill
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- ai_suggestions
+- async_polling
 ---
 
 # Smartfill

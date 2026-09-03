@@ -1,14 +1,27 @@
 ---
+id: mixed-campaign
 title: Scenario-Mixed Campaign
 description: Combining Job Marketing and Job Post products in a single campaign order.
 category: guides/scenarios
 endpoints:
-  - POST /campaigns/order
-prerequisites: [job-marketing-ordering, job-post-campaign]
-concepts: [campaign, orderedProducts, orderedProductsSpecs, mixed_campaign]
-related: [job-marketing-ordering, job-post-campaign, campaign-ordering, contract-ordering]
-audience: [developer]
+- POST /campaigns/order
+prerequisites:
+- job-marketing-ordering
+- job-post-campaign
+concepts:
+- campaign
+related:
+- job-marketing-ordering
+- job-post-campaign
+- campaign-ordering
+- contract-ordering
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- orderedProducts
+- orderedProductsSpecs
+- mixed_campaign
 ---
 
 # Mixed Campaign

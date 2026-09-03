@@ -1,13 +1,27 @@
 ---
+id: posting-requirements-introduction
 title: Posting Requirements-Introduction
 description: Overview of channel-specific fields (facets), how they work for products and contracts.
 category: guides/posting-requirements
 endpoints: []
-prerequisites: [products-introduction]
-concepts: [posting_requirements, facet, autocomplete, display_rules, validation_rules, smartfill]
-related: [facets, autocomplete, validation, smartfill]
-audience: [developer]
+prerequisites:
+- products-introduction
+concepts:
+- posting_requirements
+- facet
+- display_rules
+- smartfill
+related:
+- facets
+- autocomplete
+- posting-requirements-validation
+- posting-requirements-smartfill
+audience:
+- developer
 difficulty: beginner
+keywords:
+- autocomplete
+- validation_rules
 ---
 
 # Posting Requirements

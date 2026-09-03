@@ -1,7 +1,15 @@
 ---
+id: marketplace-endpoints
 title: Marketplace - Endpoint Reference
 description: Full request/response details for the HAPI marketplace product endpoints.
 category: guides/products
+related:
+- marketplace
+endpoints:
+- GET /products/search/
+- GET /products/single/{product_id}/
+- GET /products/multiple/{products_ids_or_portfolio_id}/
+- GET /products/delivery-time/{products_ids}/
 ---
 
 > For conceptual overview, see [Marketplace](./02-marketplace.md).

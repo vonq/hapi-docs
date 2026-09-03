@@ -1,13 +1,24 @@
 ---
+id: campaign-cpa
 title: CPA+ in Campaigns
 description: CPA+ product-specific details within the campaigns context-orderedCpa, cpaResults.
 category: guides/campaigns
 endpoints: []
-prerequisites: [campaign-ordering]
-concepts: [cpa_plus, orderedCpa, cpaResults, hiring_goal]
-related: [cpa, campaign-ordering, campaign-status]
-audience: [developer]
+prerequisites:
+- campaign-ordering
+concepts:
+- cpa_plus
+related:
+- cpa
+- campaign-ordering
+- campaign-status
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- orderedCpa
+- cpaResults
+- hiring_goal
 ---
 
 # CPA+ in Campaigns

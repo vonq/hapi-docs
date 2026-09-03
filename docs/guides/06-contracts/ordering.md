@@ -1,14 +1,27 @@
 ---
+id: contract-ordering
 title: Ordering with Contracts
 description: How to use My Contract products in campaign orders-contractId, postingRequirements, mixing JM and JP.
 category: guides/contracts
 endpoints:
-  - POST /campaigns/order
-prerequisites: [managing-contracts, campaign-ordering]
-concepts: [contract, orderedProductsSpecs, contractId, postingRequirements, utm]
-related: [campaign-ordering, contract-posting-requirements, managing-contracts]
-audience: [developer]
+- POST /campaigns/order
+prerequisites:
+- managing-contracts
+- campaign-ordering
+concepts:
+- contract
+related:
+- campaign-ordering
+- contract-posting-requirements
+- managing-contracts
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- orderedProductsSpecs
+- contractId
+- postingRequirements
+- utm
 ---
 
 # Ordering with Contracts

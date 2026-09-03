@@ -1,7 +1,14 @@
 ---
+id: cpa-endpoints
 title: CPA+ - Endpoint Reference
 description: Full request/response details for CPA+ polling endpoints-list applications, retrieve an application, download attachments.
 category: guides/cpa
+related:
+- cpa
+endpoints:
+- GET /v3/cpacampaigns/{hapi_campaign_id}/applications/
+- GET /v3/cpacampaigns/{hapi_campaign_id}/applications/{application_id}/
+- GET /v3/cpacampaigns/{hapi_campaign_id}/applications/{application_id}/attachment/
 ---
 
 > For conceptual overview, see [CPA+](./09-cpa.md).

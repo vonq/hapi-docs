@@ -1,16 +1,29 @@
 ---
+id: cpa
 title: CPA+
 description: AI-powered, performance-based hiring-pay per pre-screened candidate. Applications, dossiers, polling and webhook delivery.
 category: guides/cpa
 endpoints:
-  - GET /v3/cpacampaigns/{hapi_campaign_id}/applications/
-  - GET /v3/cpacampaigns/{hapi_campaign_id}/applications/{application_id}/
-  - GET /v3/cpacampaigns/{hapi_campaign_id}/applications/{application_id}/attachment/
-prerequisites: [campaign-ordering]
-concepts: [cpa_plus, hiring_goal, dossier, reviewed, cpaResults]
-related: [campaign-ordering, direct-apply-webhooks, screening]
-audience: [developer, manager]
+- GET /v3/cpacampaigns/{hapi_campaign_id}/applications/
+- GET /v3/cpacampaigns/{hapi_campaign_id}/applications/{application_id}/
+- GET /v3/cpacampaigns/{hapi_campaign_id}/applications/{application_id}/attachment/
+prerequisites:
+- campaign-ordering
+concepts:
+- cpa_plus
+related:
+- campaign-ordering
+- direct-apply-webhooks
+- screening-introduction
+audience:
+- developer
+- manager
 difficulty: intermediate
+keywords:
+- hiring_goal
+- dossier
+- reviewed
+- cpaResults
 ---
 
 # CPA+

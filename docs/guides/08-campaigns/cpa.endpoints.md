@@ -1,7 +1,12 @@
 ---
+id: campaign-cpa-endpoints
 title: CPA+ in Campaigns - Endpoint Reference
 description: JSON response examples for CPA+ fields in campaign responses-orderedCpa and cpaResults.
 category: guides/campaigns
+related:
+- campaign-cpa
+endpoints:
+- GET /campaigns/{campaignId}
 ---
 
 > For conceptual overview, see [CPA+ in Campaigns](./cpa.md).

@@ -1,17 +1,33 @@
 ---
+id: screening-scenario
 title: Scenario-Screening
 description: End-to-end walkthrough-create a screening job, collect candidate data, submit applications, receive AI-scored dossiers.
 category: guides/scenarios
 endpoints:
-  - POST /v3/screening/jobs/
-  - POST /v3/screening/jobs/{job_id}/applications/
-  - GET /v3/screening/jobs/{job_id}/applications/{id}/
-  - GET /v3/screening/jobs/{job_id}/applications/{id}/attachments/
-prerequisites: [authentication, screening-introduction]
-concepts: [screening, screening_job, application, requirement, dossier, finalization, application_url, finalization_time_hours]
-related: [screening-introduction, screening-jobs-and-applications, screening-webhooks]
-audience: [developer]
+- POST /v3/screening/jobs/
+- POST /v3/screening/jobs/{job_id}/applications/
+- GET /v3/screening/jobs/{job_id}/applications/{id}/
+- GET /v3/screening/jobs/{job_id}/applications/{id}/attachments/
+prerequisites:
+- authentication
+- screening-introduction
+concepts:
+- screening
+related:
+- screening-introduction
+- screening-jobs-and-applications
+- screening-webhooks
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- screening_job
+- application
+- requirement
+- dossier
+- finalization
+- application_url
+- finalization_time_hours
 ---
 
 # Screening

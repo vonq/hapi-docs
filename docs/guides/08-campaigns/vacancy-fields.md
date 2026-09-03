@@ -1,13 +1,26 @@
 ---
+id: vacancy-fields
 title: Vacancy Fields
 description: Job-level fields-recruiterInfo, postingDetails, targetGroup. Field reference with types and constraints.
 category: guides/campaigns
 endpoints: []
-prerequisites: [campaigns-introduction, taxonomy]
-concepts: [vacancy_fields, recruiterInfo, postingDetails, targetGroup, workingLocation, salaryIndication]
-related: [campaign-ordering, taxonomy]
-audience: [developer]
+prerequisites:
+- campaigns-introduction
+- taxonomy
+concepts:
+- vacancy_fields
+related:
+- campaign-ordering
+- taxonomy
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- recruiterInfo
+- postingDetails
+- targetGroup
+- workingLocation
+- salaryIndication
 ---
 
 # Vacancy Fields

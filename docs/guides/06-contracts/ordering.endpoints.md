@@ -1,7 +1,13 @@
 ---
+id: contract-ordering-endpoints
 title: Ordering with Contracts - Endpoint Reference
 description: Full request/response examples for ordering campaigns with My Contract products.
 category: guides/contracts
+related:
+- contract-ordering
+endpoints:
+- GET /contracts/single/{contract_id}/
+- POST /campaigns/order
 ---
 
 > For conceptual overview, see [Ordering with Contracts](./ordering.md).

@@ -1,7 +1,11 @@
 ---
+id: campaign-webhooks-endpoints
 title: Campaign Webhooks - Endpoint Reference
 description: Webhook notification payload structure and endpoint requirements for campaign status webhooks.
 category: guides/campaigns
+related:
+- campaign-webhooks
+endpoints: []
 ---
 
 > For conceptual overview, see [Campaign Webhooks](./webhooks.md).

@@ -1,13 +1,28 @@
 ---
+id: contracts-introduction
 title: Contracts-Introduction
 description: What contracts are, how they connect your job board accounts to VONQ for My Contract ordering.
 category: guides/contracts
 endpoints: []
-prerequisites: [authentication, products-introduction]
-concepts: [contract, channel, mc_enabled, mc_only, contract_group, credential_validation]
-related: [managing-contracts, contract-ordering, contract-posting-requirements]
-audience: [developer, manager]
+prerequisites:
+- authentication
+- products-introduction
+concepts:
+- contract
+- channel
+- contract_group
+related:
+- managing-contracts
+- contract-ordering
+- contract-posting-requirements
+audience:
+- developer
+- manager
 difficulty: beginner
+keywords:
+- mc_enabled
+- mc_only
+- credential_validation
 ---
 
 # Contracts

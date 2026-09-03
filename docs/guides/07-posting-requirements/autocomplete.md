@@ -1,15 +1,25 @@
 ---
+id: autocomplete
 title: Autocomplete
 description: Dynamic options for posting requirement facets-parameter sources, dependent facets, multi-term search, lazy-loaded options.
 category: guides/posting-requirements
 endpoints:
-  - POST /products/{product_id}/specs/facets/{facet_name}/options/
-  - POST /contracts/posting-requirements/{channel_id_or_contract_id}/{posting-requirement-name}/
-prerequisites: [facets]
-concepts: [autocomplete, parameter_sources, dependent_facets, lazy_loaded_options]
-related: [facets, product-posting-requirements, contract-posting-requirements]
-audience: [developer]
+- POST /products/{product_id}/specs/facets/{facet_name}/options/
+- POST /contracts/posting-requirements/{channel_id_or_contract_id}/{posting-requirement-name}/
+prerequisites:
+- facets
+related:
+- facets
+- product-posting-requirements
+- contract-posting-requirements
+audience:
+- developer
 difficulty: advanced
+keywords:
+- autocomplete
+- parameter_sources
+- dependent_facets
+- lazy_loaded_options
 ---
 
 # Autocomplete & Lazy-Loaded Options

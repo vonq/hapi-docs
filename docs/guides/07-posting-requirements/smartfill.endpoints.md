@@ -1,7 +1,13 @@
 ---
+id: posting-requirements-smartfill-endpoints
 title: Smartfill - Endpoint Reference
 description: HTTP request/response details for the Smartfill posting requirements endpoints-create task and poll for results.
 category: guides/posting-requirements
+related:
+- posting-requirements-smartfill
+endpoints:
+- POST /v3/smartfill/posting-requirements/
+- GET /v3/smartfill/posting-requirements/{task_id}/
 ---
 
 > For conceptual overview, see [Smartfill](./smartfill.md).

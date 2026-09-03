@@ -1,7 +1,15 @@
 ---
+id: authentication-endpoints
 title: Authentication - Endpoint Reference
 description: Full request/response details for authentication endpoints.
 category: guides/authentication-and-users
+related:
+- authentication
+endpoints:
+- POST /v3/ats/users/{customer_id}/generate-jwt-token/
+- GET /v3/ats/atsuser/me/
+- GET /v3/ats/ats/me/
+- GET /v3/ats/atsuser/me/settings/
 ---
 
 > For conceptual overview, see [Authentication](./authentication.md).

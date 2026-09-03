@@ -1,12 +1,19 @@
 ---
+id: campaign-bundles
 title: Bundles in Campaigns
 description: How bundles are ordered and appear in campaign responses-ordered as one, split into individual products.
 category: guides/campaigns
 endpoints: []
-prerequisites: [campaign-ordering, special-products]
-concepts: [bundle]
-related: [special-products, campaign-ordering]
-audience: [developer]
+prerequisites:
+- campaign-ordering
+- special-products
+concepts:
+- bundle
+related:
+- special-products
+- campaign-ordering
+audience:
+- developer
 difficulty: beginner
 ---
 

@@ -1,13 +1,30 @@
 ---
+id: campaigns-introduction
 title: Campaigns-Introduction
 description: Campaign types (JM, JP, Mixed), lifecycle (in progress → online → offline), and key concepts.
 category: guides/campaigns
 endpoints: []
-prerequisites: [authentication, products-introduction]
-concepts: [campaign, job_marketing, job_post, mixed, campaign_lifecycle, labels, editability]
-related: [vacancy-fields, campaign-validation, campaign-ordering, campaign-status]
-audience: [developer, manager]
+prerequisites:
+- authentication
+- products-introduction
+concepts:
+- campaign
+related:
+- vacancy-fields
+- campaign-validation
+- campaign-ordering
+- campaign-status
+audience:
+- developer
+- manager
 difficulty: beginner
+keywords:
+- job_marketing
+- job_post
+- mixed
+- campaign_lifecycle
+- labels
+- editability
 ---
 
 # Campaigns

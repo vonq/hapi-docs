@@ -1,13 +1,26 @@
 ---
+id: direct-apply-feedback
 title: Direct Apply-Feedback
 description: Sending application status updates back to job boards-statuses, endpoint, and timing.
 category: guides/direct-apply
-endpoints: []
-prerequisites: [direct-apply-webhooks]
-concepts: [application_feedback, delivered, qualified, cancelled, closed_rejected, closed_hired]
-related: [direct-apply-introduction, direct-apply-webhooks, direct-apply-posting-requirements]
-audience: [developer]
+endpoints:
+- POST /v3/apply-applications/application-feedback/
+prerequisites:
+- direct-apply-webhooks
+related:
+- direct-apply-introduction
+- direct-apply-webhooks
+- direct-apply-posting-requirements
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- application_feedback
+- delivered
+- qualified
+- cancelled
+- closed_rejected
+- closed_hired
 ---
 
 # Application Feedback

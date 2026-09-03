@@ -1,13 +1,23 @@
 ---
+id: contract-notes
 title: Contract Caveats & Notes
 description: OAuth credentials, deletion risks, credential validation, setup instructions, and channel-specific edge cases.
 category: guides/contracts
 endpoints: []
-prerequisites: [managing-contracts]
-concepts: [oauth, credential_validation, credential_masking, feed_url, followed_instructions]
-related: [managing-contracts, contract-ordering]
-audience: [developer]
+prerequisites:
+- managing-contracts
+related:
+- managing-contracts
+- contract-ordering
+audience:
+- developer
 difficulty: advanced
+keywords:
+- oauth
+- credential_validation
+- credential_masking
+- feed_url
+- followed_instructions
 ---
 
 # Contract Caveats & Channel-Specific Notes

@@ -1,18 +1,32 @@
 ---
+id: contract-setup
 title: Scenario-Setting Up a Contract
 description: End-to-end walkthrough-find a channel, check credentials, handle OAuth, create a contract, and verify it.
 category: guides/scenarios
 endpoints:
-  - GET /products/channels/mocs/
-  - GET /products/channels/mocs/{id}/
-  - POST /contracts/
-  - GET /contracts/single/{contract_id}/
-  - GET /contracts/
-prerequisites: [contracts-introduction, managing-contracts]
-concepts: [contract, channel, moc, contract_credentials, credential_validation, oauth_credentials]
-related: [managing-contracts, contract-ordering, contract-notes]
-audience: [developer]
+- GET /products/channels/mocs/
+- GET /products/channels/mocs/{id}/
+- POST /contracts/
+- GET /contracts/single/{contract_id}/
+- GET /contracts/
+prerequisites:
+- contracts-introduction
+- managing-contracts
+concepts:
+- contract
+- channel
+related:
+- managing-contracts
+- contract-ordering
+- contract-notes
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- moc
+- contract_credentials
+- credential_validation
+- oauth_credentials
 ---
 
 # Setting Up a Contract

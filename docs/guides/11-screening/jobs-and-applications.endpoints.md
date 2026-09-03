@@ -1,7 +1,21 @@
 ---
+id: screening-jobs-and-applications-endpoints
 title: Screening-Jobs & Applications - Endpoint Reference
 description: Full request/response details for all screening job and application endpoints.
 category: guides/screening
+related:
+- screening-jobs-and-applications
+endpoints:
+- POST /v3/screening/jobs/
+- GET /v3/screening/jobs/
+- GET /v3/screening/jobs/{id}/
+- DELETE /v3/screening/jobs/{id}/
+- POST /v3/screening/jobs/{job_id}/applications/
+- GET /v3/screening/jobs/{job_id}/applications/
+- GET /v3/screening/jobs/{job_id}/applications/{id}/
+- DELETE /v3/screening/jobs/{job_id}/applications/{id}/
+- GET /v3/screening/jobs/{job_id}/applications/{id}/attachments/
+- GET /v3/screening/jobs/{job_id}/applications/{id}/attachments/{file_type}/
 ---
 
 > For conceptual overview, see [Screening-Jobs & Applications](./jobs-and-applications.md).
@@ -87,6 +101,7 @@ Content-Type: application/json
 | `company_name` | string | Company name |
 | `company_logo_url` | string | Company logo URL as provided in `data.company.logo_url` |
 | `stats` | object | Application statistics breakdown (see below) |
+| `requirements_ready_at` | string \| null | ISO 8601 timestamp when the screening requirements became final. `null` means not yet ready (typically within a few minutes of creation), or the job predates this field. |
 | `created_on` | string | ISO 8601 timestamp |
 | `modified_on` | string | ISO 8601 timestamp |
 
@@ -128,6 +143,7 @@ The `stats` object provides a breakdown of application counts:
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `status` | string | Filter by job status: `created` or `deleted` |
+| `requirements_ready` | boolean | Filter by whether the screening requirements are ready (`true` = `requirements_ready_at` is set) |
 | `limit` | integer | Results per page (default: 25) |
 | `offset` | integer | Starting index for pagination (default: 0) |
 
@@ -153,6 +169,7 @@ The response uses `limit`/`offset` pagination with a default page size of 25:
       "company_name": "Acme Corp",
       "company_logo_url": "https://example.com/logo.png",
       "stats": {},
+      "requirements_ready_at": "2025-03-01T10:05:00Z",
       "created_on": "2025-03-01T10:00:00Z",
       "modified_on": "2025-03-01T10:00:00Z"
     }
@@ -165,7 +182,7 @@ The response uses `limit`/`offset` pagination with a default page size of 25:
 ### GET /v3/screening/jobs/{id}/
 
 - **Auth**: token or JWT
-- **Description**: Retrieve full details of a screening job, including `data`, `requirements`, and `settings`.
+- **Description**: Retrieve full details of a screening job, including `data`, `requirements`, `interview_questions`, and `settings`.
 
 ```http
 GET https://marketplace.api.vonq.com/v3/screening/jobs/a1b2c3d4-e5f6-7890-abcd-ef1234567890/ HTTP/1.1
@@ -173,11 +190,135 @@ X-Auth-Token: <your Partner token here>
 X-Customer-Id: <customer-id>
 ```
 
+In addition to all list-response fields, the details response includes the job's `data`, `requirements`, `interview_questions`, `settings`, and `metadata`.
+
+The `requirements` list evolves with the job: it starts as the requirements you supplied at creation (each assigned a stable unique `id`), and once the requirements are ready it is updated to the final screening list-your requirements enriched by the AI, plus any AI-generated ones (`source: "ai"`).
+
+**`requirements` fields**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `requirements[].id` | integer \| null | Stable unique id of the requirement, assigned at job creation |
+| `requirements[].summary` | string \| null | Short label |
+| `requirements[].description` | string \| null | Detailed context |
+| `requirements[].question` | string \| null | Question the AI evaluates against |
+| `requirements[].source` | string | `"customer"` if you supplied the requirement at job creation or have since edited it, `"ai"` if it was AI-generated and untouched |
+
+The `interview_questions` list holds the questions the AI interview agent asks during the screening conversation. They are generated from the job's requirements and appear at the same time as the final `requirements`. The list is empty until then, and stays empty for jobs where the interview agent is disabled.
+
+**`interview_questions` fields**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `interview_questions[].id` | integer \| null | Stable unique id of the interview question |
+| `interview_questions[].question` | string \| null | The question the interview agent asks |
+| `interview_questions[].requirement_summary` | string \| null | `summary` of the requirement this question assesses |
+
 **Errors**
 
 | Status | Cause |
 |--------|-------|
 | `404` | Job not found or belongs to a different customer |
+
+---
+
+### PATCH /v3/screening/jobs/{id}/requirements/
+
+- **Auth**: token or JWT
+- **Description**: Reword the job's requirements.
+- **Success**: `200 OK` - returns the full job, same shape as the retrieve endpoint.
+
+Send only the entries you are changing, each with its `id`. An omitted entry is left alone and an omitted field keeps its stored value, so entries cannot be added or removed. Available once `requirements_ready_at` is set.
+
+**Body Parameters**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `requirements` | array | Yes | The requirements you are changing, max 50 |
+| `requirements[].id` | integer | Yes | Id of an existing requirement on this job |
+| `requirements[].summary` | string | No | Short label (max 255, must be unique within the job) |
+| `requirements[].description` | string | No | Detailed context for the AI (max 1,000) |
+| `requirements[].question` | string | No | Question the AI evaluates against (max 1,000) |
+
+At least one of `summary`, `description` or `question` is required per entry.
+
+```http
+PATCH https://marketplace.api.vonq.com/v3/screening/jobs/a1b2c3d4-e5f6-7890-abcd-ef1234567890/requirements/ HTTP/1.1
+X-Auth-Token: <your Partner token here>
+X-Customer-Id: <customer-id>
+Content-Type: application/json
+```
+
+```json
+{
+  "requirements": [
+    {
+      "id": 22524,
+      "question": "Do you confirm you have production experience with Python 3.11?"
+    }
+  ]
+}
+```
+
+**Notes**
+
+- Editing an AI-generated requirement makes it yours: its `source` becomes `"customer"`.
+- Only applications created after the change are assessed against the updated wording. Candidates who already completed screening are not re-assessed.
+- Renaming a requirement's `summary` also relinks the interview questions generated from it.
+- Sending wording identical to what is stored is a no-op; nothing is sent upstream.
+- If one entry fails to save, the entries saved before it are kept and the request returns `400`. Re-send the remaining edits to retry.
+
+**Errors**
+
+| Status | Cause |
+|--------|-------|
+| `400` | Unknown `id`, an entry with no editable field, a duplicate `summary`, or the change could not be saved |
+| `404` | Job not found or belongs to a different customer |
+| `409` | The job is not `created`, or its questions are not ready yet |
+
+---
+
+### PATCH /v3/screening/jobs/{id}/interview-questions/
+
+- **Auth**: token or JWT
+- **Description**: Reword the job's interview questions.
+- **Success**: `200 OK` - returns the full job, same shape as the retrieve endpoint.
+
+Same rules as the requirements endpoint: send only the questions you are changing, each with its `id`.
+
+**Body Parameters**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `interview_questions` | array | Yes | The interview questions you are changing |
+| `interview_questions[].id` | integer | Yes | Id of an existing interview question on this job |
+| `interview_questions[].question` | string | Yes | The question the interview agent asks (max 2,000) |
+
+```http
+PATCH https://marketplace.api.vonq.com/v3/screening/jobs/a1b2c3d4-e5f6-7890-abcd-ef1234567890/interview-questions/ HTTP/1.1
+X-Auth-Token: <your Partner token here>
+X-Customer-Id: <customer-id>
+Content-Type: application/json
+```
+
+```json
+{
+  "interview_questions": [
+    {
+      "id": 84120,
+      "question": "Walk me through a Python service you designed and shipped end to end."
+    }
+  ]
+}
+```
+
+**Errors**
+
+| Status | Cause |
+|--------|-------|
+| `400` | Unknown `id`, or the change could not be saved |
+| `404` | Job not found or belongs to a different customer |
+| `409` | The job is not `created`, or its questions are not ready yet |
 
 ---
 

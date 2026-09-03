@@ -1,12 +1,14 @@
 ---
+id: scenarios-introduction
 title: Scenarios-Introduction
 description: End-to-end walkthroughs showing how to accomplish common tasks with the VONQ Hiring API.
 category: guides/scenarios
 endpoints: []
-prerequisites: [authentication]
-concepts: []
+prerequisites:
+- authentication
 related: []
-audience: [developer]
+audience:
+- developer
 difficulty: beginner
 ---
 

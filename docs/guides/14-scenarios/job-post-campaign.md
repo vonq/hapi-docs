@@ -1,20 +1,41 @@
 ---
+id: job-post-campaign
 title: Scenario-Job Post Campaign
 description: End-to-end walkthrough-find a channel, use a contract, collect posting requirements, validate, and order a Job Post campaign.
 category: guides/scenarios
 endpoints:
-  - GET /products/channels/mocs/
-  - GET /contracts/
-  - GET /contracts/single/{contract_id}/
-  - POST /contracts/posting-requirements/{channel_id_or_contract_id}/{posting-requirement-name}/
-  - POST /campaigns/validate-channel-posting/
-  - POST /campaigns/order
-  - GET /campaigns/{campaignId}
-prerequisites: [authentication, contracts-introduction, managing-contracts, campaigns-introduction]
-concepts: [contract, moc, posting_requirements, facets, orderedProductsSpecs, contractId, productId, validate_channel_posting]
-related: [contract-setup, job-marketing-ordering, contract-ordering, contract-posting-requirements, campaign-ordering, facets-display-rules]
-audience: [developer]
+- GET /products/channels/mocs/
+- GET /contracts/
+- GET /contracts/single/{contract_id}/
+- POST /contracts/posting-requirements/{channel_id_or_contract_id}/{posting-requirement-name}/
+- POST /campaigns/validate-channel-posting/
+- POST /campaigns/order
+- GET /campaigns/{campaignId}
+prerequisites:
+- authentication
+- contracts-introduction
+- managing-contracts
+- campaigns-introduction
+concepts:
+- contract
+- posting_requirements
+related:
+- contract-setup
+- job-marketing-ordering
+- contract-ordering
+- contract-posting-requirements
+- campaign-ordering
+- facets-display-rules
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- moc
+- facets
+- orderedProductsSpecs
+- contractId
+- productId
+- validate_channel_posting
 ---
 
 # Job Post Campaign

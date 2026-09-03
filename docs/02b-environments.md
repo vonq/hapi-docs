@@ -1,13 +1,25 @@
 ---
+id: environments
 title: Environments
 description: Production vs Sandbox-base URLs, separate provisioning, what sandbox does and does not do, and how to test campaign lifecycles without real deliveries.
 category: getting-started
 endpoints: []
-prerequisites: [introduction, api-overview]
-concepts: [sandbox, production, environments, provisioning, status_simulation]
-related: [api-overview, authentication, campaign-status]
-audience: [developer]
+prerequisites:
+- introduction
+- api-overview
+related:
+- api-overview
+- authentication
+- campaign-status
+audience:
+- developer
 difficulty: beginner
+keywords:
+- sandbox
+- production
+- environments
+- provisioning
+- status_simulation
 ---
 
 # Environments

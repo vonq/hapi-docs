@@ -1,15 +1,21 @@
 ---
+id: campaign-cancellation
 title: Campaign Cancellation
 description: Cancel entire campaigns or individual products.
 category: guides/campaigns
 endpoints:
-  - PUT /campaigns/{campaignId}/cancellation
-  - PUT /campaigns/{campaignId}/product_cancellation
-prerequisites: [campaign-status]
-concepts: [cancellation]
-related: [campaign-status, campaign-editing]
-audience: [developer]
+- PUT /campaigns/{campaignId}/cancellation
+- PUT /campaigns/{campaignId}/product_cancellation
+prerequisites:
+- campaign-status
+related:
+- campaign-status
+- campaign-editing
+audience:
+- developer
 difficulty: beginner
+keywords:
+- cancellation
 ---
 
 # Cancellation

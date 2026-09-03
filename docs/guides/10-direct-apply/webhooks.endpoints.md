@@ -1,7 +1,11 @@
 ---
+id: direct-apply-webhooks-endpoints
 title: Direct Apply-Webhooks - Endpoint Reference
 description: Full payload structure, file delivery mode examples, and CPA+ webhook format for Direct Apply webhooks.
 category: guides/direct-apply
+related:
+- direct-apply-webhooks
+endpoints: []
 ---
 
 > For conceptual overview, see [Direct Apply-Webhooks](./webhooks.md).
@@ -95,6 +99,12 @@ Question `type` values are delivered exactly as defined at ordering time - HAPI 
 | `text` | Free-text answer |
 | `choice` | Single-select-one answer |
 | `multi-choice` | Multi-select-one or more answers |
+| `date` | ISO 8601 datetime with timezone, e.g. `2026-10-01T00:00:00+00:00` |
+| `file` | The `filename` of an entry in `attachments` (its `comments` carries the question `id`) |
+| `int` | Whole number, delivered as a string, e.g. `"8"`. Some boards send `integer`; treat both the same. |
+| `float` | Decimal number with a dot, delivered as a string, e.g. `"32.5"` |
+
+`date`, `file`, `int` and `float` answers are validated before delivery; applications with malformed answers are rejected at the job board side.
 
 Each question object in the webhook:
 
@@ -102,8 +112,8 @@ Each question object in the webhook:
 |-------|------|-------------|
 | `question` | string | The question text shown to the candidate |
 | `id` | string | The question ID you defined when creating the questionnaire |
-| `type` | string | Forwarded verbatim from the job board - normally `text`, `choice`, or `multi-choice`. Treat as an open string, not a closed enum. |
-| `answers` | array | Candidate's answers. Each has `answer` (text) and optionally `id` (matching the option ID you defined) |
+| `type` | string | Forwarded verbatim from the job board - normally one of the types above. Treat as an open string, not a closed enum. |
+| `answers` | array | Candidate's answers. Each has `answer` (always a string, also for `int`/`float`) and optionally `id` (matching the option ID you defined) |
 
 ### Attachment Types
 

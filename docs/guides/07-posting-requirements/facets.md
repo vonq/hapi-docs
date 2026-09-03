@@ -1,13 +1,37 @@
 ---
+id: facets
 title: Facets
 description: Complete reference for the facet object-all 12 types, options, display rules, and validation rules.
 category: guides/posting-requirements
 endpoints: []
-prerequisites: [posting-requirements-introduction]
-concepts: [facet, TEXT, TEXTAREA, HTMLAREA, TEXTEXPAND, SELECT, MULTIPLE, HIER, AUTOCOMPLETE, DATE, STATISCH, AREACOUNT, QUESTIONNAIRE, display_rules, validation_rules, options]
-related: [autocomplete, validation, product-posting-requirements, contract-posting-requirements]
-audience: [developer]
+prerequisites:
+- posting-requirements-introduction
+concepts:
+- facet
+- display_rules
+related:
+- autocomplete
+- posting-requirements-validation
+- product-posting-requirements
+- contract-posting-requirements
+audience:
+- developer
 difficulty: advanced
+keywords:
+- TEXT
+- TEXTAREA
+- HTMLAREA
+- TEXTEXPAND
+- SELECT
+- MULTIPLE
+- HIER
+- AUTOCOMPLETE
+- DATE
+- STATISCH
+- AREACOUNT
+- QUESTIONNAIRE
+- validation_rules
+- options
 ---
 
 # Facets

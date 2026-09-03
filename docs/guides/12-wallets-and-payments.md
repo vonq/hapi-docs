@@ -1,16 +1,30 @@
 ---
+id: wallets-and-payments
 title: Wallets & Payments
 description: Wallet-based payments-top-ups, direct charges, purchase orders, Stripe integration, billing portal.
 category: guides/wallets-and-payments
 endpoints:
-  - POST /wallet
-  - GET /wallet
-  - POST /wallet/billing-portal
-prerequisites: [authentication, campaign-ordering]
-concepts: [wallet, billing_details, billing_portal, payment_widget, direct_charge, purchase_order, ats_managed_payment]
-related: [campaign-ordering, entities]
-audience: [developer]
+- POST /wallet/
+- GET /wallet/
+- POST /wallet/billing-portal/
+prerequisites:
+- authentication
+- campaign-ordering
+concepts:
+- wallet
+related:
+- campaign-ordering
+- entities
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- billing_details
+- billing_portal
+- payment_widget
+- direct_charge
+- purchase_order
+- ats_managed_payment
 ---
 
 # Wallets & Payments

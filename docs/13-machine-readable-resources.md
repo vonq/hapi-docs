@@ -1,70 +1,93 @@
 ---
+id: machine-readable-resources
 title: Machine-Readable Resources
-description: OpenAPI schema, workflow maps, glossary, and full documentation dumps-optimized for AI agents and programmatic consumption.
+description: Selective discovery with the documentation manifest, OpenAPI schema, workflow map, glossary, and llms.txt.
 category: resources
 endpoints: []
 prerequisites: []
-concepts: []
-related: [introduction, api-overview]
-audience: [developer, ai-agent]
+related:
+- introduction
+- api-overview
+audience:
+- developer
+- ai-agent
 difficulty: beginner
 ---
 
 # Machine-Readable Resources
 
-> Structured files designed for AI agents, code generators, and tooling-not just human readers.
+> Find the relevant guides and API contracts without preloading unrelated files.
 
 ## Quick Start for AI Agents
 
-If you are an AI agent building a HAPI integration, load these files in order:
+Clone [`vonq/hapi-docs`](https://github.com/vonq/hapi-docs), then work from the
+repository root:
 
-1. **OpenAPI schema** ([`schema/build/public.json`](https://github.com/vonq/hapi-docs/blob/master/schema/build/public.json)) - exact endpoints, parameters, request/response schemas, and auth requirements. This is your primary reference for constructing HTTP requests.
-2. **[`api-map.yaml`](https://github.com/vonq/hapi-docs/blob/master/docs/extra/api-map.yaml)** - workflow sequencing: what to call, in what order, and what depends on what. The OpenAPI spec tells you *how* to call each endpoint; this file tells you *when* and *why*.
-3. **[`glossary.yaml`](https://github.com/vonq/hapi-docs/blob/master/docs/extra/glossary.yaml)** - domain terms, aliases, and disambiguation. Use this when you encounter unfamiliar terms like "MOC", "facet", or "campaign".
-4. **[`llms.txt`](https://github.com/vonq/hapi-docs/blob/master/llms.txt)** - concise index with concepts, endpoint table, and doc links. Good for orientation if you need narrative context beyond the schema.
+1. Read [`llms.txt`](../llms.txt) to choose a guide or scenario.
+2. Query [`docs-manifest.jsonl`](../docs-manifest.jsonl) by document metadata
+   or OpenAPI operation ID.
+3. Search the selected area with `rg` and open only matching pages.
+4. Select one operation or component from the OpenAPI schema with `jq`.
+
+[`AGENTS.md`](../AGENTS.md) contains ready-to-run commands and the authority
+order for resolving source differences.
 
 ## Available Resources
 
-> **Downloading these files:** the canonical, downloadable copies live in the [`vonq/hapi-docs`](https://github.com/vonq/hapi-docs) GitHub repository. Clone the repo, or use the per-file links below to download them directly.
+The published repository contains the canonical downloadable files. Clone it so
+links stay relative and local search remains fast.
 
 ### OpenAPI Schema
 
-The canonical API specification, available at [`schema/build/public.json`](https://github.com/vonq/hapi-docs/blob/master/schema/build/public.json):
+The canonical API specification is
+[`schema/build/public.json`](../schema/build/public.json). It defines endpoint
+paths, methods, parameters, payloads, responses, and authentication.
 
-| Property | Value |
-|----------|-------|
-| Format | OpenAPI 3.0.3 (JSON) |
-| Paths | 60 |
-| Component schemas | 236 |
-| Auth schemes | 3 (`Partner-APIKey`, `ATSUser-APIKey`, `ATSUser-JWT`) |
-| Size | ~394 KB |
+Select one operation by `operationId`:
 
-This is the single source of truth for endpoint paths, HTTP methods, query/path parameters, request bodies, response shapes, and security requirements.
+```bash
+jq --arg id 'hapi-OrderCampaign' '
+  .paths | to_entries[] as $path
+  | $path.value | to_entries[]
+  | select(.value.operationId? == $id)
+  | {method: .key, path: $path.key, operation: .value}
+' schema/build/public.json
+```
+
+Select one component schema:
+
+```bash
+jq '.components.schemas.HAPICampaignCreateRequest' schema/build/public.json
+```
 
 ### Supplementary Files
 
-These files complement the OpenAPI schema with information it cannot express. `api-map.yaml` and `glossary.yaml` live under `docs/extra/`; `llms.txt` and `llms-full.txt` live at the documentation root so AI tools can discover them directly.
+These files complement the OpenAPI schema:
 
-| File | Format | Purpose | Size |
-|------|--------|---------|------|
-| [`docs/extra/api-map.yaml`](https://github.com/vonq/hapi-docs/blob/master/docs/extra/api-map.yaml) | YAML | Workflow topology-step-by-step integration flows, endpoint dependencies, state machines, and common pitfalls. | ~32 KB |
-| [`docs/extra/glossary.yaml`](https://github.com/vonq/hapi-docs/blob/master/docs/extra/glossary.yaml) | YAML | Domain terms with definitions, aliases, disambiguation, and related endpoints. | ~13 KB |
-| [`llms.txt`](https://github.com/vonq/hapi-docs/blob/master/llms.txt) | Markdown | Structured index of the entire API-concepts, endpoint table, section links. Published at the docs root for automatic AI discovery. | ~8 KB |
-| [`llms-full.txt`](https://github.com/vonq/hapi-docs/blob/master/llms-full.txt) | Markdown | Complete `docs/` documentation concatenated into a single root file for context-window ingestion. | ~436 KB |
+| File | Format | Purpose |
+|------|--------|---------|
+| [`docs-manifest.jsonl`](../docs-manifest.jsonl) | JSON Lines | Document metadata and a compact index of OpenAPI operations. |
+| [`llms.txt`](../llms.txt) | Markdown | Small router to guides, scenarios, workflow data, and optional reference pages. |
+| [`docs/extra/api-map.yaml`](extra/api-map.yaml) | YAML | Call sequences, dependencies, state changes, and decision points. |
+| [`docs/extra/glossary.yaml`](extra/glossary.yaml) | YAML | Domain terms, aliases, disambiguation, and related endpoints. |
 
 ## When to Use What
 
-**Building an integration or coding against the API?**
-Start with the **OpenAPI schema**-it has everything you need to construct valid requests. Use `api-map.yaml` to understand the correct call sequence and dependencies between endpoints.
+**Finding a guide or operation?**
+Start with `llms.txt` for browsing. Query `docs-manifest.jsonl` when you know a
+concept, keyword, document ID, or operation ID.
 
 **Need to understand domain terminology?**
-Load `glossary.yaml`. It maps terms like "campaign" to their aliases ("order", "posting order"), disambiguates similar concepts, and links to relevant endpoints.
+Search `glossary.yaml`. It maps terms such as "campaign" to aliases and related
+endpoints.
 
-**Feeding docs into an LLM context window?**
-Use `llms-full.txt` for comprehensive coverage, or `llms.txt` for a concise index that fits in smaller contexts.
+**Building an HTTP request?**
+Select the operation from `schema/build/public.json`. Then read its linked guide
+for meaning and examples.
 
 **Setting up AI-powered docs search or a chatbot?**
-Each documentation page includes YAML frontmatter with `title`, `description`, `endpoints`, `prerequisites`, `concepts`, `related`, `audience`, and `difficulty`-enabling semantic filtering and retrieval.
+Index the manifest first. It contains document metadata and byte size without
+documentation bodies.
 
 ## llms.txt Convention
 
@@ -82,6 +105,7 @@ Every documentation page includes structured YAML frontmatter:
 
 ```yaml
 ---
+id: page-id
 title: Page Title
 description: One-line summary of what this page covers.
 category: guides/section-name
@@ -93,6 +117,8 @@ prerequisites:                # Pages to read first
 concepts:                     # Domain terms used (keys from glossary.yaml)
   - campaign
   - product
+keywords:                     # Free-form search terms
+  - ordering
 related:                      # Related pages
   - campaign-ordering
   - campaign-status
@@ -105,12 +131,14 @@ This enables AI tools to filter pages by endpoint, find prerequisites, and navig
 
 ## Keeping Resources Updated
 
-When documentation changes, regenerate `llms-full.txt`:
+When documentation or the public OpenAPI schema changes, regenerate the AI
+resources:
 
 ```bash
-bash bin/docs/generate-llms-full.sh
+./bin/docs/generate-ai-docs
 ```
 
 The OpenAPI schema is generated from the Django codebase and published here as `schema/build/public.json`.
 
-The other files (`llms.txt`, `docs/extra/api-map.yaml`, `docs/extra/glossary.yaml`) are manually maintained and should be updated when new endpoints, workflows, or concepts are added.
+The generator writes `llms.txt` and `docs-manifest.jsonl`. The workflow map and
+glossary remain maintained sources.

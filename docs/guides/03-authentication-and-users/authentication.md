@@ -1,17 +1,28 @@
 ---
+id: authentication
 title: Authentication
 description: Secret key vs JWT in detail-generating and using tokens. Endpoint reference.
 category: guides/authentication-and-users
 endpoints:
-  - POST /v3/ats/users/{customer_id}/generate-jwt-token/
-  - GET /v3/ats/atsuser/me/
-  - GET /v3/ats/ats/me/
-  - GET /v3/ats/atsuser/me/settings/
-prerequisites: [entities]
-concepts: [secret_key, jwt, x_auth_token, x_customer_id, x_authorization]
-related: [entities, authentication-introduction]
-audience: [developer]
+- POST /v3/ats/users/{customer_id}/generate-jwt-token/
+- GET /v3/ats/atsuser/me/
+- GET /v3/ats/ats/me/
+- GET /v3/ats/atsuser/me/settings/
+prerequisites:
+- entities
+concepts:
+- secret_key
+- jwt
+related:
+- entities
+- authentication-introduction
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- x_auth_token
+- x_customer_id
+- x_authorization
 ---
 
 # Authentication

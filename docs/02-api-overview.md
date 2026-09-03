@@ -1,13 +1,23 @@
 ---
+id: api-overview
 title: API Overview
 description: Base URLs, environments, HTTP conventions, pagination, rate limits, error handling, localization, CORS, and caching.
 category: getting-started
 endpoints: []
-prerequisites: [introduction]
-concepts: [pagination, rate_limits, error_handling, localization, cors]
-related: [introduction, authentication]
-audience: [developer]
+prerequisites:
+- introduction
+related:
+- introduction
+- authentication
+audience:
+- developer
 difficulty: beginner
+keywords:
+- pagination
+- rate_limits
+- error_handling
+- localization
+- cors
 ---
 
 # API Overview

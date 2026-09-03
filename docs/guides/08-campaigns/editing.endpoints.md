@@ -1,7 +1,12 @@
 ---
+id: campaign-editing-endpoints
 title: Campaign Editing - Endpoint Reference
 description: HTTP request/response details for the campaign editing endpoint.
 category: guides/campaigns
+related:
+- campaign-editing
+endpoints:
+- PUT /campaigns/{campaignId}/edit
 ---
 
 > For conceptual overview, see [Campaign Editing](./editing.md).
