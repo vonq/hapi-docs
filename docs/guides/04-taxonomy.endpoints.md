@@ -1,19 +1,32 @@
 ---
+id: taxonomy-endpoints
 title: Taxonomy & Locations - Endpoint Reference
 description: Full request/response details for job titles, industries, job functions, education levels, seniority, and location search endpoints.
 category: guides/taxonomy
+prerequisites:
+- authentication
+concepts:
+- taxonomy
 endpoints:
-  - GET /products/job-titles/
-  - GET /products/industries/
-  - GET /products/job-functions/
-  - GET /taxonomy/education-levels
-  - GET /taxonomy/seniority
-  - GET /products/location/search/
-prerequisites: [authentication]
-concepts: [taxonomy, job_title, industry, education_level, seniority, location]
-related: [products-introduction, campaign-ordering]
-audience: [developer]
+- GET /products/job-titles/
+- GET /products/industries/
+- GET /products/job-functions/
+- GET /taxonomy/education-levels
+- GET /taxonomy/seniority
+- GET /products/location/search/
+related:
+- taxonomy
+- products-introduction
+- campaign-ordering
+audience:
+- developer
 difficulty: beginner
+keywords:
+- job_title
+- industry
+- education_level
+- seniority
+- location
 ---
 
 > For conceptual overview, see [Taxonomy & Locations](./04-taxonomy.md).

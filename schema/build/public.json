@@ -319,7 +319,7 @@
                 "$ref": "#/components/schemas/PostingDetailsRequest"
               }
             ],
-            "description": "Any supported posting details may be supplied independently."
+            "description": "Title, description or a recognized city/country is required unless targetGroup supplies industry or jobCategory."
           },
           "targetGroup": {
             "allOf": [
@@ -327,7 +327,7 @@
                 "$ref": "#/components/schemas/TargetGroupRequest"
               }
             ],
-            "description": "Any supported target-group fields may be supplied independently."
+            "description": "Industry or jobCategory is required unless postingDetails supplies title, description or a recognized city/country."
           }
         },
         "type": "object"
@@ -2654,6 +2654,9 @@
               "id": "lclxkgabuhcff"
             }
           },
+          "notifications": {
+            "$ref": "#/components/schemas/HAPICampaignNotifications"
+          },
           "orderReference": {
             "description": "A vendor-related Reference number for the order. This could be a PO number or an Invoice number.\nDoesn't affect the order process at all, but provides a way for the ATS to identify the specific\norder for their internal billing process\nMaximum length of this field is 80 symbols",
             "example": "PO_567_2019",
@@ -3012,6 +3015,9 @@
               "id": "iu5in90a39khz"
             }
           },
+          "notifications": {
+            "$ref": "#/components/schemas/HAPICampaignNotifications"
+          },
           "orderReference": {
             "description": "A vendor-related Reference number for the order. This could be a PO number or an Invoice number.\nDoesn't affect the order process at all, but provides a way for the ATS to identify the specific\norder for their internal billing process\nMaximum length of this field is 80 symbols",
             "example": "PO_567_2019",
@@ -3149,6 +3155,19 @@
           "orderedProducts"
         ],
         "title": "CampaignEditRequest",
+        "type": "object"
+      },
+      "HAPICampaignNotifications": {
+        "description": "Provides the ability to override per-campaign specific properties set at the account level for campaign notifications.",
+        "properties": {
+          "webhookUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "webhookUrl"
+        ],
+        "title": "CampaignNotifications",
         "type": "object"
       },
       "HAPICampaignPosting": {
@@ -5001,6 +5020,9 @@
             "type": "string"
           }
         },
+        "required": [
+          "vonqId"
+        ],
         "type": "object"
       },
       "Input": {
@@ -5045,6 +5067,9 @@
             "type": "string"
           }
         },
+        "required": [
+          "vonqId"
+        ],
         "type": "object"
       },
       "MocFeatures": {
@@ -5573,6 +5598,30 @@
             "additionalProperties": {},
             "nullable": true,
             "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "PatchedScreeningJobInterviewQuestionsUpdateRequest": {
+        "description": "Partial update of one editable collection on a screening job.\n\nSend only the entries you are changing, each keyed by its `id`. Omitting an entry leaves\nit alone and omitting a field leaves that field alone, so adding and removing entries is\nnot expressible. Each changed entry is PATCHed to Metis individually.",
+        "properties": {
+          "interview_questions": {
+            "items": {
+              "$ref": "#/components/schemas/ScreeningJobInterviewQuestionItemRequest"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PatchedScreeningJobRequirementsUpdateRequest": {
+        "description": "Partial update of one editable collection on a screening job.\n\nSend only the entries you are changing, each keyed by its `id`. Omitting an entry leaves\nit alone and omitting a field leaves that field alone, so adding and removing entries is\nnot expressible. Each changed entry is PATCHed to Metis individually.",
+        "properties": {
+          "requirements": {
+            "items": {
+              "$ref": "#/components/schemas/ScreeningJobRequirementItemRequest"
+            },
+            "type": "array"
           }
         },
         "type": "object"
@@ -7898,6 +7947,13 @@
             "readOnly": true,
             "type": "string"
           },
+          "requirements_ready_at": {
+            "description": "When the screening requirements became final. Null means not yet ready, or the job predates this field.",
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          },
           "stats": {
             "readOnly": true
           },
@@ -7919,6 +7975,7 @@
           "job_title",
           "metadata",
           "modified_on",
+          "requirements_ready_at",
           "stats",
           "status"
         ],
@@ -8029,6 +8086,14 @@
             "readOnly": true,
             "type": "string"
           },
+          "interview_questions": {
+            "description": "Questions the AI interview agent will ask, for the campaign's interview difficulty. Empty until requirements_ready_at is set, or when the interview agent is disabled for the job.",
+            "items": {
+              "$ref": "#/components/schemas/ScreeningJobInterviewQuestion"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
           "job_screening_url": {
             "nullable": true,
             "readOnly": true,
@@ -8048,7 +8113,19 @@
             "type": "string"
           },
           "requirements": {
-            "readOnly": true
+            "description": "The job's screening requirements. Starts as the entries supplied at creation; once requirements_ready_at is set, holds the final list including AI-generated entries.",
+            "items": {
+              "$ref": "#/components/schemas/ScreeningQuestionRequirement"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "requirements_ready_at": {
+            "description": "When the screening requirements became final. Null means not yet ready, or the job predates this field.",
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
           },
           "settings": {
             "allOf": [
@@ -8076,11 +8153,13 @@
           "created_on",
           "data",
           "id",
+          "interview_questions",
           "job_screening_url",
           "job_title",
           "metadata",
           "modified_on",
           "requirements",
+          "requirements_ready_at",
           "settings",
           "stats",
           "status"
@@ -8133,6 +8212,73 @@
         ],
         "type": "object"
       },
+      "ScreeningJobInterviewQuestion": {
+        "properties": {
+          "id": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "question": {
+            "description": "Asked by the AI interview agent.",
+            "nullable": true,
+            "type": "string"
+          },
+          "requirement_summary": {
+            "description": "Summary of the requirement this question assesses.",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ScreeningJobInterviewQuestionItem": {
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "question": {
+            "maxLength": 2000,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "question"
+        ],
+        "type": "object"
+      },
+      "ScreeningJobInterviewQuestionItemRequest": {
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "question": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "question"
+        ],
+        "type": "object"
+      },
+      "ScreeningJobInterviewQuestionsUpdate": {
+        "description": "Partial update of one editable collection on a screening job.\n\nSend only the entries you are changing, each keyed by its `id`. Omitting an entry leaves\nit alone and omitting a field leaves that field alone, so adding and removing entries is\nnot expressible. Each changed entry is PATCHed to Metis individually.",
+        "properties": {
+          "interview_questions": {
+            "items": {
+              "$ref": "#/components/schemas/ScreeningJobInterviewQuestionItem"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "interview_questions"
+        ],
+        "type": "object"
+      },
       "ScreeningJobRequirement": {
         "properties": {
           "description": {
@@ -8150,6 +8296,53 @@
         },
         "required": [
           "question"
+        ],
+        "type": "object"
+      },
+      "ScreeningJobRequirementItem": {
+        "properties": {
+          "description": {
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "question": {
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "summary": {
+            "maxLength": 255,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "ScreeningJobRequirementItemRequest": {
+        "properties": {
+          "description": {
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "question": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "summary": {
+            "maxLength": 255,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
         ],
         "type": "object"
       },
@@ -8171,6 +8364,21 @@
         },
         "required": [
           "question"
+        ],
+        "type": "object"
+      },
+      "ScreeningJobRequirementsUpdate": {
+        "description": "Partial update of one editable collection on a screening job.\n\nSend only the entries you are changing, each keyed by its `id`. Omitting an entry leaves\nit alone and omitting a field leaves that field alone, so adding and removing entries is\nnot expressible. Each changed entry is PATCHed to Metis individually.",
+        "properties": {
+          "requirements": {
+            "items": {
+              "$ref": "#/components/schemas/ScreeningJobRequirementItem"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "requirements"
         ],
         "type": "object"
       },
@@ -8249,6 +8457,36 @@
           "stopped"
         ],
         "type": "string"
+      },
+      "ScreeningQuestionRequirement": {
+        "properties": {
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "question": {
+            "description": "Asked at apply time when applicable.",
+            "nullable": true,
+            "type": "string"
+          },
+          "source": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SourceEnum"
+              }
+            ],
+            "default": "customer"
+          },
+          "summary": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
       },
       "ScreeningRemoteFile": {
         "properties": {
@@ -8496,6 +8734,14 @@
           "updated_at"
         ],
         "type": "object"
+      },
+      "SourceEnum": {
+        "description": "* `customer` - customer\n* `ai` - ai",
+        "enum": [
+          "customer",
+          "ai"
+        ],
+        "type": "string"
       },
       "TargetGroupRequest": {
         "properties": {
@@ -8996,11 +9242,14 @@
             "style": "form"
           },
           {
-            "description": "Number of results to return per page.",
+            "description": "Number of results to return per page. Defaults to 25; values above 100 are capped back to 25.",
             "explode": true,
             "in": "query",
             "name": "limit",
             "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
               "type": "integer"
             },
             "style": "form"
@@ -9011,21 +9260,28 @@
             "in": "query",
             "name": "offset",
             "schema": {
+              "default": 0,
+              "minimum": 0,
               "type": "integer"
             },
             "style": "form"
           },
           {
-            "description": "Filter by labels set on the campaign. Pass values as nested key-value structure.",
+            "description": "Filter by labels set on the campaign. Pass values as a nested key-value structure, e.g. `label[label1]=value1&label[label2]=value2`.",
+            "explode": true,
             "in": "query",
             "name": "label",
             "schema": {
-              "example": "label[label1]=value1&label[label2]=value2",
-              "items": {
+              "additionalProperties": {
                 "type": "string"
               },
-              "type": "string"
-            }
+              "example": {
+                "label1": "value1",
+                "label2": "value2"
+              },
+              "type": "object"
+            },
+            "style": "deepObject"
           },
           {
             "description": "Order of results",
@@ -9043,17 +9299,66 @@
             }
           },
           {
-            "description": "Filter modifiedOn greater than date/datetime",
+            "description": "Include draft campaigns in the results. Drafts are excluded by default.",
             "in": "query",
-            "name": "modifiedOn.gte",
+            "name": "includeDrafts",
             "schema": {
-              "example": "2021-12-31 or 2021-12-31T00:00:00.000Z",
-              "format": "date-time",
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Filter on the campaign status (exact match).",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "$ref": "#/components/schemas/HAPIStatus"
+            }
+          },
+          {
+            "description": "Filter on campaigns whose name *starts with* the given value. Matching is case- and accent-insensitive. Note this is a starts-with match, not a contains match. Campaigns ordered before this filter was introduced only become matchable once their name has been backfilled.",
+            "in": "query",
+            "name": "campaignName",
+            "schema": {
+              "example": "Software Development Manager",
               "type": "string"
             }
           },
           {
-            "description": "Filter modifiedOn less than date/datetime",
+            "description": "Filter on campaigns belonging to this ATS end-user (exact match). When authenticating with a JWT the customer is already derived from the token; this filter is then applied on top of that scope, so passing a different customer returns no results.",
+            "in": "query",
+            "name": "customerId",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter on campaigns linked to this work order (exact match). Work order IDs are unique, so this returns at most one campaign.",
+            "in": "query",
+            "name": "workOrderId",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter on whether the campaign was paid from a wallet. `true` matches campaigns ordered with a `walletId`, i.e. `paymentMethod` `wallet`, `direct_charge` or `purchase_order`; `false` matches `ats_managed` campaigns.",
+            "in": "query",
+            "name": "paidByWallet",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Filter on campaigns whose `modifiedOn` is on or after the given date/datetime (inclusive). Accepts a date or an ISO-8601 datetime.",
+            "in": "query",
+            "name": "modifiedOn.gte",
+            "schema": {
+              "example": "2021-12-31 or 2021-12-31T00:00:00.000Z",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter on campaigns whose `modifiedOn` is on or before the given date/datetime (inclusive). Accepts a date or an ISO-8601 datetime.",
             "in": "query",
             "name": "modifiedOn.lte",
             "schema": {
@@ -9062,7 +9367,16 @@
             }
           },
           {
-            "description": "Filter createdOn greater than date/datetime",
+            "description": "Filter on campaigns whose `createdOn` is on or after the given date/datetime (inclusive). Accepts a date or an ISO-8601 datetime.",
+            "in": "query",
+            "name": "createdOn.gte",
+            "schema": {
+              "example": "2021-12-31 or 2021-12-31T00:00:00.000Z",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter on campaigns whose `createdOn` is on or before the given date/datetime (inclusive). Accepts a date or an ISO-8601 datetime.",
             "in": "query",
             "name": "createdOn.lte",
             "schema": {
@@ -9071,9 +9385,18 @@
             }
           },
           {
-            "description": "Filter createdOn less than date/datetime",
+            "description": "Filter on campaigns whose `deliveredOn` is on or after the given date/datetime (inclusive). Accepts a date or an ISO-8601 datetime.",
             "in": "query",
-            "name": "createdOn.gte",
+            "name": "deliveredOn.gte",
+            "schema": {
+              "example": "2021-12-31 or 2021-12-31T00:00:00.000Z",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter on campaigns whose `deliveredOn` is on or before the given date/datetime (inclusive). Accepts a date or an ISO-8601 datetime.",
+            "in": "query",
+            "name": "deliveredOn.lte",
             "schema": {
               "example": "2021-12-31 or 2021-12-31T00:00:00.000Z",
               "type": "string"
@@ -13429,7 +13752,7 @@
     },
     "/v3/products/recommendations/": {
       "post": {
-        "description": "Create an asynchronous recommendation job from partial campaign data. Every documented property is optional, but the request must contain at least one meaningful value under `postingDetails` or `targetGroup`.",
+        "description": "Create an asynchronous recommendation job from partial campaign data. The request must contain a title, description, recognized city/country, industry or job category. Education, seniority, experience, employment type and remote-work preference provide extra ranking context but cannot be used alone.",
         "operationId": "v3_products_recommendations_create",
         "parameters": [
           {
@@ -13470,6 +13793,12 @@
                         {
                           "description": "Bachelor / Graduate",
                           "vonqId": "2"
+                        }
+                      ],
+                      "industry": [
+                        {
+                          "description": "Information Technology",
+                          "vonqId": "7"
                         }
                       ],
                       "seniority": [
@@ -13614,6 +13943,14 @@
             "required": false,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "description": "Filter jobs by whether their screening requirements are ready.",
+            "in": "query",
+            "name": "requirements_ready",
+            "schema": {
+              "type": "boolean"
             }
           },
           {
@@ -13800,6 +14137,144 @@
           }
         ],
         "summary": "Screening Job - Retrieve",
+        "tags": [
+          "\u00bb Screening"
+        ]
+      }
+    },
+    "/v3/screening/jobs/{id}/interview-questions/": {
+      "patch": {
+        "description": "Reword the job's interview questions.\n\nSend only the entries you are changing, each keyed by its `id`. Omitted entries are left untouched, so entries cannot be added or removed. Only `question` is editable. Available once `requirements_ready_at` is set.",
+        "operationId": "v3_screening_jobs_interview_questions_partial_update",
+        "parameters": [
+          {
+            "description": "Identifies the ATS end-user. Required for Contracts functionality.",
+            "in": "header",
+            "name": "X-Customer-Id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "A UUID string identifying this screening job.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedScreeningJobInterviewQuestionsUpdateRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedScreeningJobInterviewQuestionsUpdateRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedScreeningJobInterviewQuestionsUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScreeningJobInterviewQuestionsUpdate"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "ATSUser-APIKey": []
+          },
+          {
+            "ATSUser-JWT": []
+          }
+        ],
+        "summary": "Screening Job Interview Questions - Update",
+        "tags": [
+          "\u00bb Screening"
+        ]
+      }
+    },
+    "/v3/screening/jobs/{id}/requirements/": {
+      "patch": {
+        "description": "Reword the job's requirements.\n\nSend only the entries you are changing, each keyed by its `id`. Omitted entries and omitted fields are left untouched, so entries cannot be added or removed. Only `summary`, `description` and `question` are editable. Available once `requirements_ready_at` is set. Only applications created after the change are assessed against the updated requirements.",
+        "operationId": "v3_screening_jobs_requirements_partial_update",
+        "parameters": [
+          {
+            "description": "Identifies the ATS end-user. Required for Contracts functionality.",
+            "in": "header",
+            "name": "X-Customer-Id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "A UUID string identifying this screening job.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedScreeningJobRequirementsUpdateRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedScreeningJobRequirementsUpdateRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedScreeningJobRequirementsUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScreeningJobRequirementsUpdate"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "ATSUser-APIKey": []
+          },
+          {
+            "ATSUser-JWT": []
+          }
+        ],
+        "summary": "Screening Job Requirements - Update",
         "tags": [
           "\u00bb Screening"
         ]

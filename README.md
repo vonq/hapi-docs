@@ -15,7 +15,9 @@ The same content is published in two places - pick whichever fits your workflow:
 
 **Building an integration?** Jump to the [OpenAPI schema](schema/build/public.json) and the [guides](docs/guides/).
 
-**AI agent or code generator?** See [Machine-Readable Resources](docs/13-machine-readable-resources.md), [`llms.txt`](llms.txt), and [`llms-full.txt`](llms-full.txt).
+**AI agent or code generator?** Clone this repository, then start with
+[`llms.txt`](llms.txt) or [`docs-manifest.jsonl`](docs-manifest.jsonl). See
+[`AGENTS.md`](AGENTS.md) for selective search commands and source authority.
 
 ## Table of Contents
 
@@ -37,7 +39,7 @@ The high-level layout:
   - [Wallets & Payments](docs/guides/12-wallets-and-payments.md) - prepaid wallets, top-ups, billing portal
   - [Scenarios](docs/guides/14-scenarios/01-introduction.md) - end-to-end integration walkthroughs
 - **Reference**
-  - [Machine-Readable Resources](docs/13-machine-readable-resources.md) - OpenAPI, glossary, API map, llms.txt
+  - [Machine-Readable Resources](docs/13-machine-readable-resources.md) - manifest, OpenAPI, API map, glossary, llms.txt
   - [API Schema](schema/build/public.json) - OpenAPI 3.0.3 spec
 
 ## Repository Layout
@@ -57,7 +59,8 @@ The high-level layout:
 │   └── build/
 │       └── public.json        # OpenAPI 3.0.3 spec (source of truth for endpoints)
 ├── llms.txt                   # LLM-friendly index for automatic AI discovery
-├── llms-full.txt              # Generated docs/ concatenation for direct ingestion
+├── docs-manifest.jsonl        # Document metadata and OpenAPI operation index
+├── AGENTS.md                  # Selective retrieval instructions for agents
 └── README.md                  # This file
 ```
 
@@ -74,15 +77,17 @@ Use it directly with any OpenAPI-aware tool (Postman, Insomnia, openapi-generato
 
 ## For AI Agents
 
-Load these in order to build an integration:
+Clone the repository and select sources locally:
 
-1. [`schema/build/public.json`](schema/build/public.json) - exact endpoints, parameters, request/response schemas, auth.
-2. [`docs/extra/api-map.yaml`](docs/extra/api-map.yaml) - workflow sequencing: what to call, in what order, with what dependencies.
-3. [`docs/extra/glossary.yaml`](docs/extra/glossary.yaml) - domain terms, aliases, disambiguation.
-4. [`llms.txt`](llms.txt) - concise structured index for orientation.
-5. [`llms-full.txt`](llms-full.txt) - generated `docs/` content in a single file for context-window ingestion.
+1. Use [`llms.txt`](llms.txt) to choose a guide or scenario.
+2. Query [`docs-manifest.jsonl`](docs-manifest.jsonl) to find documents by ID,
+   concept, keyword, or OpenAPI operation ID.
+3. Use `rg` within `docs/` and open only the matching pages.
+4. Use `jq` to select the needed operation or component from
+   [`schema/build/public.json`](schema/build/public.json).
 
-Every documentation page also ships YAML frontmatter (`title`, `description`, `endpoints`, `prerequisites`, `concepts`, `related`, `audience`, `difficulty`) for semantic filtering and retrieval.
+[`AGENTS.md`](AGENTS.md) has ready-to-run commands. Every documentation page
+also has YAML frontmatter for filtering and navigation.
 
 ## Environments
 

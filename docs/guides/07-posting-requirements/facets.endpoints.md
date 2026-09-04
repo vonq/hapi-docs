@@ -1,7 +1,11 @@
 ---
+id: facets-endpoints
 title: Facets - Endpoint Reference
 description: JSON examples for all facet types, options, display rules, and validation rules.
 category: guides/posting-requirements
+related:
+- facets
+endpoints: []
 ---
 
 > For conceptual overview, see [Facets](./facets.md).

@@ -1,13 +1,22 @@
 ---
+id: special-products
 title: Special Products
 description: Bundles and CPA+ products.
 category: guides/products
 endpoints:
-  - GET /products/search/
-prerequisites: [marketplace]
-concepts: [bundle, cpa_plus]
-related: [marketplace, cpa, campaign-ordering]
-audience: [developer, manager]
+- GET /products/search/
+prerequisites:
+- marketplace
+concepts:
+- bundle
+- cpa_plus
+related:
+- marketplace
+- cpa
+- campaign-ordering
+audience:
+- developer
+- manager
 difficulty: intermediate
 ---
 

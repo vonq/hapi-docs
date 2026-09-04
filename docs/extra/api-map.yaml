@@ -77,14 +77,16 @@ workflows:
     prerequisites: [verify_credentials]
     steps:
       - action: Search job titles (for filtering)
-        endpoint: GET /products/job-titles/?text={search}
+        endpoint: GET /products/job-titles/
         auth: token + X-Customer-Id or JWT
+        params: { text: "{search}" }
         returns: "array of { id, name, job_function }"
         note: Required parameter-cannot list all. Returns ~4,000 titles per language.
         docs: guides/04-taxonomy.md
       - action: Search locations (for filtering)
-        endpoint: GET /products/location/search/?text={search}
+        endpoint: GET /products/location/search/
         auth: token + X-Customer-Id or JWT
+        params: { text: "{search}" }
         returns: locations with nested geographic hierarchy (city → region → country)
         docs: guides/04-taxonomy.md
       - action: Search products
@@ -98,11 +100,11 @@ workflows:
           limit: page size
           offset: pagination
         returns: paginated product list with pricing, duration, channel info
-        docs: guides/05-products/marketplace.md
+        docs: guides/05-products/02-marketplace.md
       - action: Get product details (optional)
         endpoint: GET /products/single/{product_id}/
         returns: full product object including pricing tiers, mc_enabled, has_product_specs, cpa
-        docs: guides/05-products/marketplace.md
+        docs: guides/05-products/02-marketplace.md
     decision_points:
       - condition: "product.cpa != null"
         meaning: This is a CPA+ product (pay per application)
@@ -118,7 +120,8 @@ workflows:
     description: Retrieve taxonomy values for product filtering and campaign target groups.
     steps:
       - action: Search job titles
-        endpoint: GET /products/job-titles/?text={search}
+        endpoint: GET /products/job-titles/
+        params: { text: "{search}" }
         returns: "{ id, name, job_function }"
         use_in: product search (jobTitleId), campaign target group
       - action: List industries
@@ -134,7 +137,8 @@ workflows:
         returns: "{ id, name[] }-multilingual array"
         use_in: campaign target group (vonqId)
       - action: Search locations
-        endpoint: GET /products/location/search/?text={search}
+        endpoint: GET /products/location/search/
+        params: { text: "{search}" }
         returns: locations with within hierarchy
         use_in: product search (includeLocationId, exactLocationId), campaign workingLocation
 
@@ -149,7 +153,7 @@ workflows:
         endpoint: GET /products/{product_id}/specs/
         auth: token + X-Customer-Id or JWT
         returns: array of facet objects (name, type, required, options, autocomplete, rules, display_rules)
-        docs: guides/05-products/posting-requirements.md
+        docs: guides/05-products/04-posting-requirements.md
       - action: For each facet with autocomplete
         endpoint: POST /products/{product_id}/specs/facets/{facet_name}/options/
         body: "{ term: 'search text' }"
@@ -201,8 +205,9 @@ workflows:
     prerequisites: [verify_credentials]
     steps:
       - action: Search for channels supporting contracts
-        endpoint: GET /products/channels/mocs/?search={channelName}
+        endpoint: GET /products/channels/mocs/
         auth: token + X-Customer-Id or JWT
+        params: { search: "{channelName}" }
         returns: "paginated list of { id, name, url, type, mc_enabled }"
         docs: guides/06-contracts/managing-contracts.md
       - action: Get channel details (credential fields + setup instructions)
@@ -266,7 +271,8 @@ workflows:
         condition: product.has_product_specs == true
         see: workflows.fill_product_posting_requirements
       - action: Validate (optional but recommended)
-        endpoint: POST /campaigns/order?validateOnly=true
+        endpoint: POST /campaigns/order
+        params: { validateOnly: true }
         body: same as ordering payload
         returns: 200 if valid, 422 with field-level errors if not
         docs: guides/08-campaigns/validation.md
@@ -379,7 +385,11 @@ workflows:
     description: Fetch only campaigns that changed since your last sync.
     steps:
       - action: Query with modifiedOn filter
-        endpoint: GET /campaigns?modifiedOn_gte={lastSyncTimestamp}&sortBy=modifiedOn.asc&limit=50
+        endpoint: GET /campaigns
+        params:
+          modifiedOn_gte: "{lastSyncTimestamp}"
+          sortBy: modifiedOn.asc
+          limit: 50
         note: modifiedOn updates on any product status change within the campaign.
       - action: Process each campaign
         note: Update local status records.
@@ -430,7 +440,8 @@ workflows:
         endpoint: GET /v3/cpacampaigns/{hapi_campaign_id}/applications/{application_id}/
         returns: single application object
       - action: Download files
-        endpoint: GET /v3/cpacampaigns/{hapi_campaign_id}/applications/{application_id}/attachment/?filename={name}
+        endpoint: GET /v3/cpacampaigns/{hapi_campaign_id}/applications/{application_id}/attachment/
+        params: { filename: "{name}" }
         returns: "{ url: temporary_signed_url }"
         available_files:
           - dossier.pdf: AI screening report (transcript, scores, evaluation)
@@ -509,19 +520,19 @@ workflows:
     prerequisites: [setup_customer]
     steps:
       - action: Create wallet
-        endpoint: POST /wallet
+        endpoint: POST /wallet/
         auth: token + X-Customer-Id or JWT
         body: "{ customerName, currency }"
         note: One wallet per ATSUser, one currency. Cannot change currency after creation.
         docs: guides/12-wallets-and-payments.md
       - action: Set up billing details
-        endpoint: POST /wallet/billing-portal
+        endpoint: POST /wallet/billing-portal/
         body: "{ partnerReturnUrl }"
         returns: "{ billingPortalLink }-Stripe-hosted page, expires in 5 min"
         note: Customer must complete billing details before top-up or purchase orders.
         docs: guides/12-wallets-and-payments.md
       - action: Verify billing complete
-        endpoint: GET /wallet
+        endpoint: GET /wallet/
         field: has_billing_details must be true
       - action: Top up wallet
         method: Embed payment widget iframe
@@ -529,7 +540,7 @@ workflows:
         note: "Listen for postMessage events: succeeded, processing, requires_action, canceled"
         docs: guides/12-wallets-and-payments.md
       - action: Check balance
-        endpoint: GET /wallet
+        endpoint: GET /wallet/
         field: balance.amount
 
   # ── Smartfill ────────────────────────────────────────
@@ -578,11 +589,11 @@ dependencies:
     requires_before:
       - "POST /v3/screening/jobs/ to create the screening job"
 
-  "POST /v3/ats/users/{id}/generate-jwt-token/":
+  "POST /v3/ats/users/{customer_id}/generate-jwt-token/":
     requires_before: []
     note: "Creates ATSUser automatically if customer_id doesn't exist"
 
-  "POST /wallet/billing-portal":
+  "POST /wallet/billing-portal/":
     requires_before:
       - "POST /wallet/ to create the wallet first"
 

@@ -1,7 +1,17 @@
 ---
+id: entities-endpoints
 title: Entities - Endpoint Reference
 description: Full request/response details for ATS and ATSUser endpoints.
 category: guides/authentication-and-users
+related:
+- entities
+endpoints:
+- GET /v3/ats/ats/me/
+- GET /v3/ats/atsuser/me/
+- GET /v3/ats/users/
+- POST /v3/ats/users/
+- GET /v3/ats/users/{customer_id}/
+- GET /v3/ats/atsuser/me/settings/
 ---
 
 > For conceptual overview, see [Entities](./entities.md).

@@ -1,13 +1,26 @@
 ---
+id: facets-display-rules
 title: Facets - Display Rules
 description: How display rules control conditional facet visibility based on other facet values, with operators, examples, and implementation guidance.
 category: guides/posting-requirements
 endpoints: []
-prerequisites: [facets]
-concepts: [display_rules, equal, in, notempty, contains, selected_option_show_contains]
-related: [facets, validation, autocomplete]
-audience: [developer]
+prerequisites:
+- facets
+concepts:
+- display_rules
+related:
+- facets
+- posting-requirements-validation
+- autocomplete
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- equal
+- in
+- notempty
+- contains
+- selected_option_show_contains
 ---
 
 # Facets - Display Rules

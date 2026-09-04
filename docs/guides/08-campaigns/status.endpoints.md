@@ -1,7 +1,14 @@
 ---
+id: campaign-status-endpoints
 title: Status & Lifecycle - Endpoint Reference
 description: HTTP request/response details for campaign status and listing endpoints.
 category: guides/campaigns
+related:
+- campaign-status
+endpoints:
+- GET /campaigns/{campaignId}/status
+- GET /campaigns/{campaignId}
+- GET /campaigns
 ---
 
 > For conceptual overview, see [Status & Lifecycle](./status.md).
@@ -234,15 +241,23 @@ X-Customer-Id: <customer-id>
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `limit` | integer | 50 | Page size |
+| `limit` | integer | 25 | Page size. Values above 100 fall back to 25 |
 | `offset` | integer | 0 | Pagination offset |
 | `sortBy` | string | `createdOn.desc` | Sort: `modifiedOn.asc`, `modifiedOn.desc`, `createdOn.asc`, `createdOn.desc` |
 | `modifiedOn_gte` | datetime | - | Campaigns modified on or after this date-use for incremental sync |
 | `modifiedOn_lte` | datetime | - | Campaigns modified on or before this date |
 | `createdOn_gte` | datetime | - | Created on or after this date |
 | `createdOn_lte` | datetime | - | Created on or before this date |
+| `deliveredOn_gte` | datetime | - | Delivered on or after this date |
+| `deliveredOn_lte` | datetime | - | Delivered on or before this date |
 | `companyId` | string | - | Filter by company ID |
-| `label[]` | string[] | - | Filter by labels |
+| `customerId` | string | - | Filter by ATS end-user. Under JWT auth this is applied on top of the token's own customer scope |
+| `status` | string | - | Exact match on `online`, `offline` or `in progress` |
+| `campaignName` | string | - | Campaigns whose name **starts with** this value (case- and accent-insensitive). Not a contains match |
+| `workOrderId` | string | - | Exact match on the linked work order. Work order IDs are unique, so this returns at most one campaign |
+| `paidByWallet` | boolean | - | `true` for campaigns ordered with a `walletId` (`paymentMethod` `wallet`, `direct_charge` or `purchase_order`), `false` for `ats_managed` |
+| `includeDrafts` | boolean | `false` | Include draft campaigns in the results |
+| `label[]` | string[] | - | Filter by labels, passed as `label[key]=value` |
 
 The response includes `total`, `limit`, `offset`, `data` (array of campaign objects), and `meta` with pagination links (`first`, `last`, `next`, `previous`).
 

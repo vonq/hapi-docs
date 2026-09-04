@@ -1,13 +1,25 @@
 ---
+id: direct-apply-webhooks
 title: Direct Apply-Webhooks
 description: Receiving applications via webhook-payload structure, file delivery modes, deduplication.
 category: guides/direct-apply
 endpoints: []
-prerequisites: [direct-apply-introduction]
-concepts: [webhook, request_id, file_delivery_mode, multipart, base64]
-related: [direct-apply-introduction, direct-apply-feedback, cpa]
-audience: [developer]
+prerequisites:
+- direct-apply-introduction
+concepts:
+- webhook
+related:
+- direct-apply-introduction
+- direct-apply-feedback
+- cpa
+audience:
+- developer
 difficulty: advanced
+keywords:
+- request_id
+- file_delivery_mode
+- multipart
+- base64
 ---
 
 # Webhooks
@@ -50,7 +62,7 @@ Key payload fields: `source` (job board identifier), `formattedName`, `questions
 
 <!-- theme: warning -->
 > ### Question Types Are Passed Through Unchanged
-> The question `type` in the delivery is forwarded exactly as the job board sends it - it is **not** normalized by HAPI. Expect the same values used at ordering time (`text`, `choice`, `multi-choice`), and treat the field as an open string rather than a closed enum.
+> The question `type` in the delivery is forwarded exactly as the job board sends it - it is **not** normalized by HAPI. Expect the same values used at ordering time (`text`, `choice`, `multi-choice`, `date`, `file`, `int`, `float`; some boards spell `int` as `integer`), and treat the field as an open string rather than a closed enum.
 
 See [Direct Apply-Webhooks - Endpoint Reference](./webhooks.endpoints.md) for the full payload schema, all field tables, attachment type reference, and file delivery mode examples.
 
@@ -119,7 +131,7 @@ sequenceDiagram
 
 <!-- theme: warning -->
 > ### No Answer Type Transformation
-> Question types are **not** transformed between ordering and webhook delivery - the delivery carries the same `type` values you defined in the questionnaire (`text`, `choice`, `multi-choice`). Build your answer processing around those values, and tolerate unexpected strings since the field is forwarded verbatim from the job board.
+> Question types are **not** transformed between ordering and webhook delivery - the delivery carries the same `type` values you defined in the questionnaire (`text`, `choice`, `multi-choice`, `date`, `file`, `int`, `float`; some boards spell `int` as `integer`). Numeric answers are always delivered as strings. Build your answer processing around those values, and tolerate unexpected strings since the field is forwarded verbatim from the job board.
 
 <!-- theme: warning -->
 > ### Unclassified Attachments

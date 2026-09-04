@@ -1,7 +1,12 @@
 ---
+id: contract-notes-endpoints
 title: Contract Caveats & Notes - Endpoint Reference
 description: Request/response examples for credential validation when creating contracts.
 category: guides/contracts
+related:
+- contract-notes
+endpoints:
+- POST /contracts/
 ---
 
 > For conceptual overview, see [Contract Caveats & Notes](./notes.md).

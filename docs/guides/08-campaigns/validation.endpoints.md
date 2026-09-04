@@ -1,7 +1,15 @@
 ---
+id: campaign-validation-endpoints
 title: Campaign Validation - Endpoint Reference
 description: HTTP request/response details for campaign validation endpoints.
 category: guides/campaigns
+related:
+- campaign-validation
+endpoints:
+- POST /campaigns/order
+- POST /campaigns/validate-vacancy-info/
+- POST /campaigns/validate-campaign/
+- POST /campaigns/validate-channel-posting/
 ---
 
 > For conceptual overview, see [Campaign Validation](./validation.md).

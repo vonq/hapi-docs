@@ -1,7 +1,13 @@
 ---
+id: campaign-bundles-endpoints
 title: Bundles in Campaigns - Endpoint Reference
 description: JSON request/response examples for ordering bundles and reading bundle campaign responses.
 category: guides/campaigns
+related:
+- campaign-bundles
+endpoints:
+- POST /campaigns/order
+- GET /campaigns/{campaignId}
 ---
 
 > For conceptual overview, see [Bundles in Campaigns](./bundles.md).

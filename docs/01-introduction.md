@@ -1,14 +1,25 @@
 ---
+id: introduction
 title: Introduction
 description: What is HAPI, key features, getting started with credentials and first API call.
 category: getting-started
 endpoints:
-  - GET /v3/ats/ats/me/
+- GET /v3/ats/ats/me/
 prerequisites: []
-concepts: [hapi, ats, ats_user, secret_key, sandbox]
-related: [api-overview, authentication]
-audience: [developer, manager]
+concepts:
+- ats
+- ats_user
+- secret_key
+related:
+- api-overview
+- authentication
+audience:
+- developer
+- manager
 difficulty: beginner
+keywords:
+- hapi
+- sandbox
 ---
 
 # Introduction

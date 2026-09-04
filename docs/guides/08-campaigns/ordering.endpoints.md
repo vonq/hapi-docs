@@ -1,7 +1,12 @@
 ---
+id: campaign-ordering-endpoints
 title: Campaign Ordering - Endpoint Reference
 description: HTTP request/response details for the campaign ordering endpoint.
 category: guides/campaigns
+related:
+- campaign-ordering
+endpoints:
+- POST /campaigns/order
 ---
 
 > For conceptual overview, see [Campaign Ordering](./ordering.md).
@@ -53,6 +58,7 @@ category: guides/campaigns
 | `poNumber` | string | No | Optional purchase-order reference. When `paymentMethod` is `purchase_order`, this text appears on the customer's invoice. Do not include it for other payment methods. |
 | `paymentMethod` | string | No | Payment method for the campaign. Allowed values: `wallet`, `purchase_order`, `ats_managed`, `direct_charge`. Defaults to `ats_managed`. For `wallet`, `direct_charge`, and `purchase_order`, the order must contain at least one product with a price greater than `0`. See [Payment Methods](./ordering.md#payment-methods). |
 | `directApply` | object | No | Override Direct Apply webhook URL for this campaign. See [Direct Apply](../10-direct-apply/01-introduction.md). |
+| `notifications` | object | No | Override the campaign webhook URL for this campaign. See [Webhooks](./webhooks.md#per-campaign-webhook-url). |
 
 **orderedProductsSpecs Fields**
 

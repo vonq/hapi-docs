@@ -1,7 +1,14 @@
 ---
+id: wallets-and-payments-endpoints
 title: Wallets & Payments - Endpoint Reference
 description: Full request/response details for wallet creation, retrieval, billing portal, and the payment widget.
 category: guides/wallets-and-payments
+related:
+- wallets-and-payments
+endpoints:
+- POST /wallet/
+- GET /wallet/
+- POST /wallet/billing-portal/
 ---
 
 > For conceptual overview, see [Wallets & Payments](./12-wallets-and-payments.md).

@@ -1,13 +1,24 @@
 ---
+id: direct-apply-posting-requirements
 title: Direct Apply-Posting Requirements
 description: Enabling Direct Apply when ordering-applicationMethod facet, questionnaire configuration.
 category: guides/direct-apply
-endpoints: []
-prerequisites: [direct-apply-introduction, facets]
-concepts: [application_method, questionnaire, question_types]
-related: [direct-apply-introduction, facets, campaign-ordering]
-audience: [developer]
+endpoints:
+- POST /campaigns/validate-questionnaire/
+prerequisites:
+- direct-apply-introduction
+- facets
+related:
+- direct-apply-introduction
+- facets
+- campaign-ordering
+audience:
+- developer
 difficulty: advanced
+keywords:
+- application_method
+- questionnaire
+- question_types
 ---
 
 # Posting Requirements
@@ -173,8 +184,40 @@ Common question types across boards:
 | `text` | Free-text input | None-candidate types a response |
 | `choice` | Single-select | 2+ options, candidate picks one |
 | `multi-choice` | Multi-select | 2+ options, candidate picks one or more |
+| `date` | Date picker | None-candidate picks a date; delivered as an ISO 8601 datetime |
+| `file` | File upload | None-candidate uploads a file; delivered as an attachment linked to the question `id` |
+| `int` | Whole number | None-delivered as a string, e.g. `"8"`. `integer` is accepted as an alias. |
+| `float` | Decimal number | None-delivered as a string, e.g. `"32.5"` |
 
-Questionnaire validation also accepts `textarea`, `date`, `file`, `hier` (hierarchical) and `information`. These are reserved and support for these types will be added as we continue expaninding Direct Apply.
+`date`, `file`, `int` and `float` are being rolled out board by board. Only use them when the facet's `types` array lists them. Their delivery format is described in [Direct Apply-Webhooks - Endpoint Reference](./webhooks.endpoints.md#questionnaire-answer-types).
+
+Questionnaire validation also accepts `textarea`, `hier` (hierarchical) and `information`. These are reserved and support for these types will be added as we continue expanding Direct Apply.
+
+### Per-Type Constraints
+
+Each type listed in `types` may have a top-level key of the same name in the facet describing its constraints. Today that is a `question` object with the HTML allowed in the question text, plus, for some types, an `attributes` array naming the optional fields you can set on the question:
+
+```json
+{
+  "types": ["text", "choice", "multi-choice", "file", "date", "int", "float"],
+  "text": { "question": { "htmlAllowed": "ul,li,b,i,a,p" } },
+  "date": { "question": { "htmlAllowed": "ul,li,b,i,a,p" }, "attributes": ["format", "min", "max"] },
+  "int": { "question": { "htmlAllowed": "ul,li,b,i,a,p" }, "attributes": ["min", "max"] },
+  "float": { "question": { "htmlAllowed": "ul,li,b,i,a,p" }, "attributes": ["min", "max"] }
+}
+```
+
+| Attribute | Types | Description |
+|-----------|-------|-------------|
+| `min` | `date`, `int`, `float` | Lowest value the candidate may enter. A number for `int`/`float`, an ISO 8601 date (`YYYY-MM-DD`) for `date`. |
+| `max` | `date`, `int`, `float` | Highest value the candidate may enter, same encoding as `min`. |
+| `format` | `date` | Display format hint for the date picker. It does not change the delivered answer, which is always an ISO 8601 datetime. |
+
+Set attributes directly on the question object, alongside `id`, `question` and `type`. Only send attributes the facet lists for that type; a board without `attributes` for a type accepts none. HAPI forwards them to the board unchanged and the board validates them through `POST /campaigns/validate-questionnaire/`.
+
+<!-- theme: warning -->
+> ### Attribute Semantics Are Board-Defined
+> The list above is our current reading of the facet spec and is not yet confirmed by every board. In particular the `date` `format` values and whether `min`/`max` are inclusive are board-defined. Treat attributes as optional hints, validate the questionnaire before ordering, and expect the delivered answer format documented in the webhook reference regardless of the attributes you set.
 
 ### Building the Questionnaire Value
 
@@ -185,8 +228,9 @@ Each question is an object with this structure:
 | `id` | string | Yes | Unique identifier you define |
 | `question` | string | Yes | Question text shown to the candidate |
 | `type` | string | Yes | One of the types from the facet's `types` array |
-| `answers` | array | For `choice` / `multi-choice` | Answer options |
+| `answers` | array | For `choice` / `multi-choice` | Answer options. Omit for all other types. |
 | `is_required` | boolean | No | Whether the candidate must answer the question. Include only when `questionnaire.questionnaire.supportsRequired` is `true`. |
+| `min`, `max`, `format` | string / number | No | Per-type constraints. Include only when the facet lists them under that type's `attributes`. See [Per-Type Constraints](#per-type-constraints). |
 
 Each answer option:
 
@@ -195,7 +239,7 @@ Each answer option:
 | `id` | string | Yes | Unique identifier for the option |
 | `answer` | string | Yes | Option text shown to the candidate |
 
-Example questionnaire with two questions:
+Example questionnaire on a board that lists all types with the attributes shown above:
 
 ```json
 [
@@ -213,6 +257,31 @@ Example questionnaire with two questions:
       { "id": "yes", "answer": "Yes" },
       { "id": "no", "answer": "No" }
     ]
+  },
+  {
+    "id": "q3",
+    "question": "Earliest start date?",
+    "type": "date",
+    "min": "2026-10-01",
+    "is_required": true
+  },
+  {
+    "id": "q4",
+    "question": "Years of relevant experience",
+    "type": "int",
+    "min": 0,
+    "max": 50
+  },
+  {
+    "id": "q5",
+    "question": "Expected hourly rate (EUR)",
+    "type": "float",
+    "min": 0
+  },
+  {
+    "id": "q6",
+    "question": "Upload a portfolio",
+    "type": "file"
   }
 ]
 ```

@@ -1,14 +1,32 @@
 ---
+id: campaign-ordering
 title: Campaign Ordering
 description: Submit campaigns-full request structure, orderedProducts, orderedProductsSpecs, payment methods, loose validation.
 category: guides/campaigns
 endpoints:
-  - POST /campaigns/order
-prerequisites: [campaigns-introduction, vacancy-fields, products-introduction]
-concepts: [campaign, orderedProducts, orderedProductsSpecs, payment_method, wallet, loose_validation, labels]
-related: [vacancy-fields, campaign-validation, campaign-status, contract-ordering, wallets]
-audience: [developer]
+- POST /campaigns/order
+prerequisites:
+- campaigns-introduction
+- vacancy-fields
+- products-introduction
+concepts:
+- campaign
+- wallet
+- loose_validation
+related:
+- vacancy-fields
+- campaign-validation
+- campaign-status
+- contract-ordering
+- wallets-and-payments
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- orderedProducts
+- orderedProductsSpecs
+- payment_method
+- labels
 ---
 
 # Ordering
@@ -132,6 +150,8 @@ GET /campaigns?label[department]=engineering
 
 You can filter on multiple labels simultaneously.
 
+Labels are one of several filters the list endpoint accepts-campaigns can also be narrowed by `campaignName`, `status`, `companyId`, `customerId`, `workOrderId`, `paidByWallet` and created/modified/delivered date ranges. See [Status & Lifecycle - Endpoint Reference](./status.endpoints.md) for the full list.
+
 ## Payment Methods
 
 | Method | Required Fields | Description |
@@ -142,6 +162,8 @@ You can filter on multiple labels simultaneously.
 | `purchase_order` | `walletId` | Order against the wallet's purchase-order credit limits and invoice separately. `poNumber` is optional free text that appears on the invoice - it is not the required field. |
 
 For `wallet`, `direct_charge`, and `purchase_order`, the order must contain at least one product with a price greater than `0`. If `paymentMethod` is omitted, HAPI uses `ats_managed`.
+
+All three wallet-backed methods mark the campaign as paid by wallet, so `GET /campaigns?paidByWallet=true` returns campaigns ordered with any of them-not just `paymentMethod: wallet`. `ats_managed` campaigns match `paidByWallet=false`.
 
 <!-- theme: warning -->
 > **`ats_managed` and `walletId` are mutually exclusive.** Including a `walletId` when the payment method is `ats_managed` (explicitly or by omission) returns `400` with the message `"walletId not supported in requests where payment method is ats_managed"`. Only send `walletId` with `wallet` or `direct_charge`.

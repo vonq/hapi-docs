@@ -1,7 +1,12 @@
 ---
+id: contract-posting-requirements-endpoints
 title: Contract Posting Requirements - Endpoint Reference
 description: Full request/response details for the contract posting requirements autocomplete endpoint.
 category: guides/contracts
+related:
+- contract-posting-requirements
+endpoints:
+- POST /contracts/posting-requirements/{channel_id_or_contract_id}/{posting-requirement-name}/
 ---
 
 > For conceptual overview, see [Contract Posting Requirements](./posting-requirements.md).

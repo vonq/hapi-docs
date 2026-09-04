@@ -1,19 +1,30 @@
 ---
+id: entities
 title: Entities
 description: ATS and ATSUser hierarchy, resource ownership, data isolation, and partitioning strategies.
 category: guides/authentication-and-users
 endpoints:
-  - GET /v3/ats/ats/me/
-  - GET /v3/ats/atsuser/me/
-  - GET /v3/ats/users/
-  - POST /v3/ats/users/
-  - GET /v3/ats/users/{customer_id}/
-  - GET /v3/ats/atsuser/me/settings/
-prerequisites: [authentication-introduction]
-concepts: [ats, ats_user, customer_id, resource_ownership, partitioning]
-related: [authentication, api-overview]
-audience: [developer]
+- GET /v3/ats/ats/me/
+- GET /v3/ats/atsuser/me/
+- GET /v3/ats/users/
+- POST /v3/ats/users/
+- GET /v3/ats/users/{customer_id}/
+- GET /v3/ats/atsuser/me/settings/
+prerequisites:
+- authentication-introduction
+concepts:
+- ats
+- ats_user
+related:
+- authentication
+- api-overview
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- customer_id
+- resource_ownership
+- partitioning
 ---
 
 # Entities

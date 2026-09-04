@@ -1,13 +1,20 @@
 ---
+id: screening-webhooks
 title: Screening-Webhooks
 description: Receive real-time screening result notifications via webhook.
 category: guides/screening
 endpoints: []
-prerequisites: [screening-jobs-and-applications]
-concepts: [webhook, screening_results]
-related: [screening-jobs-and-applications]
-audience: [developer]
+prerequisites:
+- screening-jobs-and-applications
+concepts:
+- webhook
+related:
+- screening-jobs-and-applications
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- screening_results
 ---
 
 # Screening Webhooks
@@ -16,7 +23,7 @@ difficulty: intermediate
 
 ## Overview
 
-HAPI's screening webhooks push results to your system as soon as they are available, eliminating the need to poll the API. They fire in two situations: when a candidate completes screening (`screened_success`) and when the `finalization_time_hours` window expires without completion (`screened_timeout`).
+HAPI's screening webhooks push results to your system as soon as they are available, eliminating the need to poll the API. Application webhooks fire in two situations: when a candidate completes screening (`screened_success`) and when the `finalization_time_hours` window expires without completion (`screened_timeout`). In addition, opt-in [job events](#job-events) notify you about job-level changes, such as the screening questions becoming available.
 
 For background on screening concepts, see [Screening-Introduction](./01-introduction.md).
 
@@ -129,6 +136,69 @@ Like Mode 2, but files are sent as JSON with a `base64Content` field instead of 
 2. **Subsequent POSTs**-one per file, JSON with `base64Content` field
 
 Best for JSON-only systems with request size limits.
+
+## Job Events
+
+Job events are webhooks about the **screening job itself** rather than an individual application. They share the webhook URL, retry behavior, and HMAC signing with application webhooks, but carry a different payload and are distinguished by `type: "job_event"`.
+
+<!-- theme: warning -->
+> ### Opt-In Required
+> Job events are **opt-in** and disabled by default. Contact your VONQ account manager to enable them for your account. Application webhooks are unaffected either way.
+
+### `ai_requirements_ready`
+
+Fires once per job, when the AI has finished expanding the requirements for a newly created job (typically within a few minutes of creation). The same lists also become available on the API as `requirements` and `interview_questions` on [`GET /v3/screening/jobs/{id}/`](./jobs-and-applications.endpoints.md).
+
+```json
+{
+  "request_id": "7f3d1c22-9a4b-4d6e-8f01-23456789abcd",
+  "job_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "type": "job_event",
+  "event": "ai_requirements_ready",
+  "metadata": { "ats_job_id": "job-456" },
+  "payload": {
+    "requirements_ready_at": "2026-08-10T09:15:33Z",
+    "job_screening_url": "https://screening.vonq.com/jobs/a1b2c3d4",
+    "requirements": [
+      {
+        "id": 22524,
+        "summary": "Python proficiency",
+        "description": "We use Python 3.11 with FastAPI and SQLAlchemy.",
+        "question": "Is the candidate proficient in Python?",
+        "source": "customer"
+      }
+    ],
+    "interview_questions": [
+      {
+        "id": 84120,
+        "question": "Walk me through a Python service you designed end to end.",
+        "requirement_summary": "Python proficiency"
+      }
+    ]
+  }
+}
+```
+
+### Job Event Field Reference
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `request_id` | UUID | Unique ID for this delivery-use for deduplication |
+| `job_id` | UUID | The screening job the event is about |
+| `type` | string | Always `"job_event"`-route on this field to separate job events from application webhooks |
+| `event` | string | What happened. Currently only `ai_requirements_ready`; more job events may be added later. |
+| `metadata` | object | Passthrough metadata from **job** creation (application webhooks carry the application's metadata instead) |
+| `payload.requirements_ready_at` | string | ISO 8601 timestamp when the requirements became final |
+| `payload.job_screening_url` | string \| null | Public application URL. `null` if `allow_public_applications` is `false`. |
+| `payload.requirements` | array | Screening criteria the AI evaluates candidates against-same shape as `requirements` on the job details endpoint. Each entry carries a stable unique `id`; `source` is `"customer"` for requirements you supplied at job creation or have since edited, `"ai"` for AI-generated ones you have not touched. |
+| `payload.interview_questions` | array | Questions the AI interview agent will ask-same shape as `interview_questions` on the job details endpoint. Empty for jobs where the interview agent is disabled. |
+
+### Differences from Application Webhooks
+
+- **Always a single JSON POST.** File delivery modes do not apply-job events have no attachments.
+- **No `application_id` and no `status` field.** Handlers that assume every webhook is an application result should route on `type` first.
+- **Signed the same way.** When HMAC signing is enabled for your account, job events carry the same `X-Webhook-Timestamp` / `X-Webhook-Signature` headers over the full JSON body.
+- **Delivered to the same URL** as application webhooks by default, honoring the per-job `settings.webhook_url` override. Your account manager can configure a separate URL for job events if you prefer not to multiplex on `type`.
 
 ## HMAC Signature Verification
 

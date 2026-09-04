@@ -1,14 +1,25 @@
 ---
+id: campaign-editing
 title: Campaign Editing
 description: Update vacancy details and posting requirements on live campaigns-editable fields and channel support.
 category: guides/campaigns
 endpoints:
-  - PUT /campaigns/{campaignId}/edit
-prerequisites: [campaign-ordering, campaign-status]
-concepts: [campaign_editing, isEditable, loose_validation]
-related: [campaign-ordering, campaign-status, campaign-cancellation]
-audience: [developer]
+- PUT /campaigns/{campaignId}/edit
+prerequisites:
+- campaign-ordering
+- campaign-status
+concepts:
+- loose_validation
+related:
+- campaign-ordering
+- campaign-status
+- campaign-cancellation
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- campaign_editing
+- isEditable
 ---
 
 # Editing

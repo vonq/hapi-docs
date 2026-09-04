@@ -1,7 +1,12 @@
 ---
+id: direct-apply-feedback-endpoints
 title: Direct Apply-Feedback - Endpoint Reference
 description: Full request/response details for the application feedback endpoint.
 category: guides/direct-apply
+related:
+- direct-apply-feedback
+endpoints:
+- POST /v3/apply-applications/application-feedback/
 ---
 
 > For conceptual overview, see [Direct Apply-Feedback](./feedback.md).

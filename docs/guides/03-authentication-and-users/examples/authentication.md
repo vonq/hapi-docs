@@ -1,15 +1,25 @@
 ---
+id: authentication-examples
 title: Authentication Examples
 description: Request/response examples for each authentication level-secret key, JWT, partner-level, and customer-level.
 category: guides/authentication-and-users
 endpoints:
-  - GET /v3/ats/ats/me/
-  - GET /v3/ats/atsuser/me/
-prerequisites: [authentication]
-concepts: [secret_key, jwt, x_auth_token, x_customer_id]
-related: [authentication, entities]
-audience: [developer]
+- GET /v3/ats/ats/me/
+- GET /v3/ats/atsuser/me/
+prerequisites:
+- authentication
+concepts:
+- secret_key
+- jwt
+related:
+- authentication
+- entities
+audience:
+- developer
 difficulty: beginner
+keywords:
+- x_auth_token
+- x_customer_id
 ---
 
 # Authentication Examples

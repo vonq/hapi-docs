@@ -1,7 +1,25 @@
 ---
+id: managing-contracts-endpoints
 title: Managing Contracts - Endpoint Reference
 description: Full request/response details for MOC, contract CRUD, and contract group endpoints.
 category: guides/contracts
+related:
+- managing-contracts
+endpoints:
+- GET /products/channels/mocs/
+- GET /products/channels/mocs/{id}/
+- GET /contracts/
+- POST /contracts/
+- GET /contracts/single/{contract_id}/
+- GET /contracts/multiple/{contracts_ids}/
+- PATCH /contracts/single/{contract_id}/
+- DELETE /contracts/{contract_id}/
+- GET /igb/contracts/groups/
+- POST /igb/contracts/groups/
+- GET /igb/contracts/groups/{group_idx}/
+- PUT /igb/contracts/groups/{group_idx}/
+- PATCH /igb/contracts/groups/{group_idx}/
+- DELETE /igb/contracts/groups/{group_idx}/
 ---
 
 > For conceptual overview, see [Managing Contracts](./managing-contracts.md).

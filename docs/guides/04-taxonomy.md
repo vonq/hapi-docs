@@ -1,19 +1,31 @@
 ---
+id: taxonomy
 title: Taxonomy & Locations
 description: Standardized job titles, industries, education levels, seniority, and geographic locations.
 category: guides/taxonomy
 endpoints:
-  - GET /products/job-titles/
-  - GET /products/industries/
-  - GET /products/job-functions/
-  - GET /taxonomy/education-levels
-  - GET /taxonomy/seniority
-  - GET /products/location/search/
-prerequisites: [authentication]
-concepts: [taxonomy, job_title, industry, education_level, seniority, location]
-related: [products-introduction, campaign-ordering]
-audience: [developer]
+- GET /products/job-titles/
+- GET /products/industries/
+- GET /products/job-functions/
+- GET /taxonomy/education-levels
+- GET /taxonomy/seniority
+- GET /products/location/search/
+prerequisites:
+- authentication
+concepts:
+- taxonomy
+related:
+- products-introduction
+- campaign-ordering
+audience:
+- developer
 difficulty: beginner
+keywords:
+- job_title
+- industry
+- education_level
+- seniority
+- location
 ---
 
 # Taxonomy & Locations

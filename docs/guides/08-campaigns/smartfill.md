@@ -1,17 +1,25 @@
 ---
+id: campaign-smartfill
 title: Campaign Smartfill
 description: AI-powered autofill for vacancy fields-using Smartfill during campaign creation.
 category: guides/campaigns
 endpoints:
-  - POST /v3/smartfill/vacancy-fields/
-  - GET /v3/smartfill/vacancy-fields/{task_id}/
-  - POST /v3/smartfill/product-search-filters/
-  - GET /v3/smartfill/product-search-filters/{task_id}/
-prerequisites: [vacancy-fields]
-concepts: [smartfill, ai_suggestions]
-related: [vacancy-fields, posting-requirements-smartfill]
-audience: [developer]
+- POST /v3/smartfill/vacancy-fields/
+- GET /v3/smartfill/vacancy-fields/{task_id}/
+- POST /v3/smartfill/product-search-filters/
+- GET /v3/smartfill/product-search-filters/{task_id}/
+prerequisites:
+- vacancy-fields
+concepts:
+- smartfill
+related:
+- vacancy-fields
+- posting-requirements-smartfill
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- ai_suggestions
 ---
 
 # Smartfill for Vacancy Fields

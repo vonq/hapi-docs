@@ -1,7 +1,12 @@
 ---
+id: vacancy-fields-endpoints
 title: Vacancy Fields - Endpoint Reference
 description: JSON payload examples for vacancy field sections used in campaign ordering and validation.
 category: guides/campaigns
+related:
+- vacancy-fields
+endpoints:
+- POST /campaigns/order
 ---
 
 > For conceptual overview and field reference tables, see [Vacancy Fields](./vacancy-fields.md).

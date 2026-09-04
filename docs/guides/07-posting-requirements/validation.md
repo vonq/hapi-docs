@@ -1,15 +1,25 @@
 ---
+id: posting-requirements-validation
 title: Validation
 description: Client-side validation rules, server-side validation endpoints, and error handling for posting requirements.
 category: guides/posting-requirements
 endpoints:
-  - POST /campaigns/validate-channel-posting/
-  - POST /campaigns/validate-questionnaire/
-prerequisites: [facets]
-concepts: [validation_rules, maxlength, regex, date_format, server_validation]
-related: [facets, campaign-validation]
-audience: [developer]
+- POST /campaigns/validate-channel-posting/
+- POST /campaigns/validate-questionnaire/
+prerequisites:
+- facets
+related:
+- facets
+- campaign-validation
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- validation_rules
+- maxlength
+- regex
+- date_format
+- server_validation
 ---
 
 # Validation

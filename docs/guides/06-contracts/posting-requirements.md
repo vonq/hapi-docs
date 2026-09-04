@@ -1,14 +1,27 @@
 ---
+id: contract-posting-requirements
 title: Contract Posting Requirements
 description: Contract-specific posting requirements, autocomplete endpoint, and posting requirement defaults.
 category: guides/contracts
 endpoints:
-  - POST /contracts/posting-requirements/{channel_id_or_contract_id}/{posting-requirement-name}/
-prerequisites: [managing-contracts, facets]
-concepts: [posting_requirements, autocomplete, contract, posting_requirements_defaults]
-related: [facets, autocomplete, product-posting-requirements, contract-ordering]
-audience: [developer]
+- POST /contracts/posting-requirements/{channel_id_or_contract_id}/{posting-requirement-name}/
+prerequisites:
+- managing-contracts
+- facets
+concepts:
+- posting_requirements
+- contract
+related:
+- facets
+- autocomplete
+- product-posting-requirements
+- contract-ordering
+audience:
+- developer
 difficulty: advanced
+keywords:
+- autocomplete
+- posting_requirements_defaults
 ---
 
 # Contract Posting Requirements

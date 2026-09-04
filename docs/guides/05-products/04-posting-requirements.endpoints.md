@@ -1,7 +1,14 @@
 ---
+id: product-posting-requirements-endpoints
 title: Product Posting Requirements - Endpoint Reference
 description: Full request/response details for product specs and facet autocomplete endpoints.
 category: guides/products
+related:
+- product-posting-requirements
+endpoints:
+- GET /products/{product_id}/specs/
+- GET /products/{product_id}/specs/facets/{facet_name}/options/
+- POST /products/{product_id}/specs/facets/{facet_name}/options/
 ---
 
 > For conceptual overview, see [Product Posting Requirements](./04-posting-requirements.md).

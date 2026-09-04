@@ -1,7 +1,13 @@
 ---
+id: posting-requirements-validation-endpoints
 title: Validation - Endpoint Reference
 description: HTTP request/response details for posting requirement validation endpoints.
 category: guides/posting-requirements
+related:
+- posting-requirements-validation
+endpoints:
+- POST /campaigns/validate-channel-posting/
+- POST /campaigns/validate-questionnaire/
 ---
 
 > For conceptual overview, see [Validation](./validation.md).

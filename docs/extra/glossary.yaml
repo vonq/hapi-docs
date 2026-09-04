@@ -183,9 +183,9 @@ terms:
     aka: [payment balance, prepaid account]
     note: One wallet per ATSUser, one currency per wallet. Cannot change currency after creation.
     related_endpoints:
-      - POST /wallet
-      - GET /wallet
-      - POST /wallet/billing-portal
+      - POST /wallet/
+      - GET /wallet/
+      - POST /wallet/billing-portal/
     docs: guides/12-wallets-and-payments.md
 
   direct_apply:

@@ -1,22 +1,43 @@
 ---
+id: job-marketing-ordering
 title: Scenario-Job Marketing Campaign
 description: End-to-end walkthrough-search for products, fill vacancy fields, validate, and place a Job Marketing campaign order.
 category: guides/scenarios
 endpoints:
-  - GET /products/search/
-  - GET /taxonomy/education-levels
-  - GET /taxonomy/seniority
-  - GET /products/industries/
-  - GET /products/job-titles/
-  - POST /campaigns/validate-vacancy-info/
-  - POST /campaigns/validate-campaign/
-  - POST /campaigns/order
-  - GET /campaigns/{campaignId}
-prerequisites: [authentication, taxonomy, products-introduction, campaigns-introduction]
-concepts: [product, marketplace, taxonomy, vacancy_fields, targetGroup, campaign, validation, wallet]
-related: [marketplace, taxonomy, campaign-ordering, campaign-validation, campaign-status, wallets-and-payments]
-audience: [developer]
+- GET /products/search/
+- GET /taxonomy/education-levels
+- GET /taxonomy/seniority
+- GET /products/industries/
+- GET /products/job-titles/
+- POST /campaigns/validate-vacancy-info/
+- POST /campaigns/validate-campaign/
+- POST /campaigns/order
+- GET /campaigns/{campaignId}
+prerequisites:
+- authentication
+- taxonomy
+- products-introduction
+- campaigns-introduction
+concepts:
+- product
+- taxonomy
+- vacancy_fields
+- campaign
+- wallet
+related:
+- marketplace
+- taxonomy
+- campaign-ordering
+- campaign-validation
+- campaign-status
+- wallets-and-payments
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- marketplace
+- targetGroup
+- validation
 ---
 
 # Job Marketing Campaign

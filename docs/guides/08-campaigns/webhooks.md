@@ -1,13 +1,21 @@
 ---
+id: campaign-webhooks
 title: Campaign Webhooks
 description: Receive campaign status change notifications via webhooks.
 category: guides/campaigns
 endpoints: []
-prerequisites: [campaign-status]
-concepts: [webhook, campaign_status]
-related: [campaign-status, direct-apply-webhooks]
-audience: [developer]
+prerequisites:
+- campaign-status
+concepts:
+- webhook
+related:
+- campaign-status
+- direct-apply-webhooks
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- campaign_status
 ---
 
 # Webhooks
@@ -27,6 +35,22 @@ Campaign webhooks must be enabled by your VONQ account manager. To set up:
 2. **Contact your account manager**-provide your callback URL. They will configure your account to receive campaign webhook notifications.
 
 There is no self-service subscription endpoint-webhook configuration is managed by VONQ.
+
+### Per-Campaign Webhook URL
+
+The account-level callback URL applies to every campaign you order. To send the notifications for a single campaign somewhere else, set `notifications.webhookUrl` in the campaign order request:
+
+```json
+{
+  "notifications": {
+    "webhookUrl": "https://your-ats.example.com/webhooks/vonq/campaigns/tenant-42"
+  }
+}
+```
+
+When present, that URL replaces the account-level one for that campaign only. Everything else stays the same: campaign webhooks must still be enabled for your account, the payload is unchanged, custom headers configured by your account manager are still sent, and the no-retry policy still applies.
+
+Omit `notifications` (or leave `webhookUrl` empty) to use the account-level URL.
 
 ### Authenticating Deliveries
 

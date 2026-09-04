@@ -1,7 +1,12 @@
 ---
+id: direct-apply-posting-requirements-endpoints
 title: Direct Apply-Posting Requirements - Endpoint Reference
 description: Full request/response details for the questionnaire validation endpoint and campaign order example.
 category: guides/direct-apply
+related:
+- direct-apply-posting-requirements
+endpoints:
+- POST /campaigns/validate-questionnaire/
 ---
 
 > For conceptual overview, see [Direct Apply-Posting Requirements](./posting-requirements.md).

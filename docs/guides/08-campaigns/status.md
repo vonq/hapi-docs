@@ -1,16 +1,30 @@
 ---
+id: campaign-status
 title: Status & Lifecycle
 description: Track campaign and product status, delivery dates, job board links, click metrics.
 category: guides/campaigns
 endpoints:
-  - GET /campaigns/{campaignId}/status
-  - GET /campaigns/{campaignId}
-  - GET /campaigns
-prerequisites: [campaign-ordering]
-concepts: [campaign_status, product_status, not_processed, deliveredOn, jobBoardLink, clicks, incremental_sync]
-related: [campaign-ordering, campaign-webhooks, campaign-editing, campaign-cancellation]
-audience: [developer]
+- GET /campaigns/{campaignId}/status
+- GET /campaigns/{campaignId}
+- GET /campaigns
+prerequisites:
+- campaign-ordering
+related:
+- campaign-ordering
+- campaign-webhooks
+- campaign-editing
+- campaign-cancellation
+audience:
+- developer
 difficulty: intermediate
+keywords:
+- campaign_status
+- product_status
+- not_processed
+- deliveredOn
+- jobBoardLink
+- clicks
+- incremental_sync
 ---
 
 # Status & Lifecycle
@@ -41,6 +55,8 @@ stateDiagram-v2
 | `offline` | All products have finished, expired, or been cancelled |
 
 The campaign status is an aggregate-it reflects the best state across all its products. A campaign is `online` as soon as one product goes live, even if others are still `in progress` or have failed.
+
+These three values are also what the `status` filter on the list endpoint accepts, so `GET /campaigns?status=online` returns every campaign with at least one live product.
 
 ## Product Status
 
@@ -168,6 +184,8 @@ The `modifiedOn` timestamp updates whenever any product status changes within th
 2. Query with `modifiedOn_gte={lastSync}` sorted by `modifiedOn.asc`.
 3. Process each campaign-update local status records.
 4. Update your stored timestamp to the `modifiedOn` of the last processed campaign.
+
+Combine `modifiedOn_gte` with the other list filters to narrow the sync further-`status=online` to touch only live campaigns, or `deliveredOn_gte`/`deliveredOn_lte` to pick up the ones delivered in a given window. See [Status & Lifecycle - Endpoint Reference](./status.endpoints.md) for the full parameter list.
 
 ## Edge Cases & Gotchas
 
