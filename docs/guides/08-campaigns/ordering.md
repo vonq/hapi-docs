@@ -181,7 +181,7 @@ Use `GET /v3/ats/atsuser/me/settings/` to read the current configuration:
 | `settings.campaigns.loose_validation.marketplace.fields` | Marketplace orders |
 | `settings.campaigns.loose_validation.job_post.fields` | Job Post orders |
 
-The applicable list is chosen from the products in the campaign: Marketplace-only campaigns use the marketplace list, Job Post-only campaigns use the job_post list, and mixed campaigns use the union of both. Empty lists mean no fields may be omitted for that campaign type.
+The applicable list is chosen from the products in the campaign: Marketplace-only campaigns use the marketplace list, Job Post-only campaigns use the job_post list, and mixed campaigns may omit only fields present in both lists. Empty lists mean no fields may be omitted for that campaign type. If any `orderedProducts` entry cannot be resolved, no fields may be omitted.
 
 <!-- theme: warning -->
 > ### Restrictions

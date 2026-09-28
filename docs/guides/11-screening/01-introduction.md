@@ -65,7 +65,7 @@ graph LR
 
 Key behaviors:
 
-- Shortly after job creation, the AI expands your requirements into the final screening set. `requirements_ready_at` marks when the job's `requirements` list is updated to the final version, and an opt-in [job event webhook](./webhooks.md#job-events) can notify you.
+- Shortly after job creation, the AI writes the screening requirements from the job description. `requirements_ready_at` marks when the job's `requirements` list is filled in, and an opt-in [job event webhook](./webhooks.md#job-events) can notify you. From then on you can reword them, add your own and remove the ones you do not want.
 - If a candidate returns to the same `application_url`, they resume from where they left off.
 - `finalization_time_hours` (1–168, default 168 = 7 days) controls when applications expire. An additional buffer accommodates candidates who are mid-conversation when the timer runs out.
 - Requirements are never shown to candidates. The AI uses them internally to guide questions and evaluate answers.
@@ -74,7 +74,7 @@ Key behaviors:
 
 ## Key Concepts
 
-**Screening Job**-A job configured for AI screening. Contains a job description, company information, optional requirements, and settings like `finalization_time_hours`. Created once per vacancy and receives many applications. Immutable after creation-you can only soft-delete a screening job, not update it.
+**Screening Job**-A job configured for AI screening. Contains a job description, company information, the requirements the AI prepares from them, and settings like `finalization_time_hours`. Created once per vacancy and receives many applications. Immutable after creation-you can only soft-delete a screening job, not update it.
 
 **Application**-A single candidate's screening session. Created via the API (ATS-collected) or via the public URL (HAPI-collected, flagged as `is_external_application`). A candidate can resume their session by returning to the same URL.
 

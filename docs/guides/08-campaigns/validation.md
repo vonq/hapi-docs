@@ -66,6 +66,8 @@ For simpler integrations, you can skip the individual validation steps and valid
 
 All validation endpoints support the same `?loose=true` query parameter as the ordering and editing endpoints: vacancy fields listed in `settings.campaigns.loose_validation` may be omitted from the payload, while validation still runs for all other fields. This lets you pre-validate exactly what a loose order or edit will accept.
 
+`POST /campaigns/validate-vacancy-info/` has no products to pick a list from, so only the original six fields (`yearsOfExperience`, `workingLocation.addressLine1` and the four `targetGroup` fields) may be omitted there when they appear in either list. Use `POST /campaigns/validate-campaign/` to check the full product-dependent field set.
+
 Your account must be enabled for loose validation-the API returns `400` if `?loose=true` is used before it is. See [Ordering-Loose Validation](./ordering.md#loose-validation) for the settings that control which fields may be omitted, and [Vacancy Fields-Loose Validation](./vacancy-fields.md#loose-validation) for the possible field paths.
 
 ## Endpoints

@@ -8,7 +8,11 @@ endpoints:
 - GET /v3/screening/jobs/
 - GET /v3/screening/jobs/{id}/
 - PATCH /v3/screening/jobs/{id}/requirements/
+- POST /v3/screening/jobs/{id}/requirements/
+- DELETE /v3/screening/jobs/{id}/requirements/{requirement_id}/
 - PATCH /v3/screening/jobs/{id}/interview-questions/
+- POST /v3/screening/jobs/{id}/interview-questions/
+- DELETE /v3/screening/jobs/{id}/interview-questions/{question_id}/
 - DELETE /v3/screening/jobs/{id}/
 - POST /v3/screening/jobs/{job_id}/applications/
 - GET /v3/screening/jobs/{job_id}/applications/
@@ -39,7 +43,7 @@ keywords:
 
 ## Overview
 
-A **screening job** defines what you are hiring for-the title, description, company info, and evaluation requirements. The job's own content is fixed once created: you cannot change the title, description or company, only soft-delete the job. The wording of its requirements and interview questions _can_ be edited once the AI has finished preparing them.
+A **screening job** defines what you are hiring for-the title, description and company info, from which the AI writes the criteria candidates are evaluated against. The job's own content is fixed once created: you cannot change the title, description or company, only soft-delete the job. Its requirements and interview questions _can_ be edited, added to and removed once the AI has finished preparing them.
 
 An **application** represents a single candidate screening session tied to a job. You submit the candidate's contact details and resume, the candidate completes the screening flow, and HAPI returns an enriched dossier with scores and parsed data.
 
@@ -47,10 +51,11 @@ For background on how screening fits into HAPI, see [Screening-Introduction](./0
 
 ## Key Concepts
 
-- **Requirements**-criteria the AI uses to evaluate candidates. Requirements are _not_ shown to candidates. Each requirement has a `question` (required) and optional `summary` and `description`.
-- **Screening requirements**-shortly after job creation, the AI expands your requirements into the final set (it may add AI-generated requirements). Once ready, `requirements_ready_at` is set and the job's `requirements` list is updated to the final version. Opt-in [job event webhooks](./webhooks.md#job-events) can notify you when this happens.
-- **Editing questions**-once `requirements_ready_at` is set, you can reword the requirements and interview questions to be more specific, stricter, or to fix a typo. Send only the entries you are changing, each with its `id`; omitted entries and omitted fields are left untouched, so entries cannot be added or removed. Only applications created after the change are assessed against the updated wording-candidates who already went through screening are not re-assessed.
-- **Interview questions**-the questions the AI interview agent asks during the screening conversation. They are generated from your requirements and become available on the job at the same time as the final `requirements`, in the job's `interview_questions` list. Jobs with the interview agent disabled return an empty list.
+- **Requirements**-criteria the AI uses to evaluate candidates. Requirements are _not_ shown to candidates. Each requirement has a `summary`, a `question` and an optional `description`.
+- **Screening requirements**-shortly after job creation, the AI writes the requirement set from the job description. A job therefore starts with none, and you cannot supply them when creating it. Once ready, `requirements_ready_at` is set and the job's `requirements` list holds the final version. Opt-in [job event webhooks](./webhooks.md#job-events) can notify you when this happens.
+- **Editing questions**-once `requirements_ready_at` is set, you can reword the requirements and interview questions to be more specific, stricter, or to fix a typo. `PATCH` the entries you are changing, each with its `id`; omitted entries and omitted fields are left untouched. Only applications created after the change are assessed against the updated wording-candidates who already went through screening are not re-assessed.
+- **Adding and removing questions**-`POST` to the same collection to add one requirement or interview question, and `DELETE` the entry to remove it. What you add is used exactly as written: the AI does not rewrite it, generate an interview question for it, or send another `ai_requirements_ready` webhook. Deleting a requirement also deletes the interview questions assessing it.
+- **Interview questions**-the questions the AI interview agent asks during the screening conversation. They are generated from your requirements and become available on the job at the same time as the final `requirements`, in the job's `interview_questions` list. Each question assesses one requirement, and a requirement holds at most one question. Jobs with the interview agent disabled return an empty list.
 - **Finalization**-the point at which screening completes and the dossier becomes available. Controlled by `finalization_time_hours` (default: 168 hours / 7 days).
 - **Dossier**-the enriched candidate profile available after successful screening. Includes `screened_payload` (same shape as `initial_payload`, enriched) and `screened_files`.
 - **Attachments**-optional files submitted with an application (e.g. resume, cover letter). Accepted extensions: `.pdf`, `.docx`, `.jpg`, `.jpeg`, `.png`, `.txt`. Upload directly via `multipart/form-data` (`files`) or reference remote URLs via JSON (`remote_files`, 10 MB / 10-second download limit). Every entry in `initial_payload.attachments` must correspond to an uploaded or remote file, and vice versa.
@@ -61,11 +66,15 @@ For background on how screening fits into HAPI, see [Screening-Introduction](./0
 
 | Endpoint | Description |
 |----------|-------------|
-| `POST /v3/screening/jobs/` | Create a screening job with title, description, company info, requirements, and settings |
+| `POST /v3/screening/jobs/` | Create a screening job with title, description, company info, and settings |
 | `GET /v3/screening/jobs/` | List screening jobs (paginated), filterable by `status` and `requirements_ready` |
 | `GET /v3/screening/jobs/{id}/` | Retrieve full job details including `data`, `requirements`, `interview_questions`, and `settings` |
 | `PATCH /v3/screening/jobs/{id}/requirements/` | Edit the wording of the job's requirements |
+| `POST /v3/screening/jobs/{id}/requirements/` | Add one requirement to the job |
+| `DELETE /v3/screening/jobs/{id}/requirements/{requirement_id}/` | Delete one requirement and the interview questions assessing it |
 | `PATCH /v3/screening/jobs/{id}/interview-questions/` | Edit the wording of the job's interview questions |
+| `POST /v3/screening/jobs/{id}/interview-questions/` | Add one interview question, assessing one requirement |
+| `DELETE /v3/screening/jobs/{id}/interview-questions/{question_id}/` | Delete one interview question |
 | `DELETE /v3/screening/jobs/{id}/` | Soft-delete a screening job |
 | `POST /v3/screening/jobs/{job_id}/applications/` | Create a candidate screening application (supports multipart upload or remote file URLs) |
 | `GET /v3/screening/jobs/{job_id}/applications/` | List applications with filtering by `status`, `screened_stage`, `is_external_application`, and sorting |

@@ -7,6 +7,27 @@ category: resources
 
 # Changelog
 
+## 2026-09-24
+### Added
+- AI ad creatives. A product whose posting requirements include a `GENERATOR` facet can have HAPI write complete adverts for it: create a task on `POST /v3/smartfill/posting-requirements/` naming the facet in `generator`, then poll for `generator.alternatives`, each with its copy and, when the facet declares `media`, a picture. Enabled per partner by your VONQ Account Manager. See [AI Ad Creatives](guides/07-posting-requirements/ai-ad-creatives.md).
+- `jobs` on `POST /v3/smartfill/posting-requirements/` - run the form fill (`fill`), the ad generation (`generator`), or both. Left out, a request carrying a `generator` runs both and one without runs the fill, so existing requests are unaffected.
+- `generator.count` - ask a run for fewer alternatives than the facet declares. More than the facet's `count` is rejected with `400`.
+- `status` on `GET /v3/smartfill/posting-requirements/{task_id}/` covers every job the task was asked for. A task asked only for the fill reports the fill's status.
+
+## 2026-09-17
+### Added
+- Six more vacancy fields can be omitted with `?loose=true`: `postingDetails.employmentType`, `postingDetails.organization.name`, `postingDetails.organization.companyLogo`, `postingDetails.workingLocation.postcode`, `.city` and `.country`. See [Vacancy Fields-Loose Validation](guides/08-campaigns/vacancy-fields.md#loose-validation).
+### Changed
+- Mixed campaigns now use the intersection of `loose_validation.marketplace.fields` and `job_post.fields` instead of the union. Unresolvable products in `orderedProducts` disable loose validation for that request.
+
+## 2026-09-09
+### Changed
+- `requirements` on `POST /v3/screening/jobs/` is gone. The AI writes a job's requirements from its description, so a job now starts with none and a `requirements` array sent at creation is ignored. Add your own with `POST /v3/screening/jobs/{id}/requirements/` once `requirements_ready_at` is set.
+### Added
+- `POST /v3/screening/jobs/{id}/requirements/` and `DELETE /v3/screening/jobs/{id}/requirements/{requirement_id}/` - add a requirement to a job, or delete one together with the interview questions assessing it. On add, `summary` and `question` are required and `description` falls back to the question.
+- `POST /v3/screening/jobs/{id}/interview-questions/` and `DELETE /v3/screening/jobs/{id}/interview-questions/{question_id}/` - add an interview question for one requirement (a requirement holds a single question), or delete one. Deleting a question leaves its requirement in place.
+- What you add is used as written: the AI does not rewrite it, does not generate interview questions for a new requirement, and sends no further `ai_requirements_ready` webhook. All four endpoints are available once `requirements_ready_at` is set. See [Screening-Jobs & Applications](guides/11-screening/jobs-and-applications.md).
+
 ## 2026-09-01
 ### Added
 - `PATCH /v3/screening/jobs/{id}/requirements/` and `PATCH /v3/screening/jobs/{id}/interview-questions/` - reword a job's requirements and interview questions once `requirements_ready_at` is set. Send only the entries you are changing, each with its `id`; omitted entries and fields keep their stored values, so entries cannot be added or removed. Only applications created after the change are assessed against the updated wording. See [Screening-Jobs & Applications](guides/11-screening/jobs-and-applications.md).

@@ -209,7 +209,7 @@ X-Customer-Id: customer-123
 | `campaigns.loose_validation.marketplace.fields` | array | Vacancy fields that may be omitted with `?loose=true` for Marketplace orders |
 | `campaigns.loose_validation.job_post.fields` | array | Vacancy fields that may be omitted with `?loose=true` for Job Post orders |
 
-For mixed campaigns, loose validation uses the union of `marketplace.fields` and `job_post.fields`. Empty field lists mean no fields may be omitted for that campaign type. Other feature settings (e.g. `smartfill`, `direct_apply`, `analytics`) are managed internally and may change without notice.
+For mixed campaigns, loose validation uses the intersection of `marketplace.fields` and `job_post.fields`. Empty field lists mean no fields may be omitted for that campaign type. Other feature settings (e.g. `smartfill`, `direct_apply`, `analytics`) are managed internally and may change without notice.
 
 **`payment_settings` array** - one entry per enabled currency:
 

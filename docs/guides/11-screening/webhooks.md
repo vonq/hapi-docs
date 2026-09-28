@@ -147,7 +147,7 @@ Job events are webhooks about the **screening job itself** rather than an indivi
 
 ### `ai_requirements_ready`
 
-Fires once per job, when the AI has finished expanding the requirements for a newly created job (typically within a few minutes of creation). The same lists also become available on the API as `requirements` and `interview_questions` on [`GET /v3/screening/jobs/{id}/`](./jobs-and-applications.endpoints.md).
+Fires once per job, when the AI has finished preparing the requirements for a newly created job (typically within a few minutes of creation). The same lists also become available on the API as `requirements` and `interview_questions` on [`GET /v3/screening/jobs/{id}/`](./jobs-and-applications.endpoints.md).
 
 ```json
 {
@@ -190,7 +190,7 @@ Fires once per job, when the AI has finished expanding the requirements for a ne
 | `metadata` | object | Passthrough metadata from **job** creation (application webhooks carry the application's metadata instead) |
 | `payload.requirements_ready_at` | string | ISO 8601 timestamp when the requirements became final |
 | `payload.job_screening_url` | string \| null | Public application URL. `null` if `allow_public_applications` is `false`. |
-| `payload.requirements` | array | Screening criteria the AI evaluates candidates against-same shape as `requirements` on the job details endpoint. Each entry carries a stable unique `id`; `source` is `"customer"` for requirements you supplied at job creation or have since edited, `"ai"` for AI-generated ones you have not touched. |
+| `payload.requirements` | array | Screening criteria the AI evaluates candidates against-same shape as `requirements` on the job details endpoint. Each entry carries a stable unique `id`; `source` is `"customer"` for requirements you added or edited, `"ai"` for AI-generated ones you have not touched. |
 | `payload.interview_questions` | array | Questions the AI interview agent will ask-same shape as `interview_questions` on the job details endpoint. Empty for jobs where the interview agent is disabled. |
 
 ### Differences from Application Webhooks
