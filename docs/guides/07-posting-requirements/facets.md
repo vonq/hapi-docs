@@ -59,6 +59,7 @@ See [Facets - Endpoint Reference](./facets.endpoints.md) for full request/respon
 | `autocomplete` | object or null | Autocomplete configuration. Non-null means options must be fetched dynamically. See [Autocomplete](autocomplete.md). |
 | `display_rules` | object or null | Conditional visibility rules (see [Display Rules](#display-rules) below). Null means always visible. |
 | `primary_taxonomy` | string | Classification label grouping related facets (e.g. `job_product`, `employer_location`). Reserved for future use. |
+| `is_data` | boolean | Present and true when the facet is not a field to fill in. Its content is derived from the values of other facets. Do not render an input for it; fetch its content from the [facet data endpoint](#derived-facets). Omitted for ordinary facets. |
 
 ## Facet Types
 
@@ -260,6 +261,37 @@ With `MULTIPLE`, the user can select several options at once. The vacancy field 
 <!-- theme: warning -->
 > ### Validate vacancy fields against selected options
 > The `requires` field creates a runtime dependency: which vacancy fields are required depends on which posting requirement options are selected. Your integration should check `requires` when rendering the form and ensure the corresponding vacancy fields are filled before submitting.
+
+## Derived Facets
+
+Most posting requirements are fields a recruiter fills in. A few are not: their content is
+derived from the values of other facets, and the API computes it for you. These carry
+`is_data: true`.
+
+Do not render an input for a derived facet. Ask for its content instead, sending the current
+values of the facets it draws on:
+
+```json
+POST /products/{product_id}/specs/facets/{facet_name}/data/
+{ "values": { "headline1": "Care that fits your life", "image1": "https://..." } }
+```
+
+The response is a typed envelope. Branch on `type` so that a future kind of derived content
+does not break your integration:
+
+```json
+{ "type": "preview", "data": { "url": "https://.../preview#headline1=Care+that+fits+your+life" } }
+```
+
+`type: preview` returns a URL that renders the posting requirement as the end user will see
+it. Render it in an iframe, or ignore it and lay the values out yourself.
+
+Send only the facets the derived facet draws on; unknown names are rejected. Values may be
+omitted, so a partially completed form still resolves.
+
+<!-- theme: warning -->
+> **Clients that render every returned facet will show an empty control.** Check `is_data`
+> before building an input.
 
 ## Display Rules
 

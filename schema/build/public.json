@@ -165,7 +165,13 @@
                             "targetGroup.educationLevel",
                             "targetGroup.seniority",
                             "targetGroup.industry",
-                            "targetGroup.jobCategory"
+                            "targetGroup.jobCategory",
+                            "postingDetails.employmentType",
+                            "postingDetails.organization.name",
+                            "postingDetails.organization.companyLogo",
+                            "postingDetails.workingLocation.postcode",
+                            "postingDetails.workingLocation.city",
+                            "postingDetails.workingLocation.country"
                           ],
                           "type": "string"
                         },
@@ -185,7 +191,13 @@
                             "targetGroup.educationLevel",
                             "targetGroup.seniority",
                             "targetGroup.industry",
-                            "targetGroup.jobCategory"
+                            "targetGroup.jobCategory",
+                            "postingDetails.employmentType",
+                            "postingDetails.organization.name",
+                            "postingDetails.organization.companyLogo",
+                            "postingDetails.workingLocation.postcode",
+                            "postingDetails.workingLocation.city",
+                            "postingDetails.workingLocation.country"
                           ],
                           "type": "string"
                         },
@@ -270,6 +282,9 @@
           },
           "smartfill": {
             "properties": {
+              "generators": {
+                "type": "boolean"
+              },
               "posting_requirements": {
                 "type": "boolean"
               },
@@ -1406,6 +1421,7 @@
       "ApplyCommonPayloadQuestion": {
         "properties": {
           "answers": {
+            "description": "Candidate answers. Choice questions contain one selected option; multi-choice questions contain one entry per selected option. Option-based answers contain both id and answer; text answers contain only answer.",
             "items": {
               "$ref": "#/components/schemas/ApplyCommonPayloadQuestionAnswer"
             },
@@ -1431,9 +1447,11 @@
       "ApplyCommonPayloadQuestionAnswer": {
         "properties": {
           "answer": {
+            "description": "Candidate response. For choice and multi-choice questions, this is the selected option text.",
             "type": "string"
           },
           "id": {
+            "description": "Selected option ID for choice and multi-choice questions. Omitted for text answers. Interpret it together with the question ID; it is not globally unique.",
             "type": "string"
           },
           "score": {
@@ -1448,10 +1466,12 @@
       "ApplyCommonPayloadQuestionAnswerRequest": {
         "properties": {
           "answer": {
+            "description": "Candidate response. For choice and multi-choice questions, this is the selected option text.",
             "minLength": 1,
             "type": "string"
           },
           "id": {
+            "description": "Selected option ID for choice and multi-choice questions. Omitted for text answers. Interpret it together with the question ID; it is not globally unique.",
             "minLength": 1,
             "type": "string"
           },
@@ -1467,6 +1487,7 @@
       "ApplyCommonPayloadQuestionRequest": {
         "properties": {
           "answers": {
+            "description": "Candidate answers. Choice questions contain one selected option; multi-choice questions contain one entry per selected option. Option-based answers contain both id and answer; text answers contain only answer.",
             "items": {
               "$ref": "#/components/schemas/ApplyCommonPayloadQuestionAnswerRequest"
             },
@@ -2301,6 +2322,25 @@
           "industry"
         ]
       },
+      "Autocomplete": {
+        "properties": {
+          "parameters_source": {
+            "readOnly": true
+          },
+          "required_parameters": {
+            "items": {
+              "type": "string"
+            },
+            "readOnly": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "parameters_source",
+          "required_parameters"
+        ],
+        "type": "object"
+      },
       "CampaignStatusEnum": {
         "description": "* `online` - Online\n* `offline` - Offline\n* `in progress` - In Progress",
         "enum": [
@@ -2564,6 +2604,201 @@
           "internship"
         ],
         "type": "string"
+      },
+      "Facet": {
+        "properties": {
+          "autocomplete": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Autocomplete"
+              }
+            ],
+            "readOnly": true
+          },
+          "display_rules": {
+            "readOnly": true
+          },
+          "generator": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FacetGenerator"
+              }
+            ],
+            "description": "Present on a posting requirement that writes values into other posting requirements rather than collecting one of its own. It names the facets it reads (`inputs`), the facets it writes (`targets`), the facet that renders a result (`preview`), and the angles a caller may ask a regeneration to lean on (`angles`). Run it through the Smartfill API.",
+            "readOnly": true
+          },
+          "is_data": {
+            "description": "Present and true when this posting requirement is not a field to fill in. Its content is derived from the values of other facets: fetch it from `/products/{product_id}/specs/facets/{facet_name}/data/` instead of rendering an input for it.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "label": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "message": {
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/ProductsSpecsFacetOptions"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "primary_taxonomy": {
+            "type": "string"
+          },
+          "questionnaire": {},
+          "required": {
+            "default": false,
+            "type": "boolean"
+          },
+          "rules": {},
+          "sort": {
+            "default": "0",
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "autocomplete",
+          "display_rules",
+          "generator",
+          "is_data",
+          "label",
+          "message",
+          "name",
+          "options",
+          "type"
+        ],
+        "type": "object"
+      },
+      "FacetGenerator": {
+        "description": "What a generator posting requirement reads, writes and offers.",
+        "properties": {
+          "angles": {
+            "items": {
+              "$ref": "#/components/schemas/FacetGeneratorAngle"
+            },
+            "type": "array"
+          },
+          "count": {
+            "description": "How many alternatives a run produces.",
+            "type": "integer"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/FacetGeneratorInput"
+            },
+            "type": "array"
+          },
+          "media": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FacetGeneratorMedia"
+              }
+            ],
+            "description": "Present when the generator also produces a file for one of its targets."
+          },
+          "preview": {
+            "$ref": "#/components/schemas/FacetGeneratorPreview"
+          },
+          "targets": {
+            "description": "Names of the posting requirements this writes. Nothing outside this list is ever written.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "targets"
+        ],
+        "type": "object"
+      },
+      "FacetGeneratorAngle": {
+        "description": "A slant a caller may ask a regeneration to take.",
+        "properties": {
+          "instruction": {
+            "description": "What the model is told to do differently. Falls back to the label.",
+            "type": "string"
+          },
+          "key": {
+            "description": "Send this back as `generator.angle` to ask for it.",
+            "type": "string"
+          },
+          "label": {
+            "description": "Wording for the control that asks for it.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label"
+        ],
+        "type": "object"
+      },
+      "FacetGeneratorInput": {
+        "description": "One value that briefs a generator. Either a facet on this channel or a campaign field.",
+        "properties": {
+          "facet": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "FacetGeneratorMedia": {
+        "description": "How a generator wants the picture for one of its targets made.",
+        "properties": {
+          "branding": {},
+          "facet": {
+            "description": "Which target the file is written into. Must be one of `targets`.",
+            "type": "string"
+          },
+          "format": {
+            "type": "string"
+          },
+          "platform": {
+            "description": "What the picture is sized and framed for.",
+            "type": "string"
+          },
+          "quality": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "facet"
+        ],
+        "type": "object"
+      },
+      "FacetGeneratorPreview": {
+        "properties": {
+          "facet": {
+            "description": "The facet that renders a result. Fetch it from its data endpoint.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "facet"
+        ],
+        "type": "object"
       },
       "HAPIAcceptedCurrencyEnum": {
         "description": "An ISO 4217 code for a currency.",
@@ -5072,6 +5307,14 @@
         ],
         "type": "object"
       },
+      "JobsEnum": {
+        "description": "* `fill` - fill\n* `generator` - generator",
+        "enum": [
+          "fill",
+          "generator"
+        ],
+        "type": "string"
+      },
       "MocFeatures": {
         "properties": {
           "direct_apply": {
@@ -5176,10 +5419,18 @@
             "type": "string"
           },
           "jobBoardLink": {
-            "format": "uri",
-            "maxLength": 1024,
             "nullable": true,
-            "type": "string"
+            "oneOf": [
+              {
+                "format": "uri",
+                "maxLength": 1024,
+                "type": "string"
+              },
+              {
+                "maxLength": 0,
+                "type": "string"
+              }
+            ]
           },
           "productId": {
             "minLength": 1,
@@ -6156,8 +6407,7 @@
           },
           "posting_requirements": {
             "items": {
-              "additionalProperties": {},
-              "type": "object"
+              "$ref": "#/components/schemas/Facet"
             },
             "readOnly": true,
             "type": "array"
@@ -6451,8 +6701,7 @@
           },
           "posting_requirements": {
             "items": {
-              "additionalProperties": {},
-              "type": "object"
+              "$ref": "#/components/schemas/Facet"
             },
             "readOnly": true,
             "type": "array"
@@ -7990,19 +8239,12 @@
             "additionalProperties": {},
             "type": "object"
           },
-          "requirements": {
-            "items": {
-              "$ref": "#/components/schemas/ScreeningJobRequirement"
-            },
-            "type": "array"
-          },
           "settings": {
             "$ref": "#/components/schemas/ScreeningJobSettings"
           }
         },
         "required": [
-          "data",
-          "requirements"
+          "data"
         ],
         "type": "object"
       },
@@ -8045,19 +8287,12 @@
             "additionalProperties": {},
             "type": "object"
           },
-          "requirements": {
-            "items": {
-              "$ref": "#/components/schemas/ScreeningJobRequirementRequest"
-            },
-            "type": "array"
-          },
           "settings": {
             "$ref": "#/components/schemas/ScreeningJobSettingsRequest"
           }
         },
         "required": [
-          "data",
-          "requirements"
+          "data"
         ],
         "type": "object"
       },
@@ -8231,6 +8466,24 @@
         },
         "type": "object"
       },
+      "ScreeningJobInterviewQuestionCreateRequest": {
+        "description": "Add one interview question, assessing one requirement.\n\nA requirement holds a single interview question, so one that already has a question\ncan only be reworded.",
+        "properties": {
+          "question": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "requirement_id": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "question",
+          "requirement_id"
+        ],
+        "type": "object"
+      },
       "ScreeningJobInterviewQuestionItem": {
         "properties": {
           "id": {
@@ -8279,7 +8532,8 @@
         ],
         "type": "object"
       },
-      "ScreeningJobRequirement": {
+      "ScreeningJobRequirementCreateRequest": {
+        "description": "Add one requirement to a screening job.\n\nThe requirement is stored as the recruiter wrote it: nothing is regenerated, no\ninterview question is generated for it, and no webhook is fired.",
         "properties": {
           "description": {
             "maxLength": 1000,
@@ -8287,15 +8541,18 @@
           },
           "question": {
             "maxLength": 1000,
+            "minLength": 1,
             "type": "string"
           },
           "summary": {
             "maxLength": 255,
+            "minLength": 1,
             "type": "string"
           }
         },
         "required": [
-          "question"
+          "question",
+          "summary"
         ],
         "type": "object"
       },
@@ -8338,32 +8595,12 @@
           },
           "summary": {
             "maxLength": 255,
+            "minLength": 1,
             "type": "string"
           }
         },
         "required": [
           "id"
-        ],
-        "type": "object"
-      },
-      "ScreeningJobRequirementRequest": {
-        "properties": {
-          "description": {
-            "maxLength": 1000,
-            "type": "string"
-          },
-          "question": {
-            "maxLength": 1000,
-            "minLength": 1,
-            "type": "string"
-          },
-          "summary": {
-            "maxLength": 255,
-            "type": "string"
-          }
-        },
-        "required": [
-          "question"
         ],
         "type": "object"
       },
@@ -8541,6 +8778,84 @@
         },
         "type": "object"
       },
+      "SmartfillAlternative": {
+        "description": "One way of filling the fields a generator declares as its targets.",
+        "properties": {
+          "angle": {
+            "description": "Which of the angles the facet declares this one leans on.",
+            "type": "string"
+          },
+          "media": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SmartfillAlternativeMedia"
+              }
+            ],
+            "description": "Absent until the media run has produced one, and when it could not.",
+            "nullable": true
+          },
+          "values": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Copy to apply, keyed by the target posting requirement it belongs to.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "angle",
+          "values"
+        ],
+        "type": "object"
+      },
+      "SmartfillAlternativeMedia": {
+        "description": "A picture for one alternative.\n\n`value` is the whole of what the posting requirement takes: write it into\nthe requirement `facet` names and nothing else, because that field holds a\nURL and a job board is handed it verbatim.",
+        "properties": {
+          "facet": {
+            "description": "The posting requirement `value` is written into.",
+            "type": "string"
+          },
+          "file": {
+            "$ref": "#/components/schemas/SmartfillAlternativeMediaFile"
+          },
+          "value": {
+            "description": "Hosted by VONQ for as long as the campaign runs.",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "facet",
+          "file",
+          "value"
+        ],
+        "type": "object"
+      },
+      "SmartfillAlternativeMediaFile": {
+        "description": "What the picture is, for a client that renders it. No campaign takes any of it.",
+        "properties": {
+          "filename": {
+            "type": "string"
+          },
+          "handle": {
+            "type": "string"
+          },
+          "mimetype": {
+            "type": "string"
+          },
+          "size": {
+            "description": "In bytes.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "filename",
+          "handle",
+          "mimetype",
+          "size"
+        ],
+        "type": "object"
+      },
       "SmartfillContextRequest": {
         "properties": {
           "structured": {
@@ -8557,6 +8872,82 @@
         },
         "type": "object"
       },
+      "SmartfillGeneratorMedia": {
+        "description": "How the pictures for these alternatives are getting on.",
+        "properties": {
+          "completed": {
+            "description": "Pictures finished so far.",
+            "type": "integer"
+          },
+          "status": {
+            "description": "Just the pictures, for a client that wants to show copy before they arrive. Waiting on the generation as a whole needs only the status above.",
+            "type": "string"
+          },
+          "total": {
+            "description": "Pictures expected in total.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "completed",
+          "status",
+          "total"
+        ],
+        "type": "object"
+      },
+      "SmartfillGeneratorRequest": {
+        "description": "Asks a generator posting requirement to write the fields it declares.",
+        "properties": {
+          "angle": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "count": {
+            "description": "How many alternatives to write, when fewer than the generator declares are wanted - one to replace an alternative that was turned down, say. Left out, the generator's own number is used, and that number is the most a run may be asked for.",
+            "minimum": 1,
+            "type": "integer",
+            "writeOnly": true
+          },
+          "facet": {
+            "minLength": 1,
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "facet"
+        ],
+        "type": "object"
+      },
+      "SmartfillGeneratorResult": {
+        "description": "What a task's generator produced. Null on a task that ran none.",
+        "properties": {
+          "alternatives": {
+            "items": {
+              "$ref": "#/components/schemas/SmartfillAlternative"
+            },
+            "type": "array"
+          },
+          "media": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SmartfillGeneratorMedia"
+              }
+            ],
+            "nullable": true
+          },
+          "status": {
+            "description": "The generation alone, copy and pictures together: terminal only once there is nothing left to arrive. Narrower than the task status above, which covers every job the task was asked for.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "alternatives",
+          "media",
+          "status"
+        ],
+        "type": "object"
+      },
       "SmartfillPostingRequirementsCreateRequest": {
         "properties": {
           "context": {
@@ -8569,6 +8960,28 @@
           },
           "contract_id": {
             "format": "uuid",
+            "type": "string",
+            "writeOnly": true
+          },
+          "generator": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SmartfillGeneratorRequest"
+              }
+            ],
+            "writeOnly": true
+          },
+          "jobs": {
+            "description": "Which parts of the task to run: `fill` writes the posting requirements, `generator` writes ad alternatives and their pictures. Left out, a request carrying a generator runs both and one without runs the fill, so a caller that does not send this sees no change. Send `[\"generator\"]` alone to produce another set of ads without paying for a fill nobody reads.",
+            "items": {
+              "$ref": "#/components/schemas/JobsEnum"
+            },
+            "type": "array",
+            "writeOnly": true
+          },
+          "language": {
+            "description": "Language to write generated values in, as an ISO 639-1 code. Left out, they are written in the language the vacancy is written in, judged from its words: a vacancy in English for a role in another country is answered in English. Only generator posting requirements honour this.",
+            "maxLength": 8,
             "type": "string",
             "writeOnly": true
           },
@@ -8599,6 +9012,15 @@
             "format": "date-time",
             "type": "string"
           },
+          "generator": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SmartfillGeneratorResult"
+              }
+            ],
+            "nullable": true,
+            "readOnly": true
+          },
           "id": {
             "format": "uuid",
             "readOnly": true,
@@ -8614,6 +9036,7 @@
             "type": "string"
           },
           "status": {
+            "description": "Every job the task was asked for, taken together: `queued` until one starts, `started` while any is running, `errored` only when all of them failed, and `completed` otherwise. A task asked for the fill alone reports the fill's own status.",
             "readOnly": true,
             "type": "string"
           },
@@ -8626,6 +9049,7 @@
           "channel_id",
           "contract_id",
           "created_at",
+          "generator",
           "id",
           "prefill_data",
           "status",
@@ -12641,6 +13065,144 @@
         ]
       }
     },
+    "/products/{product_id}/specs/facets/{facet_name}/data/": {
+      "get": {
+        "description": "Some posting requirements are not fields to fill in, but describe something derived from the values of other fields. This endpoint returns that derived result.\n\nSend the current values of the sibling facets the requirement declares, keyed by facet name:\n\n```json\n{ \"values\": { \"headline1\": \"Care that fits your life\", \"image1\": \"https://\u2026\" } }\n```\n\nThe response is a typed envelope, so a client branches on `type` to decide how to render `data`:\n\n```json\n{ \"type\": \"preview\", \"data\": { \"url\": \"https://\u2026#headline1=\u2026&image1=\u2026\" } }\n```\n\n`type: preview` returns a URL that renders the posting requirement as the end user will see it. The values travel in the URL fragment, so they are never sent to a server. Render it in an iframe, or ignore the URL and render the values yourself.\n\nOnly facets the requirement declares are accepted; unknown names are rejected. Values may be omitted, so a partially completed form still previews.",
+        "operationId": "products_specs_facets_data_retrieve",
+        "parameters": [
+          {
+            "description": "Identifies the ATS end-user. Required for Contracts functionality.",
+            "in": "header",
+            "name": "X-Customer-Id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "facet_name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductSpecs"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "Partner-APIKey": []
+          },
+          {
+            "ATSUser-APIKey": []
+          },
+          {
+            "ATSUser-JWT": []
+          }
+        ],
+        "summary": "Product Posting Requirements - Facet Data",
+        "tags": [
+          "\u00bb Products"
+        ],
+        "x-internal": false
+      },
+      "post": {
+        "description": "Some posting requirements are not fields to fill in, but describe something derived from the values of other fields. This endpoint returns that derived result.\n\nSend the current values of the sibling facets the requirement declares, keyed by facet name:\n\n```json\n{ \"values\": { \"headline1\": \"Care that fits your life\", \"image1\": \"https://\u2026\" } }\n```\n\nThe response is a typed envelope, so a client branches on `type` to decide how to render `data`:\n\n```json\n{ \"type\": \"preview\", \"data\": { \"url\": \"https://\u2026#headline1=\u2026&image1=\u2026\" } }\n```\n\n`type: preview` returns a URL that renders the posting requirement as the end user will see it. The values travel in the URL fragment, so they are never sent to a server. Render it in an iframe, or ignore the URL and render the values yourself.\n\nOnly facets the requirement declares are accepted; unknown names are rejected. Values may be omitted, so a partially completed form still previews.",
+        "operationId": "products_specs_facets_data_create",
+        "parameters": [
+          {
+            "description": "Identifies the ATS end-user. Required for Contracts functionality.",
+            "in": "header",
+            "name": "X-Customer-Id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "facet_name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductSpecsRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductSpecsRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductSpecsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductSpecs"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "Partner-APIKey": []
+          },
+          {
+            "ATSUser-APIKey": []
+          },
+          {
+            "ATSUser-JWT": []
+          }
+        ],
+        "summary": "Product Posting Requirements - Facet Data",
+        "tags": [
+          "\u00bb Products"
+        ],
+        "x-internal": false
+      }
+    },
     "/products/{product_id}/specs/facets/{facet_name}/options/": {
       "get": {
         "description": "Allows retrieving the posting requirements associated to a product.\n\nThe `facets/{name}/options/` sub-resource exposes autocomplete items given a `product_id` and a posting requirement name.",
@@ -14144,7 +14706,7 @@
     },
     "/v3/screening/jobs/{id}/interview-questions/": {
       "patch": {
-        "description": "Reword the job's interview questions.\n\nSend only the entries you are changing, each keyed by its `id`. Omitted entries are left untouched, so entries cannot be added or removed. Only `question` is editable. Available once `requirements_ready_at` is set.",
+        "description": "Reword the job's interview questions.\n\nSend only the entries you are changing, each keyed by its `id`. Omitted entries are left untouched, so this endpoint only edits: use `POST` to add a question and `DELETE` to remove one. Only `question` is editable. Available once `requirements_ready_at` is set.",
         "operationId": "v3_screening_jobs_interview_questions_partial_update",
         "parameters": [
           {
@@ -14209,11 +14771,138 @@
         "tags": [
           "\u00bb Screening"
         ]
+      },
+      "post": {
+        "description": "Add one interview question, assessing one of the job's requirements.\n\nA requirement holds a single interview question, so `requirement_id` must name a requirement that has none yet. Available once `requirements_ready_at` is set, on jobs that run the interview agent.",
+        "operationId": "v3_screening_jobs_interview_questions_create",
+        "parameters": [
+          {
+            "description": "Identifies the ATS end-user. Required for Contracts functionality.",
+            "in": "header",
+            "name": "X-Customer-Id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "A UUID string identifying this screening job.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScreeningJobInterviewQuestionCreateRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/ScreeningJobInterviewQuestionCreateRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ScreeningJobInterviewQuestionCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScreeningJobDetails"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "ATSUser-APIKey": []
+          },
+          {
+            "ATSUser-JWT": []
+          }
+        ],
+        "summary": "Screening Job Interview Question - Add",
+        "tags": [
+          "\u00bb Screening"
+        ]
+      }
+    },
+    "/v3/screening/jobs/{id}/interview-questions/{question_id}/": {
+      "delete": {
+        "description": "Delete one interview question. Its requirement stays, and candidates are still screened against it. Available once `requirements_ready_at` is set.",
+        "operationId": "v3_screening_jobs_interview_questions_destroy",
+        "parameters": [
+          {
+            "description": "Identifies the ATS end-user. Required for Contracts functionality.",
+            "in": "header",
+            "name": "X-Customer-Id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "A UUID string identifying this screening job.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Id of the interview question, as listed under `interview_questions` on the job.",
+            "in": "path",
+            "name": "question_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScreeningJobDetails"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "ATSUser-APIKey": []
+          },
+          {
+            "ATSUser-JWT": []
+          }
+        ],
+        "summary": "Screening Job Interview Question - Delete",
+        "tags": [
+          "\u00bb Screening"
+        ]
       }
     },
     "/v3/screening/jobs/{id}/requirements/": {
       "patch": {
-        "description": "Reword the job's requirements.\n\nSend only the entries you are changing, each keyed by its `id`. Omitted entries and omitted fields are left untouched, so entries cannot be added or removed. Only `summary`, `description` and `question` are editable. Available once `requirements_ready_at` is set. Only applications created after the change are assessed against the updated requirements.",
+        "description": "Reword the job's requirements.\n\nSend only the entries you are changing, each keyed by its `id`. Omitted entries and omitted fields are left untouched, so this endpoint only edits: use `POST` to add a requirement and `DELETE` to remove one. Only `summary`, `description` and `question` are editable. Available once `requirements_ready_at` is set. Only applications created after the change are assessed against the updated requirements.",
         "operationId": "v3_screening_jobs_requirements_partial_update",
         "parameters": [
           {
@@ -14275,6 +14964,133 @@
           }
         ],
         "summary": "Screening Job Requirements - Update",
+        "tags": [
+          "\u00bb Screening"
+        ]
+      },
+      "post": {
+        "description": "Add one requirement to the job.\n\n`summary` and `question` are required; `description` falls back to the question when omitted. The requirement is stored as written - the AI neither rewrites it nor generates an interview question for it, so add that yourself if the job runs the interview agent. Available once `requirements_ready_at` is set. Only applications created after the change are assessed against it.",
+        "operationId": "v3_screening_jobs_requirements_create",
+        "parameters": [
+          {
+            "description": "Identifies the ATS end-user. Required for Contracts functionality.",
+            "in": "header",
+            "name": "X-Customer-Id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "A UUID string identifying this screening job.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScreeningJobRequirementCreateRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/ScreeningJobRequirementCreateRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ScreeningJobRequirementCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScreeningJobDetails"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "ATSUser-APIKey": []
+          },
+          {
+            "ATSUser-JWT": []
+          }
+        ],
+        "summary": "Screening Job Requirement - Add",
+        "tags": [
+          "\u00bb Screening"
+        ]
+      }
+    },
+    "/v3/screening/jobs/{id}/requirements/{requirement_id}/": {
+      "delete": {
+        "description": "Delete one requirement, together with the interview questions assessing it.\n\nAvailable once `requirements_ready_at` is set. Applications already screened keep the scores they were given.",
+        "operationId": "v3_screening_jobs_requirements_destroy",
+        "parameters": [
+          {
+            "description": "Identifies the ATS end-user. Required for Contracts functionality.",
+            "in": "header",
+            "name": "X-Customer-Id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "A UUID string identifying this screening job.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Id of the requirement, as listed under `requirements` on the job.",
+            "in": "path",
+            "name": "requirement_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScreeningJobDetails"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "ATSUser-APIKey": []
+          },
+          {
+            "ATSUser-JWT": []
+          }
+        ],
+        "summary": "Screening Job Requirement - Delete",
         "tags": [
           "\u00bb Screening"
         ]

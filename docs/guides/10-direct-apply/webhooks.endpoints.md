@@ -20,28 +20,39 @@ The webhook payload contains the candidate's application data, questionnaire ans
   "campaignId": "e2f3a4b5-c6d7-8901-bcde-f12345678901",
   "productId": "d7e8f9a0-b1c2-3456-0123-567890123456",
   "payload": {
-    "firstName": "Jane",
-    "lastName": "Doe",
-    "formattedName": "Jane Doe",
-    "source": "seek",
+    "firstName": "Alex",
+    "lastName": "Example",
+    "formattedName": "Alex Example",
+    "source": "example-board",
     "emailAddresses": [
-      { "type": "PERSONAL", "emailAddress": "jane.doe@example.com", "isPreferred": true }
+      { "type": "PERSONAL", "emailAddress": "alex@example.com", "isPreferred": true }
     ],
     "phoneNumbers": [
-      { "number": "+31612345678", "isPreferred": true }
+      { "number": "+10000000000", "isPreferred": true }
     ],
     "questions": [
       {
-        "question": "Why are you interested in this role?",
-        "id": "q1",
+        "question": "What interests you about this role?",
+        "id": "question-interest",
         "type": "text",
-        "answers": [{ "answer": "I am passionate about..." }]
+        "answers": [{ "answer": "The opportunity to solve practical problems." }]
       },
       {
-        "question": "Do you have a valid work permit?",
-        "id": "q2",
+        "question": "How much relevant experience do you have?",
+        "id": "question-experience",
         "type": "choice",
-        "answers": [{ "answer": "Yes", "id": "yes" }]
+        "answers": [
+          { "id": "option-one-to-three-years", "answer": "1 to 3 years" }
+        ]
+      },
+      {
+        "question": "Which work arrangements suit you?",
+        "id": "question-work-arrangements",
+        "type": "multi-choice",
+        "answers": [
+          { "id": "option-hybrid", "answer": "Hybrid" },
+          { "id": "option-remote", "answer": "Remote" }
+        ]
       }
     ],
     "attachments": [
@@ -113,7 +124,19 @@ Each question object in the webhook:
 | `question` | string | The question text shown to the candidate |
 | `id` | string | The question ID you defined when creating the questionnaire |
 | `type` | string | Forwarded verbatim from the job board - normally one of the types above. Treat as an open string, not a closed enum. |
-| `answers` | array | Candidate's answers. Each has `answer` (always a string, also for `int`/`float`) and optionally `id` (matching the option ID you defined) |
+| `answers` | array | Candidate's answers. See the rules below. |
+
+Every answer object contains `answer`, always as a string. The presence of `id` depends on the question type:
+
+| Question type | Answer shape | Number of entries |
+|---------------|--------------|-------------------|
+| `text` | `{ "answer": "Within one month" }` | One |
+| `choice` | `{ "id": "option-one-month", "answer": "Within one month" }` | One selected option |
+| `multi-choice` | `{ "id": "option-remote", "answer": "Remote" }` | One entry per selected option |
+
+For `choice` and `multi-choice`, `id` is the selected option ID and `answer` is the option text shown to the candidate. Use the pair of question `id` and answer `id` to identify a selected option. An answer ID may appear under more than one question, so it is not a global identifier.
+
+Types without configured options, including `text`, do not have an answer ID. Their answer objects contain only `answer`.
 
 ### Attachment Types
 

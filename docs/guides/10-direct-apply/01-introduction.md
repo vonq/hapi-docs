@@ -105,7 +105,7 @@ The mechanism for enabling Direct Apply differs across job boards:
 
 **Questionnaire**-One or more posting requirement facets that define custom screening questions shown to candidates on the job board. The value is a stringified JSON array of question objects. Facet names vary by board (e.g., `questionnaire`, `customQuestions`). Each board has its own supported question types and limits.
 
-**Question Types**-The types of questions you can include in a questionnaire. Common types are `text` (free text), `choice` (single-select), and `multi-choice` (multi-select). Some boards support additional types like `date`, `file`, or `hier` (hierarchical). Types and limits are returned dynamically by the API.
+**Question Types**-The types of questions you can include in a questionnaire. Common types are `text` (free text), `choice` (single-select), and `multi-choice` (multi-select). LinkedIn also supports `date`, `file`, `int`, and `float`. Types and limits are returned dynamically by the API.
 
 **Postback URL**-The HTTPS endpoint on your system where HAPI delivers application webhooks. Configured by your account manager at the account level. Can be overridden per-campaign.
 
@@ -121,7 +121,7 @@ The mechanism for enabling Direct Apply differs across job boards:
 |-------|--------------------|-----------------------|---------------------|
 | Indeed | `applicationMethod` facet | `text`, `choice`, `multi-choice` (up to 100 questions) | Conditional logic, required questions, file uploads up to 5MB |
 | Seek | `applicationMethod` facet | `text`, `choice`, `multi-choice` (up to 100 questions) | Generous character limits |
-| LinkedIn | Implicit (via questionnaire) | `text`, `textarea`, `choice` (multiple facets) | Conditional logic, required questions, file uploads |
+| LinkedIn | Implicit (via questionnaire) | `text`, `textarea`, `choice`, `date`, `file`, `int`, `float` (multiple facets) | Conditional logic and required questions |
 | Naukri | `applicationMethod` facet | `text`, `choice`, `multi-choice` (up to 10 questions, all required) | 150 character limit per question, all questions are required |
 | Infojobs | `applicationMethod` facet | `text`, `choice` (max 4 text + 8 choice = 12 questions) | Strict split: max 4 open-text + max 8 closed-choice |
 

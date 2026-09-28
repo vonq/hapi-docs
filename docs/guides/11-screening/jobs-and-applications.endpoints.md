@@ -36,10 +36,6 @@ endpoints:
 | `data.job.description` | string | Yes | Job description, HTML supported (max 10,000 characters) |
 | `data.company.name` | string | Yes | Company name (max 255 characters) |
 | `data.company.logo_url` | string | Yes | URL to the company logo |
-| `requirements` | array | Yes | Evaluation criteria (can be empty `[]`) |
-| `requirements[].summary` | string | No | Short label (max 255, must be unique within the job) |
-| `requirements[].description` | string | No | Detailed context for the AI (max 1,000) |
-| `requirements[].question` | string | Yes | Question the AI evaluates against (max 1,000, must be unique within the job) |
 | `settings.webhook_url` | string | No | Override account-level webhook URL |
 | `settings.finalization_time_hours` | integer | No | Hours before auto-finalization (1–168, default 168) |
 | `settings.duration_days` | integer | No | Days the screening job stays active before it expires (1–365, default 60) |
@@ -48,7 +44,7 @@ endpoints:
 | `settings.allow_duplicate_applies` | boolean | No | Allow same candidate to apply multiple times (default `true`) |
 | `metadata` | object | No | Custom key-value pairs (max 50 keys, 255 chars per value) |
 
-Create a screening job with two requirements:
+A job is created without requirements: the AI writes them from the job description, and you add your own once they are ready. See [POST /v3/screening/jobs/{id}/requirements/](#post-v3screeningjobsidrequirements).
 
 ```http
 POST https://marketplace.api.vonq.com/v3/screening/jobs/ HTTP/1.1
@@ -69,17 +65,6 @@ Content-Type: application/json
       "logo_url": "https://example.com/logo.png"
     }
   },
-  "requirements": [
-    {
-      "summary": "Distributed systems",
-      "question": "Does the candidate have experience building distributed systems?"
-    },
-    {
-      "summary": "Python proficiency",
-      "question": "Is the candidate proficient in Python?",
-      "description": "We use Python 3.11 with FastAPI and SQLAlchemy."
-    }
-  ],
   "settings": {
     "finalization_time_hours": 72,
     "allow_public_applications": true
@@ -192,17 +177,17 @@ X-Customer-Id: <customer-id>
 
 In addition to all list-response fields, the details response includes the job's `data`, `requirements`, `interview_questions`, `settings`, and `metadata`.
 
-The `requirements` list evolves with the job: it starts as the requirements you supplied at creation (each assigned a stable unique `id`), and once the requirements are ready it is updated to the final screening list-your requirements enriched by the AI, plus any AI-generated ones (`source: "ai"`).
+The `requirements` list is empty until the AI finishes preparing it. Once ready it holds the screening list the AI wrote from the job description (`source: "ai"`), each entry with a stable unique `id`, plus whatever you have since added or reworded (`source: "customer"`).
 
 **`requirements` fields**
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `requirements[].id` | integer \| null | Stable unique id of the requirement, assigned at job creation |
+| `requirements[].id` | integer \| null | Stable unique id of the requirement |
 | `requirements[].summary` | string \| null | Short label |
 | `requirements[].description` | string \| null | Detailed context |
 | `requirements[].question` | string \| null | Question the AI evaluates against |
-| `requirements[].source` | string | `"customer"` if you supplied the requirement at job creation or have since edited it, `"ai"` if it was AI-generated and untouched |
+| `requirements[].source` | string | `"customer"` if you added or edited the requirement, `"ai"` if it was AI-generated and untouched |
 
 The `interview_questions` list holds the questions the AI interview agent asks during the screening conversation. They are generated from the job's requirements and appear at the same time as the final `requirements`. The list is empty until then, and stays empty for jobs where the interview agent is disabled.
 
@@ -228,7 +213,7 @@ The `interview_questions` list holds the questions the AI interview agent asks d
 - **Description**: Reword the job's requirements.
 - **Success**: `200 OK` - returns the full job, same shape as the retrieve endpoint.
 
-Send only the entries you are changing, each with its `id`. An omitted entry is left alone and an omitted field keeps its stored value, so entries cannot be added or removed. Available once `requirements_ready_at` is set.
+Send only the entries you are changing, each with its `id`. An omitted entry is left alone and an omitted field keeps its stored value, so this endpoint only edits: add with `POST` and remove with `DELETE`. Available once `requirements_ready_at` is set.
 
 **Body Parameters**
 
@@ -236,7 +221,7 @@ Send only the entries you are changing, each with its `id`. An omitted entry is 
 |-------|------|----------|-------------|
 | `requirements` | array | Yes | The requirements you are changing, max 50 |
 | `requirements[].id` | integer | Yes | Id of an existing requirement on this job |
-| `requirements[].summary` | string | No | Short label (max 255, must be unique within the job) |
+| `requirements[].summary` | string | No | Short label (max 255, must be unique within the job, cannot be blanked) |
 | `requirements[].description` | string | No | Detailed context for the AI (max 1,000) |
 | `requirements[].question` | string | No | Question the AI evaluates against (max 1,000) |
 
@@ -272,8 +257,90 @@ Content-Type: application/json
 
 | Status | Cause |
 |--------|-------|
-| `400` | Unknown `id`, an entry with no editable field, a duplicate `summary`, or the change could not be saved |
+| `400` | Unknown `id`, an entry with no editable field, a blank or duplicate `summary`, or the change could not be saved |
 | `404` | Job not found or belongs to a different customer |
+| `409` | The job is not `created`, or its questions are not ready yet |
+
+---
+
+### POST /v3/screening/jobs/{id}/requirements/
+
+- **Auth**: token or JWT
+- **Description**: Add one requirement to the job.
+- **Success**: `201 Created` - returns the full job, same shape as the retrieve endpoint.
+
+Available once `requirements_ready_at` is set. The requirement is stored exactly as you write it.
+
+**Body Parameters**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `summary` | string | Yes | Short label (max 255, must be unique within the job) |
+| `description` | string | No | Detailed context for the AI (max 1,000). Defaults to `question` |
+| `question` | string | Yes | Question the AI evaluates against (max 1,000) |
+
+```http
+POST https://marketplace.api.vonq.com/v3/screening/jobs/a1b2c3d4-e5f6-7890-abcd-ef1234567890/requirements/ HTTP/1.1
+X-Auth-Token: <your Partner token here>
+X-Customer-Id: <customer-id>
+Content-Type: application/json
+```
+
+```json
+{
+  "summary": "Work permit",
+  "description": "Only candidates who may already work in the EU can be hired.",
+  "question": "Do you hold a EU work permit?"
+}
+```
+
+**Notes**
+
+- The new requirement is yours: its `source` is `"customer"`.
+- The AI does not react to it. Nothing is regenerated, no interview question is created for the new requirement, and no `ai_requirements_ready` webhook is sent. Add its interview question yourself if the job runs the interview agent.
+- Only applications created after the change are assessed against it.
+
+**Errors**
+
+| Status | Cause |
+|--------|-------|
+| `400` | Missing `summary` or `question`, a `summary` already used on this job, or the requirement could not be saved |
+| `404` | Job not found or belongs to a different customer |
+| `409` | The job is not `created`, or its questions are not ready yet |
+
+---
+
+### DELETE /v3/screening/jobs/{id}/requirements/{requirement_id}/
+
+- **Auth**: token or JWT
+- **Description**: Delete one requirement, together with the interview questions assessing it.
+- **Success**: `200 OK` - returns the full job, same shape as the retrieve endpoint.
+
+**Path Parameters**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | UUID | The screening job |
+| `requirement_id` | integer | Id of the requirement, as listed under `requirements` on the job |
+
+```http
+DELETE https://marketplace.api.vonq.com/v3/screening/jobs/a1b2c3d4-e5f6-7890-abcd-ef1234567890/requirements/22524/ HTTP/1.1
+X-Auth-Token: <your Partner token here>
+X-Customer-Id: <customer-id>
+```
+
+**Notes**
+
+- AI-generated requirements can be deleted like your own, and are not regenerated.
+- Applications already screened keep the scores they were given.
+- A job can be left with no requirements at all.
+
+**Errors**
+
+| Status | Cause |
+|--------|-------|
+| `400` | The deletion could not be saved |
+| `404` | Job not found, belongs to a different customer, or has no such requirement |
 | `409` | The job is not `created`, or its questions are not ready yet |
 
 ---
@@ -284,7 +351,7 @@ Content-Type: application/json
 - **Description**: Reword the job's interview questions.
 - **Success**: `200 OK` - returns the full job, same shape as the retrieve endpoint.
 
-Same rules as the requirements endpoint: send only the questions you are changing, each with its `id`.
+Same rules as the requirements endpoint: send only the questions you are changing, each with its `id`. Add with `POST` and remove with `DELETE`.
 
 **Body Parameters**
 
@@ -318,6 +385,74 @@ Content-Type: application/json
 |--------|-------|
 | `400` | Unknown `id`, or the change could not be saved |
 | `404` | Job not found or belongs to a different customer |
+| `409` | The job is not `created`, or its questions are not ready yet |
+
+---
+
+### POST /v3/screening/jobs/{id}/interview-questions/
+
+- **Auth**: token or JWT
+- **Description**: Add one interview question, assessing one of the job's requirements.
+- **Success**: `201 Created` - returns the full job, same shape as the retrieve endpoint.
+
+Available once `requirements_ready_at` is set, on jobs that run the interview agent. A requirement holds a single interview question, so `requirement_id` must name a requirement that has none yet; reword the existing one instead.
+
+**Body Parameters**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `requirement_id` | integer | Yes | Id of the requirement this question assesses, as listed under `requirements` on the job |
+| `question` | string | Yes | The question the interview agent asks (max 2,000) |
+
+```http
+POST https://marketplace.api.vonq.com/v3/screening/jobs/a1b2c3d4-e5f6-7890-abcd-ef1234567890/interview-questions/ HTTP/1.1
+X-Auth-Token: <your Partner token here>
+X-Customer-Id: <customer-id>
+Content-Type: application/json
+```
+
+```json
+{
+  "requirement_id": 22526,
+  "question": "Which work permit do you hold, and until when is it valid?"
+}
+```
+
+**Errors**
+
+| Status | Cause |
+|--------|-------|
+| `400` | Unknown `requirement_id`, a requirement that already has an interview question, or the question could not be saved |
+| `404` | Job not found or belongs to a different customer |
+| `409` | The job is not `created`, its questions are not ready yet, or the interview agent is disabled for it |
+
+---
+
+### DELETE /v3/screening/jobs/{id}/interview-questions/{question_id}/
+
+- **Auth**: token or JWT
+- **Description**: Delete one interview question. Its requirement stays, and candidates are still screened against it.
+- **Success**: `200 OK` - returns the full job, same shape as the retrieve endpoint.
+
+**Path Parameters**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | UUID | The screening job |
+| `question_id` | integer | Id of the interview question, as listed under `interview_questions` on the job |
+
+```http
+DELETE https://marketplace.api.vonq.com/v3/screening/jobs/a1b2c3d4-e5f6-7890-abcd-ef1234567890/interview-questions/84120/ HTTP/1.1
+X-Auth-Token: <your Partner token here>
+X-Customer-Id: <customer-id>
+```
+
+**Errors**
+
+| Status | Cause |
+|--------|-------|
+| `400` | The deletion could not be saved |
+| `404` | Job not found, belongs to a different customer, or has no such interview question |
 | `409` | The job is not `created`, or its questions are not ready yet |
 
 ---

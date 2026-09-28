@@ -49,18 +49,29 @@ Content-Type: application/json
   "facet": "questionnaire",
   "questionnaire": [
     {
-      "id": "q1",
-      "question": "Why are you interested in this role?",
+      "id": "question-interest",
+      "question": "What interests you about this role?",
       "type": "text",
       "is_required": true
     },
     {
-      "id": "q2",
-      "question": "Do you have a valid work permit?",
+      "id": "question-experience",
+      "question": "How much relevant experience do you have?",
       "type": "choice",
       "answers": [
-        { "id": "yes", "answer": "Yes" },
-        { "id": "no", "answer": "No" }
+        { "id": "option-less-than-one-year", "answer": "Less than 1 year" },
+        { "id": "option-one-to-three-years", "answer": "1 to 3 years" },
+        { "id": "option-more-than-three-years", "answer": "More than 3 years" }
+      ]
+    },
+    {
+      "id": "question-work-arrangements",
+      "question": "Which work arrangements suit you?",
+      "type": "multi-choice",
+      "answers": [
+        { "id": "option-onsite", "answer": "On-site" },
+        { "id": "option-hybrid", "answer": "Hybrid" },
+        { "id": "option-remote", "answer": "Remote" }
       ]
     }
   ]

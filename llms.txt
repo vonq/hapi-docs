@@ -43,6 +43,7 @@ Clone `vonq/hapi-docs`, start with this index or `docs-manifest.jsonl`, then use
 - [Autocomplete](docs/guides/07-posting-requirements/autocomplete.md)
 - [Validation](docs/guides/07-posting-requirements/validation.md)
 - [Smartfill](docs/guides/07-posting-requirements/smartfill.md)
+- [AI Ad Creatives](docs/guides/07-posting-requirements/ai-ad-creatives.md)
 - [Campaigns-Introduction](docs/guides/08-campaigns/01-introduction.md)
 - [Vacancy Fields](docs/guides/08-campaigns/vacancy-fields.md)
 - [Campaign Validation](docs/guides/08-campaigns/validation.md)

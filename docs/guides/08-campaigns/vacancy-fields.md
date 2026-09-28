@@ -92,12 +92,12 @@ The `postingDetails` object contains the core job listing content.
 |-------|------|----------|-------------|
 | `title` | string | Yes | Job title |
 | `description` | string | Yes | Job description (HTML allowed-see [HTML in descriptions](#html-in-descriptions)) |
-| `organization.name` | string | Yes | Company name |
-| `organization.companyLogo` | string | Yes | URL to the company logo |
+| `organization.name` | string | Loose | Company name. Optional with `?loose=true`. |
+| `organization.companyLogo` | string | Loose | URL to the company logo. Optional with `?loose=true`. |
 | `workingLocation` | object | Yes | Job location (see [Working Location](#working-location)) |
 | `contactInfo` | object | No | Recruiter contact shown on the listing (see [Contact Info](#contact-info)) |
 | `yearsOfExperience` | integer | Loose | Required years of experience. Optional with `?loose=true`. |
-| `employmentType` | string | Yes | Employment type (see [Employment Types](#employment-types)) |
+| `employmentType` | string | Loose | Employment type (see [Employment Types](#employment-types)). Optional with `?loose=true`. |
 | `weeklyWorkingHours` | object | Yes* | Working hours range: `from` and `to` (integers, 1–168) |
 | `weeklyWorkingMinutes` | object | Yes* | Working minutes range: `from` and `to` (integers, 60–10080) |
 | `salaryIndication` | object | No | Salary range (see [Salary Indication](#salary-indication)) |
@@ -116,9 +116,9 @@ The `postingDetails` object contains the core job listing content.
 |-------|------|----------|-------------|
 | `addressLine1` | string | Loose | Street address. Optional with `?loose=true`. |
 | `addressLine2` | string | No | Secondary address line |
-| `postcode` | string | Yes | Postal code |
-| `city` | string | Yes | City name |
-| `country` | string | Yes | Country name or ISO code |
+| `postcode` | string | Loose | Postal code. Optional with `?loose=true`. |
+| `city` | string | Loose | City name. Optional with `?loose=true`. |
+| `country` | string | Loose | Country name or ISO code. Optional with `?loose=true`. |
 | `allowsRemoteWork` | boolean | No | Whether the position allows remote work |
 
 <!-- theme: info -->
@@ -247,10 +247,16 @@ Possible fields for loose validation:
 - `targetGroup.seniority`
 - `targetGroup.industry`
 - `targetGroup.jobCategory`
+- `postingDetails.employmentType`
+- `postingDetails.organization.name`
+- `postingDetails.organization.companyLogo`
+- `postingDetails.workingLocation.postcode`
+- `postingDetails.workingLocation.city`
+- `postingDetails.workingLocation.country`
 
 <!-- theme: info -->
 > ### Loose Validation Requires Account Configuration
-> Your account must be enabled for loose validation. Use `GET /v3/ats/atsuser/me/settings/` to read `settings.campaigns.loose_validation`: `marketplace.fields` applies to Marketplace orders, `job_post.fields` applies to Job Post orders, and mixed campaigns use the union of both.
+> Your account must be enabled for loose validation. Use `GET /v3/ats/atsuser/me/settings/` to read `settings.campaigns.loose_validation`: `marketplace.fields` applies to Marketplace orders, `job_post.fields` applies to Job Post orders, and mixed campaigns may omit only fields present in both lists.
 
 See [Ordering](./ordering.md) for the full ordering request and query parameters.
 

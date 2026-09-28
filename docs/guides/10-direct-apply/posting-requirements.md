@@ -191,6 +191,10 @@ Common question types across boards:
 
 `date`, `file`, `int` and `float` are being rolled out board by board. Only use them when the facet's `types` array lists them. Their delivery format is described in [Direct Apply-Webhooks - Endpoint Reference](./webhooks.endpoints.md#questionnaire-answer-types).
 
+<!-- theme: warning -->
+> ### Optional numeric questions on LinkedIn
+> LinkedIn validates `int` and `float` answers only when the question is required. For optional questions, LinkedIn accepts invalid input but omits the answer from the application payload. For example, if a candidate enters `abc`, no answer is sent.
+
 Questionnaire validation also accepts `textarea`, `hier` (hierarchical) and `information`. These are reserved and support for these types will be added as we continue expanding Direct Apply.
 
 ### Per-Type Constraints
@@ -236,50 +240,63 @@ Each answer option:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `id` | string | Yes | Unique identifier for the option |
+| `id` | string | Yes | Identifier for the option. Keep it unique within the question. |
 | `answer` | string | Yes | Option text shown to the candidate |
+
+For `choice` and `multi-choice` questions, the webhook returns both fields for each selected option. Match the response by question `id` and answer `id`; answer IDs are not guaranteed to be unique across different questions. Text answers have no answer ID.
 
 Example questionnaire on a board that lists all types with the attributes shown above:
 
 ```json
 [
   {
-    "id": "q1",
-    "question": "Why are you interested in this role?",
+    "id": "question-interest",
+    "question": "What interests you about this role?",
     "type": "text",
     "is_required": true
   },
   {
-    "id": "q2",
-    "question": "Do you have a valid work permit?",
+    "id": "question-experience",
+    "question": "How much relevant experience do you have?",
     "type": "choice",
     "answers": [
-      { "id": "yes", "answer": "Yes" },
-      { "id": "no", "answer": "No" }
+      { "id": "option-less-than-one-year", "answer": "Less than 1 year" },
+      { "id": "option-one-to-three-years", "answer": "1 to 3 years" },
+      { "id": "option-more-than-three-years", "answer": "More than 3 years" }
     ]
   },
   {
-    "id": "q3",
+    "id": "question-work-arrangements",
+    "question": "Which work arrangements suit you?",
+    "type": "multi-choice",
+    "answers": [
+      { "id": "option-onsite", "answer": "On-site" },
+      { "id": "option-hybrid", "answer": "Hybrid" },
+      { "id": "option-remote", "answer": "Remote" }
+    ]
+  },
+  {
+    "id": "question-start-date-limit",
     "question": "Earliest start date?",
     "type": "date",
     "min": "2026-10-01",
     "is_required": true
   },
   {
-    "id": "q4",
+    "id": "question-years-experience",
     "question": "Years of relevant experience",
     "type": "int",
     "min": 0,
     "max": 50
   },
   {
-    "id": "q5",
+    "id": "question-hourly-rate",
     "question": "Expected hourly rate (EUR)",
     "type": "float",
     "min": 0
   },
   {
-    "id": "q6",
+    "id": "question-portfolio",
     "question": "Upload a portfolio",
     "type": "file"
   }
@@ -298,7 +315,7 @@ When submitting the questionnaire in a campaign order, wrap it with `JSON.string
 {
   "postingRequirements": {
     "applicationMethod": "directapply",
-    "questionnaire": "[{\"id\":\"q1\",\"question\":\"Why are you interested in this role?\",\"type\":\"text\",\"is_required\":true},{\"id\":\"q2\",\"question\":\"Do you have a valid work permit?\",\"type\":\"choice\",\"answers\":[{\"id\":\"yes\",\"answer\":\"Yes\"},{\"id\":\"no\",\"answer\":\"No\"}]}]"
+    "questionnaire": "[{\"id\":\"question-interest\",\"question\":\"What interests you about this role?\",\"type\":\"text\",\"is_required\":true},{\"id\":\"question-experience\",\"question\":\"How much relevant experience do you have?\",\"type\":\"choice\",\"answers\":[{\"id\":\"option-less-than-one-year\",\"answer\":\"Less than 1 year\"},{\"id\":\"option-one-to-three-years\",\"answer\":\"1 to 3 years\"},{\"id\":\"option-more-than-three-years\",\"answer\":\"More than 3 years\"}]},{\"id\":\"question-work-arrangements\",\"question\":\"Which work arrangements suit you?\",\"type\":\"multi-choice\",\"answers\":[{\"id\":\"option-onsite\",\"answer\":\"On-site\"},{\"id\":\"option-hybrid\",\"answer\":\"Hybrid\"},{\"id\":\"option-remote\",\"answer\":\"Remote\"}]}]"
   }
 }
 ```
