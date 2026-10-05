@@ -60,6 +60,28 @@ Select one component schema:
 jq '.components.schemas.HAPICampaignCreateRequest' schema/build/public.json
 ```
 
+### Webhook Payload Schemas
+
+Webhook models describe requests **HAPI sends to your system**. They are generated into the same [OpenAPI schema](../schema/build/public.json) as the REST API on every schema build.
+
+| Model name | Outgoing request | Guide |
+|------------|------------------|-------|
+| `DirectApplyWebhookData` | Direct Apply or CPA+ application | [Direct Apply contract](guides/10-direct-apply/webhooks.endpoints.md#openapi-contract) |
+| `DirectApplyWebhookFile` | Direct Apply or CPA+ Base64 file | [File delivery](guides/10-direct-apply/webhooks.endpoints.md#openapi-contract) |
+| `ScreeningApplicationWebhookData` | Screening application result | [Screening contract](guides/11-screening/webhooks.md#openapi-contract) |
+| `ScreeningApplicationWebhookFile` | Screening Base64 file | [Screening contract](guides/11-screening/webhooks.md#openapi-contract) |
+| `ScreeningJobWebhookData` | Screening job event | [Job events](guides/11-screening/webhooks.md#job-events) |
+
+On **Stoplight**, open the API reference and find the exact name above in its models. On **GitHub**, open the JSON file and search for that name under `components.schemas`, or extract it locally:
+
+```bash
+jq '.components.schemas.DirectApplyWebhookData' schema/build/public.json
+```
+
+These links use published relative file paths and ordinary Markdown headings so the guides work on both sites. A JSON pointer such as `#/components/schemas/DirectApplyWebhookData` identifies a model inside OpenAPI, but is not a GitHub page anchor. Use the model names above instead of relying on a renderer-specific deep link or a generated Stoplight URL.
+
+The `DirectApplyApplication` callback on campaign ordering covers Direct Apply and CPA+. The `ScreeningApplication` and `ScreeningJob` callbacks on screening job creation cover application results and job events, including account-level destinations when no per-campaign or per-job URL override is supplied. Their request bodies describe JSON and, where applicable, multipart delivery. These are partner receivers, not additional HAPI endpoints to call.
+
 ### Supplementary Files
 
 These files complement the OpenAPI schema:

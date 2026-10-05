@@ -24,7 +24,7 @@ category: resources
 ### Changed
 - `requirements` on `POST /v3/screening/jobs/` is gone. The AI writes a job's requirements from its description, so a job now starts with none and a `requirements` array sent at creation is ignored. Add your own with `POST /v3/screening/jobs/{id}/requirements/` once `requirements_ready_at` is set.
 ### Added
-- `POST /v3/screening/jobs/{id}/requirements/` and `DELETE /v3/screening/jobs/{id}/requirements/{requirement_id}/` - add a requirement to a job, or delete one together with the interview questions assessing it. On add, `summary` and `question` are required and `description` falls back to the question.
+- `POST /v3/screening/jobs/{id}/requirements/` and `DELETE /v3/screening/jobs/{id}/requirements/{requirement_id}/` - add a requirement to a job, or delete one together with the interview questions assessing it. On add, `summary` and `question` are required; `description` is optional and is left empty when you omit it.
 - `POST /v3/screening/jobs/{id}/interview-questions/` and `DELETE /v3/screening/jobs/{id}/interview-questions/{question_id}/` - add an interview question for one requirement (a requirement holds a single question), or delete one. Deleting a question leaves its requirement in place.
 - What you add is used as written: the AI does not rewrite it, does not generate interview questions for a new requirement, and sends no further `ai_requirements_ready` webhook. All four endpoints are available once `requirements_ready_at` is set. See [Screening-Jobs & Applications](guides/11-screening/jobs-and-applications.md).
 

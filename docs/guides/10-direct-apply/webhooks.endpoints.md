@@ -10,6 +10,12 @@ endpoints: []
 
 > For conceptual overview, see [Direct Apply-Webhooks](./webhooks.md).
 
+## OpenAPI Contract
+
+The machine-readable outgoing request model is **`DirectApplyWebhookData`** in the [public OpenAPI schema](../../../schema/build/public.json). CPA+ uses the same model, including `payload.cpa`. Separate Base64 file requests use **`DirectApplyWebhookFile`**; `DirectApplyApplicationDelivery` describes either JSON request. The `DirectApplyApplication` callback on campaign ordering also documents multipart delivery.
+
+See [Webhook payload schemas](../../13-machine-readable-resources.md#webhook-payload-schemas) for how to find these models on Stoplight or GitHub. The examples below illustrate the generated contract.
+
 ## Payload Structure
 
 The webhook payload contains the candidate's application data, questionnaire answers, and attachment metadata.

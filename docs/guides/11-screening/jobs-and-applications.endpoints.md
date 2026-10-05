@@ -20,6 +20,8 @@ endpoints:
 
 > For conceptual overview, see [Screening-Jobs & Applications](./jobs-and-applications.md).
 
+For results pushed to your system, see [Screening webhooks](./webhooks.md#openapi-contract). The outgoing request models **`ScreeningApplicationWebhookData`** and **`ScreeningJobWebhookData`** are included in the [public OpenAPI schema](../../../schema/build/public.json); they differ from the API responses documented below.
+
 ## Endpoints
 
 ### POST /v3/screening/jobs/
@@ -222,7 +224,7 @@ Send only the entries you are changing, each with its `id`. An omitted entry is 
 | `requirements` | array | Yes | The requirements you are changing, max 50 |
 | `requirements[].id` | integer | Yes | Id of an existing requirement on this job |
 | `requirements[].summary` | string | No | Short label (max 255, must be unique within the job, cannot be blanked) |
-| `requirements[].description` | string | No | Detailed context for the AI (max 1,000) |
+| `requirements[].description` | string | No | Detailed context for the AI (max 1,000). Send `""` to clear it |
 | `requirements[].question` | string | No | Question the AI evaluates against (max 1,000) |
 
 At least one of `summary`, `description` or `question` is required per entry.
@@ -276,7 +278,7 @@ Available once `requirements_ready_at` is set. The requirement is stored exactly
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `summary` | string | Yes | Short label (max 255, must be unique within the job) |
-| `description` | string | No | Detailed context for the AI (max 1,000). Defaults to `question` |
+| `description` | string | No | Detailed context for the AI (max 1,000). Left empty when omitted |
 | `question` | string | Yes | Question the AI evaluates against (max 1,000) |
 
 ```http

@@ -42,47 +42,107 @@ X-Customer-Id: <customer-id>
 
 ```json
 {
-  "count": 15,
-  "next": "https://marketplace.api.vonq.com/v3/cpacampaigns/f1a2b3c4-.../applications/?page=2",
-  "previous": null,
+  "count": 2,
   "results": [
     {
-      "id": "app-001",
+      "id": "1001",
       "reviewed": true,
       "name": "Jane Doe",
       "email": "jane.doe@example.com",
       "phone": "+31 6 12345678",
-      "files": ["dossier.pdf", "resume.pdf"],
-      "updated": "2026-03-10T14:30:00Z"
+      "files": [
+        {"type": "DOSSIER", "mimeType": "application/pdf", "filename": "dossier.pdf"},
+        {"type": "RESUME", "mimeType": "application/pdf", "filename": "resume.pdf"}
+      ],
+      "updated": "2026-03-10T14:30:00Z",
+      "experiences": [
+        {
+          "organizationName": "Example Logistics",
+          "title": "Backend Developer",
+          "location": "Amsterdam, Netherlands",
+          "dateStart": "2021-03-01T00:00:00+00:00",
+          "currentlyWorking": true,
+          "description": "Builds and maintains Python services."
+        }
+      ],
+      "educations": [
+        {
+          "instituteName": "Example University",
+          "educationName": "Computer Science",
+          "degree": "Master",
+          "dateStart": "2015-09-01T00:00:00+00:00",
+          "dateEnd": "2017-07-01T00:00:00+00:00"
+        }
+      ],
+      "skills": [
+        {"competenceName": "Python"}
+      ],
+      "certifications": [
+        {
+          "name": "Example Cloud Practitioner",
+          "issuingAuthorityName": "Example Institute",
+          "dateIssued": "2022-05-01T00:00:00+00:00"
+        }
+      ]
     },
     {
-      "id": "app-002",
+      "id": "1002",
       "reviewed": false,
       "name": "John Smith",
       "email": "john.smith@example.com",
       "phone": "+49 170 9876543",
-      "files": ["resume.docx"],
-      "updated": "2026-03-09T09:15:00Z"
+      "files": [
+        {"type": "DOSSIER", "mimeType": "application/pdf", "filename": "dossier.pdf"},
+        {
+          "type": "RESUME",
+          "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "filename": "resume.docx"
+        }
+      ],
+      "updated": "2026-03-09T09:15:00Z",
+      "experiences": [],
+      "educations": [],
+      "skills": [],
+      "certifications": []
     }
   ]
 }
 ```
+
+The list is not paginated: the response contains only `count` and `results`.
 
 **Response fields**
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `count` | integer | Total number of applications |
-| `next` | string | URL for the next page of results (null if last page) |
-| `previous` | string | URL for the previous page (null if first page) |
 | `results` | array | List of application objects |
 | `results[].id` | string | Application identifier |
 | `results[].reviewed` | boolean | Whether the application was reviewed by AI |
 | `results[].name` | string | Candidate's full name |
 | `results[].email` | string | Candidate's email address |
 | `results[].phone` | string | Candidate's phone number |
-| `results[].files` | array | List of downloadable filenames |
+| `results[].files` | array | Downloadable files, each an object with `type` (`DOSSIER` or `RESUME`), `mimeType` and `filename` |
 | `results[].updated` | datetime | When the application was last updated |
+| `results[].experiences` | array | Work experience from the candidate's profile |
+| `results[].educations` | array | Education from the candidate's profile |
+| `results[].skills` | array | Skills from the candidate's profile |
+| `results[].certifications` | array | Certifications from the candidate's profile |
+
+**Profile arrays**
+
+`experiences`, `educations`, `skills` and `certifications` use the same item fields as the Direct Apply payload. Every item field is optional except `competenceName` on skills, and dates are ISO 8601 strings. The table lists the common fields; the API schema lists all of them.
+
+| Array | Common item fields |
+|-------|-------------|
+| `experiences` | `title`, `organizationName`, `location`, `description`, `dateStart`, `dateEnd`, `currentlyWorking`, `level`, `jobCategories`, `industries` |
+| `educations` | `instituteName`, `educationName`, `degree`, `level`, `location`, `dateStart`, `dateEnd`, `currentlyEnrolled`, `status` |
+| `skills` | `competenceName`, `proficiencyLevel` |
+| `certifications` | `name`, `issuingAuthorityName`, `description`, `dateStarted`, `dateIssued`, `code` |
+
+<!-- theme: info -->
+> ### Profile arrays can be empty
+> On the list endpoint the profile arrays can be `[]` until the candidate's profile data has been populated, which happens in the background after the first request. An empty array can also mean the candidate has no data of that kind. Request the list again later, or retrieve the application, which loads the profile data if needed.
 
 Filter to only reviewed applications:
 
@@ -105,7 +165,7 @@ X-Auth-Token: <your Partner token here>
 X-Customer-Id: <customer-id>
 ```
 
-Returns a single application object (same structure as in the list response).
+Returns a single application object with the same fields as a list item, including `files` and the four profile arrays (`experiences`, `educations`, `skills`, `certifications`).
 
 **Errors**
 
@@ -125,7 +185,7 @@ Returns a single application object (same structure as in the list response).
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `filename` | string | Yes | The file to download (must match a value from the application's `files` array) |
+| `filename` | string | Yes | The file to download (must match a `filename` from the application's `files` array) |
 
 **Available files**
 

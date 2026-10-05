@@ -66,6 +66,8 @@ Key payload fields: `source` (job board identifier), `formattedName`, `questions
 
 See [Direct Apply-Webhooks - Endpoint Reference](./webhooks.endpoints.md) for the full payload schema, all field tables, attachment type reference, and file delivery mode examples.
 
+The machine-readable contract is **`DirectApplyWebhookData`** in the [public OpenAPI schema](../../../schema/build/public.json), shared with CPA+. See [OpenAPI Contract](./webhooks.endpoints.md#openapi-contract) for file-delivery models and navigation from GitHub or Stoplight.
+
 ## File Delivery Modes
 
 Your account manager configures one of four modes for how files are delivered with the webhook.
