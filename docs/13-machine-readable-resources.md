@@ -23,8 +23,8 @@ difficulty: beginner
 Clone [`vonq/hapi-docs`](https://github.com/vonq/hapi-docs), then work from the
 repository root:
 
-1. Read [`llms.txt`](../llms.txt) to choose a guide or scenario.
-2. Query [`docs-manifest.jsonl`](../docs-manifest.jsonl) by document metadata
+1. Read [`llms.txt`](https://github.com/vonq/hapi-docs/blob/master/llms.txt) to choose a guide or scenario.
+2. Query [`docs-manifest.jsonl`](https://github.com/vonq/hapi-docs/blob/master/docs-manifest.jsonl) by document metadata
    or OpenAPI operation ID.
 3. Search the selected area with `rg` and open only matching pages.
 4. Select one operation or component from the OpenAPI schema with `jq`.
@@ -34,13 +34,13 @@ order for resolving source differences.
 
 ## Available Resources
 
-The published repository contains the canonical downloadable files. Clone it so
-links stay relative and local search remains fast.
+The published repository contains the canonical downloadable files. Clone it for
+local search and the relative file paths used in the commands below.
 
 ### OpenAPI Schema
 
 The canonical API specification is
-[`schema/build/public.json`](../schema/build/public.json). It defines endpoint
+[`schema/build/public.json`](https://github.com/vonq/hapi-docs/blob/master/schema/build/public.json). It defines endpoint
 paths, methods, parameters, payloads, responses, and authentication.
 
 Select one operation by `operationId`:
@@ -60,16 +60,38 @@ Select one component schema:
 jq '.components.schemas.HAPICampaignCreateRequest' schema/build/public.json
 ```
 
+### Webhook Payload Schemas
+
+Webhook models describe requests **HAPI sends to your system**. They are generated into the same [OpenAPI schema](https://github.com/vonq/hapi-docs/blob/master/schema/build/public.json) as the REST API on every schema build.
+
+| Model name | Outgoing request | Guide |
+|------------|------------------|-------|
+| [`DirectApplyWebhookData`](../schema/build/public.json/components/schemas/DirectApplyWebhookData) | Direct Apply or CPA+ application | [Direct Apply contract](guides/10-direct-apply/webhooks.endpoints.md#openapi-contract) |
+| [`DirectApplyWebhookFile`](../schema/build/public.json/components/schemas/DirectApplyWebhookFile) | Direct Apply or CPA+ Base64 file | [File delivery](guides/10-direct-apply/webhooks.endpoints.md#openapi-contract) |
+| [`ScreeningApplicationWebhookData`](../schema/build/public.json/components/schemas/ScreeningApplicationWebhookData) | Screening application result | [Screening contract](guides/11-screening/webhooks.md#openapi-contract) |
+| [`ScreeningApplicationWebhookFile`](../schema/build/public.json/components/schemas/ScreeningApplicationWebhookFile) | Screening Base64 file | [Screening contract](guides/11-screening/webhooks.md#openapi-contract) |
+| [`ScreeningJobWebhookData`](../schema/build/public.json/components/schemas/ScreeningJobWebhookData) | Screening job event | [Job events](guides/11-screening/webhooks.md#job-events) |
+
+The model names link directly to their rendered definitions on **Stoplight**. On **GitHub**, open the JSON file and search for a name under `components.schemas`, or extract it locally:
+
+```bash
+jq '.components.schemas.DirectApplyWebhookData' schema/build/public.json
+```
+
+Stoplight model links use its documented relative path format: `schema/build/public.json/components/schemas/ModelName`. A JSON pointer such as `#/components/schemas/DirectApplyWebhookData` identifies a model inside OpenAPI, but is not a GitHub page anchor. Use the JSON file link above when reading the source on GitHub.
+
+The `DirectApplyApplication` callback on campaign ordering covers Direct Apply and CPA+. The `ScreeningApplication` and `ScreeningJob` callbacks on screening job creation cover application results and job events, including account-level destinations when no per-campaign or per-job URL override is supplied. Their request bodies describe JSON and, where applicable, multipart delivery. These are partner receivers, not additional HAPI endpoints to call.
+
 ### Supplementary Files
 
 These files complement the OpenAPI schema:
 
 | File | Format | Purpose |
 |------|--------|---------|
-| [`docs-manifest.jsonl`](../docs-manifest.jsonl) | JSON Lines | Document metadata and a compact index of OpenAPI operations. |
-| [`llms.txt`](../llms.txt) | Markdown | Small router to guides, scenarios, workflow data, and optional reference pages. |
-| [`docs/extra/api-map.yaml`](extra/api-map.yaml) | YAML | Call sequences, dependencies, state changes, and decision points. |
-| [`docs/extra/glossary.yaml`](extra/glossary.yaml) | YAML | Domain terms, aliases, disambiguation, and related endpoints. |
+| [`docs-manifest.jsonl`](https://github.com/vonq/hapi-docs/blob/master/docs-manifest.jsonl) | JSON Lines | Document metadata and a compact index of OpenAPI operations. |
+| [`llms.txt`](https://github.com/vonq/hapi-docs/blob/master/llms.txt) | Markdown | Small router to guides, scenarios, workflow data, and optional reference pages. |
+| [`docs/extra/api-map.yaml`](https://github.com/vonq/hapi-docs/blob/master/docs/extra/api-map.yaml) | YAML | Call sequences, dependencies, state changes, and decision points. |
+| [`docs/extra/glossary.yaml`](https://github.com/vonq/hapi-docs/blob/master/docs/extra/glossary.yaml) | YAML | Domain terms, aliases, disambiguation, and related endpoints. |
 
 ## When to Use What
 

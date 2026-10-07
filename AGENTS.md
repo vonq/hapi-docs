@@ -1,7 +1,7 @@
 # Working with HAPI documentation
 
-Start with [`llms.txt`](llms.txt) for a compact route to the guides, or query
-[`docs-manifest.jsonl`](docs-manifest.jsonl) by document metadata and OpenAPI
+Start with [`llms.txt`](https://github.com/vonq/hapi-docs/blob/master/llms.txt) for a compact route to the guides, or query
+[`docs-manifest.jsonl`](https://github.com/vonq/hapi-docs/blob/master/docs-manifest.jsonl) by document metadata and OpenAPI
 operation ID. Open only the sources needed for the task.
 
 Use `rg` to find guide text:

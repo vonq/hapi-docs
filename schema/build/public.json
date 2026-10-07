@@ -1,5 +1,87 @@
 {
   "components": {
+    "callbacks": {
+      "DirectApplyApplication": {
+        "{$request.body#/directApply/webhookUrl}": {
+          "post": {
+            "description": "HAPI sends Direct Apply and CPA+ applications to the partner's configured postback URL. directApply.webhookUrl on the campaign overrides the account URL when supplied. The callback also applies when the override is absent. CPA+ uses the same DirectApplyWebhookData envelope, with payload.cpa.reviewed and enrichment fields. JSON delivery contains either application data (type=payload) or a Base64 file (type=file). Inline Base64 mode adds base64Content to payload.attachments. Multipart delivery contains the JSON envelope in a json part and files keyed by filename, or a separate file part in split mode. The same requestId correlates all requests. Configured partner headers are used; HAPI API authentication headers are not required by this contract.",
+            "requestBody": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/DirectApplyApplicationDelivery"
+                  }
+                },
+                "multipart/form-data": {
+                  "encoding": {
+                    "json": {
+                      "contentType": "application/json"
+                    }
+                  },
+                  "schema": {
+                    "oneOf": [
+                      {
+                        "additionalProperties": {
+                          "format": "binary",
+                          "type": "string"
+                        },
+                        "properties": {
+                          "json": {
+                            "description": "JSON-encoded DirectApplyWebhookData object. Additional parts contain binary files, keyed by filename.",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "json"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "properties": {
+                          "campaignId": {
+                            "type": "string"
+                          },
+                          "file": {
+                            "format": "binary",
+                            "type": "string"
+                          },
+                          "productId": {
+                            "type": "string"
+                          },
+                          "requestId": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "enum": [
+                              "file"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "requestId",
+                          "campaignId",
+                          "productId",
+                          "type",
+                          "file"
+                        ],
+                        "type": "object"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "responses": {
+              "2XX": {
+                "description": "Delivery accepted. The response body is ignored."
+              }
+            },
+            "summary": "DirectApplyApplication"
+          }
+        }
+      }
+    },
     "schemas": {
       "ATS": {
         "description": "View ATS's information by both ATS and ATSUser",
@@ -2527,8 +2609,29 @@
       },
       "CpaCampaignApplicationsList": {
         "properties": {
+          "certifications": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadCertification"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "educations": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadEducation"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
           "email": {
             "type": "string"
+          },
+          "experiences": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadExperience"
+            },
+            "readOnly": true,
+            "type": "array"
           },
           "files": {
             "items": {
@@ -2550,21 +2653,67 @@
           "reviewed": {
             "type": "boolean"
           },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadSkill"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
           "updated": {
             "format": "date-time",
             "type": "string"
           }
         },
         "required": [
+          "certifications",
+          "educations",
           "email",
+          "experiences",
           "files",
           "id",
           "name",
           "phone",
           "reviewed",
+          "skills",
           "updated"
         ],
         "type": "object"
+      },
+      "CpaCampaignApplicationsListResponse": {
+        "properties": {
+          "count": {
+            "type": "integer"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/CpaCampaignApplicationsList"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "results"
+        ],
+        "type": "object"
+      },
+      "DirectApplyApplicationDelivery": {
+        "discriminator": {
+          "mapping": {
+            "file": "#/components/schemas/DirectApplyWebhookFile",
+            "payload": "#/components/schemas/DirectApplyWebhookData"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/DirectApplyWebhookData"
+          },
+          {
+            "$ref": "#/components/schemas/DirectApplyWebhookFile"
+          }
+        ]
       },
       "DirectApplyEnum": {
         "description": "* `n/a` - Not available\n* `optional` - Optional\n* `mandatory` - Mandatory",
@@ -2574,6 +2723,300 @@
           "mandatory"
         ],
         "type": "string"
+      },
+      "DirectApplyWebhookAttachment": {
+        "properties": {
+          "base64Content": {
+            "description": "File bytes encoded as Base64 in inline mode.",
+            "type": "string"
+          },
+          "comments": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "primaryAttachment": {
+            "type": "boolean"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "filename",
+          "type"
+        ],
+        "type": "object"
+      },
+      "DirectApplyWebhookData": {
+        "description": "Application sent by HAPI to your Direct Apply receiver. CPA+ adds payload.cpa and enrichment fields.",
+        "properties": {
+          "campaignId": {
+            "type": "string"
+          },
+          "payload": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DirectApplyWebhookPayload"
+              }
+            ],
+            "description": "CPA+ uses this same contract with cpa.reviewed and candidate enrichment fields."
+          },
+          "productId": {
+            "description": "Product identifier; legacy identifiers are not necessarily UUIDs.",
+            "type": "string"
+          },
+          "requestId": {
+            "description": "Delivery ID, shared by the application and its split files.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/WebhookPayloadTypeEnum"
+          }
+        },
+        "required": [
+          "campaignId",
+          "payload",
+          "productId",
+          "requestId",
+          "type"
+        ],
+        "type": "object"
+      },
+      "DirectApplyWebhookFile": {
+        "description": "A separate Base64 file sent to your Direct Apply or CPA+ receiver, correlated by requestId.",
+        "properties": {
+          "base64Content": {
+            "description": "File bytes encoded as Base64.",
+            "type": "string"
+          },
+          "campaignId": {
+            "type": "string"
+          },
+          "contentType": {
+            "nullable": true,
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "productId": {
+            "description": "Product identifier; legacy identifiers are not necessarily UUIDs.",
+            "type": "string"
+          },
+          "requestId": {
+            "description": "Delivery ID, shared by the application and its split files.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/WebhookFileTypeEnum"
+          }
+        },
+        "required": [
+          "base64Content",
+          "campaignId",
+          "contentType",
+          "filename",
+          "productId",
+          "requestId",
+          "type"
+        ],
+        "type": "object"
+      },
+      "DirectApplyWebhookPayload": {
+        "properties": {
+          "additionalInformation": {
+            "type": "string"
+          },
+          "addresses": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadAddress"
+            },
+            "type": "array"
+          },
+          "ambition": {
+            "type": "string"
+          },
+          "attachments": {
+            "items": {
+              "$ref": "#/components/schemas/DirectApplyWebhookAttachment"
+            },
+            "type": "array"
+          },
+          "birthCity": {
+            "type": "string"
+          },
+          "birthDate": {
+            "type": "string"
+          },
+          "certifications": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadCertification"
+            },
+            "type": "array"
+          },
+          "consents": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadConsent"
+            },
+            "type": "array"
+          },
+          "cpa": {
+            "$ref": "#/components/schemas/ApplyCommonPayloadCpa"
+          },
+          "disability": {
+            "type": "string"
+          },
+          "doNotContact": {
+            "type": "boolean"
+          },
+          "educations": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadEducation"
+            },
+            "type": "array"
+          },
+          "emailAddresses": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadEmailAddress"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "employmentStatus": {
+            "type": "string"
+          },
+          "experiences": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadExperience"
+            },
+            "type": "array"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "formattedName": {
+            "type": "string"
+          },
+          "formerFamilyName": {
+            "type": "string"
+          },
+          "gender": {
+            "type": "string"
+          },
+          "hobbies": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadHobby"
+            },
+            "type": "array"
+          },
+          "isCarOwner": {
+            "type": "boolean"
+          },
+          "jobboardApplyDateTime": {
+            "type": "string"
+          },
+          "jobboardResumeId": {
+            "type": "string"
+          },
+          "jurisdictionalCountries": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadJurisdictionalCountry"
+            },
+            "type": "array"
+          },
+          "languages": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadLanguage"
+            },
+            "type": "array"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "lastNamePrefix": {
+            "type": "string"
+          },
+          "legalIDs": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadLegalID"
+            },
+            "type": "array"
+          },
+          "licenses": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadLicense"
+            },
+            "type": "array"
+          },
+          "maritalStatus": {
+            "type": "string"
+          },
+          "middleName": {
+            "type": "string"
+          },
+          "onlineReferences": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadOnlineReference"
+            },
+            "type": "array"
+          },
+          "personalDetails": {
+            "type": "string"
+          },
+          "phoneNumbers": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadPhoneNumber"
+            },
+            "type": "array"
+          },
+          "positionPreferences": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadPositionPreference"
+            },
+            "type": "array"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadQuestion"
+            },
+            "type": "array"
+          },
+          "race": {
+            "type": "string"
+          },
+          "salutation": {
+            "type": "string"
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadSkill"
+            },
+            "type": "array"
+          },
+          "source": {
+            "type": "string"
+          },
+          "veteranStatus": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "emailAddresses",
+          "firstName",
+          "jobboardApplyDateTime",
+          "jobboardResumeId"
+        ],
+        "type": "object"
       },
       "EducationLevelElementRequest": {
         "properties": {
@@ -7205,6 +7648,23 @@
         ],
         "type": "object"
       },
+      "ScreeningApplicationDelivery": {
+        "discriminator": {
+          "mapping": {
+            "file": "#/components/schemas/ScreeningApplicationWebhookFile",
+            "payload": "#/components/schemas/ScreeningApplicationWebhookData"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ScreeningApplicationWebhookData"
+          },
+          {
+            "$ref": "#/components/schemas/ScreeningApplicationWebhookFile"
+          }
+        ]
+      },
       "ScreeningApplicationDetails": {
         "properties": {
           "application_url": {
@@ -7398,6 +7858,293 @@
           "screened_timeout"
         ],
         "type": "string"
+      },
+      "ScreeningApplicationWebhookData": {
+        "description": "Screening result sent by HAPI to your receiver, with application metadata and a nullable evaluation.",
+        "properties": {
+          "application_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "job_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "description": "Metadata from the application, not the job.",
+            "type": "object"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/ScreeningApplicationWebhookPayload"
+          },
+          "request_id": {
+            "description": "Delivery ID, shared by the application and its split files.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScreeningApplicationStatusEnum"
+              }
+            ],
+            "description": "Normally screened_success or screened_timeout; reflects the current application status on resend.\n\n* `created` - Created\n* `deleted` - Deleted\n* `screened_success` - Screened Success\n* `screened_timeout` - Screened Timeout"
+          },
+          "type": {
+            "$ref": "#/components/schemas/WebhookPayloadTypeEnum"
+          }
+        },
+        "required": [
+          "application_id",
+          "job_id",
+          "metadata",
+          "payload",
+          "request_id",
+          "status",
+          "type"
+        ],
+        "type": "object"
+      },
+      "ScreeningApplicationWebhookFile": {
+        "properties": {
+          "application_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "base64Content": {
+            "description": "File bytes encoded as Base64.",
+            "type": "string"
+          },
+          "contentType": {
+            "nullable": true,
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "job_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "description": "Metadata from the application, not the job.",
+            "type": "object"
+          },
+          "request_id": {
+            "description": "Delivery ID, shared by the application and its split files.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScreeningApplicationStatusEnum"
+              }
+            ],
+            "description": "Normally screened_success or screened_timeout; reflects the current application status on resend.\n\n* `created` - Created\n* `deleted` - Deleted\n* `screened_success` - Screened Success\n* `screened_timeout` - Screened Timeout"
+          },
+          "type": {
+            "$ref": "#/components/schemas/WebhookFileTypeEnum"
+          }
+        },
+        "required": [
+          "application_id",
+          "base64Content",
+          "contentType",
+          "filename",
+          "job_id",
+          "metadata",
+          "request_id",
+          "status",
+          "type"
+        ],
+        "type": "object"
+      },
+      "ScreeningApplicationWebhookPayload": {
+        "properties": {
+          "additionalInformation": {
+            "type": "string"
+          },
+          "addresses": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadAddress"
+            },
+            "type": "array"
+          },
+          "ambition": {
+            "type": "string"
+          },
+          "attachments": {
+            "items": {
+              "$ref": "#/components/schemas/ScreeningWebhookAttachment"
+            },
+            "type": "array"
+          },
+          "birthCity": {
+            "type": "string"
+          },
+          "birthDate": {
+            "type": "string"
+          },
+          "certifications": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadCertification"
+            },
+            "type": "array"
+          },
+          "consents": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadConsent"
+            },
+            "type": "array"
+          },
+          "cpa": {
+            "$ref": "#/components/schemas/ApplyCommonPayloadCpa"
+          },
+          "disability": {
+            "type": "string"
+          },
+          "doNotContact": {
+            "type": "boolean"
+          },
+          "educations": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadEducation"
+            },
+            "type": "array"
+          },
+          "emailAddresses": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadEmailAddress"
+            },
+            "type": "array"
+          },
+          "employmentStatus": {
+            "type": "string"
+          },
+          "experiences": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadExperience"
+            },
+            "type": "array"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "formattedName": {
+            "type": "string"
+          },
+          "formerFamilyName": {
+            "type": "string"
+          },
+          "gender": {
+            "type": "string"
+          },
+          "hobbies": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadHobby"
+            },
+            "type": "array"
+          },
+          "isCarOwner": {
+            "type": "boolean"
+          },
+          "jurisdictionalCountries": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadJurisdictionalCountry"
+            },
+            "type": "array"
+          },
+          "languages": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadLanguage"
+            },
+            "type": "array"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "lastNamePrefix": {
+            "type": "string"
+          },
+          "legalIDs": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadLegalID"
+            },
+            "type": "array"
+          },
+          "licenses": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadLicense"
+            },
+            "type": "array"
+          },
+          "maritalStatus": {
+            "type": "string"
+          },
+          "middleName": {
+            "type": "string"
+          },
+          "onlineReferences": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadOnlineReference"
+            },
+            "type": "array"
+          },
+          "personalDetails": {
+            "type": "string"
+          },
+          "phoneNumbers": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadPhoneNumber"
+            },
+            "type": "array"
+          },
+          "positionPreferences": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadPositionPreference"
+            },
+            "type": "array"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadQuestion"
+            },
+            "type": "array"
+          },
+          "race": {
+            "type": "string"
+          },
+          "salutation": {
+            "type": "string"
+          },
+          "screening_evaluation": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScreeningEvaluation"
+              }
+            ],
+            "nullable": true
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/ApplyCommonPayloadSkill"
+            },
+            "type": "array"
+          },
+          "source": {
+            "type": "string"
+          },
+          "veteranStatus": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "screening_evaluation"
+        ],
+        "type": "object"
       },
       "ScreeningAttachmentsInfo": {
         "properties": {
@@ -8695,6 +9442,82 @@
         ],
         "type": "string"
       },
+      "ScreeningJobWebhookData": {
+        "description": "Opt-in screening job event sent by HAPI to your receiver. Includes job metadata and no application ID.",
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/ScreeningJobWebhookEventEnum"
+          },
+          "job_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "description": "Metadata from the job.",
+            "type": "object"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/ScreeningJobWebhookPayload"
+          },
+          "request_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/WebhookJobEventTypeEnum"
+          }
+        },
+        "required": [
+          "event",
+          "job_id",
+          "metadata",
+          "payload",
+          "request_id",
+          "type"
+        ],
+        "type": "object"
+      },
+      "ScreeningJobWebhookEventEnum": {
+        "description": "* `ai_requirements_ready` - AI Requirements Ready",
+        "enum": [
+          "ai_requirements_ready"
+        ],
+        "type": "string"
+      },
+      "ScreeningJobWebhookPayload": {
+        "properties": {
+          "interview_questions": {
+            "items": {
+              "$ref": "#/components/schemas/ScreeningJobInterviewQuestion"
+            },
+            "type": "array"
+          },
+          "job_screening_url": {
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "requirements": {
+            "items": {
+              "$ref": "#/components/schemas/ScreeningQuestionRequirement"
+            },
+            "type": "array"
+          },
+          "requirements_ready_at": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "interview_questions",
+          "job_screening_url",
+          "requirements",
+          "requirements_ready_at"
+        ],
+        "type": "object"
+      },
       "ScreeningQuestionRequirement": {
         "properties": {
           "description": {
@@ -8758,6 +9581,41 @@
         "required": [
           "filename",
           "remoteUrl"
+        ],
+        "type": "object"
+      },
+      "ScreeningWebhookAttachment": {
+        "properties": {
+          "base64Content": {
+            "description": "File bytes encoded as Base64 in inline mode.",
+            "type": "string"
+          },
+          "comments": {
+            "type": "string"
+          },
+          "contentType": {
+            "nullable": true,
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "primaryAttachment": {
+            "type": "boolean"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "filename",
+          "type"
         ],
         "type": "object"
       },
@@ -9562,6 +10420,27 @@
         ],
         "type": "object"
       },
+      "WebhookFileTypeEnum": {
+        "description": "* `file` - file",
+        "enum": [
+          "file"
+        ],
+        "type": "string"
+      },
+      "WebhookJobEventTypeEnum": {
+        "description": "* `job_event` - job_event",
+        "enum": [
+          "job_event"
+        ],
+        "type": "string"
+      },
+      "WebhookPayloadTypeEnum": {
+        "description": "* `payload` - payload",
+        "enum": [
+          "payload"
+        ],
+        "type": "string"
+      },
       "WorkingLocationRequest": {
         "properties": {
           "addressLine1": {
@@ -9635,7 +10514,7 @@
     }
   },
   "info": {
-    "description": "The VONQ Hiring API (HAPI) provides a comprehensive RESTful API for listing available VONQ Products and creating Campaigns.\n\nFor details on environments, authentication, pagination, rate limits, and error handling, see the [API Overview](./docs/02-api-overview.md).",
+    "description": "The VONQ Hiring API (HAPI) provides a comprehensive RESTful API for listing available VONQ Products and creating Campaigns.\n\nFor details on environments, authentication, pagination, rate limits, and error handling, see the [API Overview](../../docs/02-api-overview.md).",
     "title": "VONQ Hiring API",
     "version": "1.0.0"
   },
@@ -9856,6 +10735,11 @@
     },
     "/campaigns/order": {
       "post": {
+        "callbacks": {
+          "DirectApplyApplication": {
+            "$ref": "#/components/callbacks/DirectApplyApplication"
+          }
+        },
         "deprecated": false,
         "description": "Once your Customer has decided on a list of Channels they would like to buy, you can send the list along with\npublishing information as a `POST` request in order to create a `Campaign`. In return, you'll receive\nthe id of the newly created `Campaign` along with the URL where you can access that Campaign information.\nFor \"My Contracts\" type of Products, there is no expiration. The vacancy can be taken offline either by the job board or manually, by calling `PUT /campaigns/{campaignId}/cancellation`.\n\n#### Target group\n\nYou should use the following endpoints for the target group information:\n\n- [**`Industry`**](b3A6MzM0NDA3Mzg-industry-names)\n\n- [**`Job Function`**](b3A6MzM0NDA3MzU-job-functions)\n\n- [**`Education Level`**](b3A6MzM0NDA3Mzk-retrieve-education-level-taxonomy)\n\n- [**`Seniority`**](b3A6MzM0NDA3NDA-retrieve-seniority-taxonomy)",
         "operationId": "hapi-OrderCampaign",
@@ -13906,7 +14790,7 @@
     },
     "/v3/cpacampaigns/{hapi_campaign_id}/applications/": {
       "get": {
-        "description": "Return CPA+ applications for a campaign.",
+        "description": "Return CPA+ applications for a campaign.\n\nEach application includes the candidate's `experiences`, `educations`, `skills` and `certifications`. These profile arrays can be empty until enrichment has been populated.",
         "operationId": "cpacampaigns_applications_list",
         "parameters": [
           {
@@ -13936,7 +14820,14 @@
         ],
         "responses": {
           "200": {
-            "description": "No response body"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CpaCampaignApplicationsListResponse"
+                }
+              }
+            },
+            "description": ""
           }
         },
         "security": [
@@ -13955,7 +14846,7 @@
     },
     "/v3/cpacampaigns/{hapi_campaign_id}/applications/{application_id}/": {
       "get": {
-        "description": "CPA+ application details for a campaign.",
+        "description": "CPA+ application details for a campaign, including the candidate's `experiences`, `educations`, `skills` and `certifications`.",
         "operationId": "cpacampaigns_application_retrieve",
         "parameters": [
           {
@@ -14555,6 +15446,122 @@
         ]
       },
       "post": {
+        "callbacks": {
+          "ScreeningApplication": {
+            "{$request.body#/settings/webhook_url}": {
+              "post": {
+                "description": "HAPI sends screening results to the job's settings.webhook_url, or the account postback URL when no override is supplied. This covers both API-submitted and publicly collected applications. Application metadata is included. A timeout can contain only screening_evaluation=null in payload. JSON delivery contains application data or a Base64 file; inline Base64 mode adds base64Content and contentType to attachments. Multipart delivery contains a JSON envelope and filename-keyed files, or a separate file part in split mode. Correlate requests by request_id. Configured partner headers are used. When signing is enabled, JSON requests carry X-Webhook-Timestamp and X-Webhook-Signature; binary multipart requests are not signed.",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/ScreeningApplicationDelivery"
+                      }
+                    },
+                    "multipart/form-data": {
+                      "encoding": {
+                        "json": {
+                          "contentType": "application/json"
+                        }
+                      },
+                      "schema": {
+                        "oneOf": [
+                          {
+                            "additionalProperties": {
+                              "format": "binary",
+                              "type": "string"
+                            },
+                            "properties": {
+                              "json": {
+                                "description": "JSON-encoded ScreeningApplicationWebhookData object. Additional parts contain binary files, keyed by filename.",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "json"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "properties": {
+                              "application_id": {
+                                "type": "string"
+                              },
+                              "file": {
+                                "format": "binary",
+                                "type": "string"
+                              },
+                              "job_id": {
+                                "type": "string"
+                              },
+                              "metadata": {
+                                "description": "In split multipart delivery, nonempty metadata is sent as repeated metadata keys.",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              },
+                              "request_id": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "enum": [
+                                  "file"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "request_id",
+                              "job_id",
+                              "application_id",
+                              "status",
+                              "type",
+                              "file"
+                            ],
+                            "type": "object"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                "responses": {
+                  "2XX": {
+                    "description": "Delivery accepted. The response body is ignored."
+                  }
+                },
+                "summary": "ScreeningApplication"
+              }
+            }
+          },
+          "ScreeningJob": {
+            "{$request.body#/settings/webhook_url}": {
+              "post": {
+                "description": "Opt-in job events, currently ai_requirements_ready. Always a single JSON request. Job metadata is included. The destination is settings.webhook_url when supplied, otherwise the account's job-events URL or default postback URL. Configured partner headers and optional X-Webhook-Timestamp / X-Webhook-Signature apply.",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/ScreeningJobWebhookData"
+                      }
+                    }
+                  },
+                  "required": true
+                },
+                "responses": {
+                  "2XX": {
+                    "description": "Delivery accepted. The response body is ignored."
+                  }
+                },
+                "summary": "Screening job event"
+              }
+            }
+          }
+        },
         "description": "Create, list, retrieve and delete screening jobs for AI-powered candidate screening.",
         "operationId": "v3_screening_jobs_create",
         "parameters": [
@@ -14969,7 +15976,7 @@
         ]
       },
       "post": {
-        "description": "Add one requirement to the job.\n\n`summary` and `question` are required; `description` falls back to the question when omitted. The requirement is stored as written - the AI neither rewrites it nor generates an interview question for it, so add that yourself if the job runs the interview agent. Available once `requirements_ready_at` is set. Only applications created after the change are assessed against it.",
+        "description": "Add one requirement to the job.\n\n`summary` and `question` are required; `description` is optional and stays empty when omitted. The requirement is stored as written - the AI neither rewrites it nor generates an interview question for it, so add that yourself if the job runs the interview agent. Available once `requirements_ready_at` is set. Only applications created after the change are assessed against it.",
         "operationId": "v3_screening_jobs_requirements_create",
         "parameters": [
           {

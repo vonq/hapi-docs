@@ -156,6 +156,8 @@ CPA+ applications can be delivered to your ATS in two ways:
 
 ### Delivery via Direct Apply
 
+The outgoing request uses [**`DirectApplyWebhookData`**](../../schema/build/public.json/components/schemas/DirectApplyWebhookData) in the public OpenAPI schema, with the additional `payload.cpa` object. See [Direct Apply's OpenAPI contract](./10-direct-apply/webhooks.endpoints.md#openapi-contract) for all delivery modes and [Webhook payload schemas](../13-machine-readable-resources.md#webhook-payload-schemas) for the downloadable schema.
+
 The recommended approach. Applications are pushed to your webhook endpoint as they arrive, using the same [Direct Apply webhook infrastructure](./10-direct-apply/webhooks.md). The payload is identical to a standard Direct Apply webhook, with an additional `cpa` object:
 
 ```json
