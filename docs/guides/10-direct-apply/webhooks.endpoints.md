@@ -10,6 +10,12 @@ endpoints: []
 
 > For conceptual overview, see [Direct Apply-Webhooks](./webhooks.md).
 
+## OpenAPI Contract
+
+The machine-readable outgoing request model is [**`DirectApplyWebhookData`**](../../../schema/build/public.json/components/schemas/DirectApplyWebhookData) in the public OpenAPI schema. CPA+ uses the same model, including `payload.cpa`. Separate Base64 file requests use [**`DirectApplyWebhookFile`**](../../../schema/build/public.json/components/schemas/DirectApplyWebhookFile); [**`DirectApplyApplicationDelivery`**](../../../schema/build/public.json/components/schemas/DirectApplyApplicationDelivery) describes either JSON request. The `DirectApplyApplication` callback on campaign ordering also documents multipart delivery.
+
+See [Webhook payload schemas](../../13-machine-readable-resources.md#webhook-payload-schemas) for how to find these models on Stoplight or GitHub. The examples below illustrate the generated contract.
+
 ## Payload Structure
 
 The webhook payload contains the candidate's application data, questionnaire answers, and attachment metadata.
@@ -168,6 +174,8 @@ In every mode, an application without files is delivered as a single `applicatio
 
 JSON payload and all files in one `multipart/form-data` POST. The JSON is in a form field named `json`; files are additional form fields.
 
+The `json` part is sent with `Content-Type: application/json`, also with forced multipart delivery. Each file part carries the file's content type.
+
 <!-- theme: info -->
 > ### Recommended
 > Single request mode allows you to atomically process the entire application in one request.
@@ -227,15 +235,33 @@ The payload request always arrives first. File requests are sent only after your
 
 ```text
 POST https://your-ats.example.com/webhooks/vonq
-Content-Type: multipart/form-data
+Content-Type: multipart/form-data; boundary=----Boundary
 
-requestId=e3f4a5b6-c7d8-9012-cdef-123456789012
-campaignId=e2f3a4b5-c6d7-8901-bcde-f12345678901
-productId=d7e8f9a0-b1c2-3456-0123-567890123456
-type=file
+------Boundary
+Content-Disposition: form-data; name="requestId"
 
-file=<<resume.pdf>>
+e3f4a5b6-c7d8-9012-cdef-123456789012
+------Boundary
+Content-Disposition: form-data; name="campaignId"
+
+e2f3a4b5-c6d7-8901-bcde-f12345678901
+------Boundary
+Content-Disposition: form-data; name="productId"
+
+d7e8f9a0-b1c2-3456-0123-567890123456
+------Boundary
+Content-Disposition: form-data; name="type"
+
+file
+------Boundary
+Content-Disposition: form-data; name="file"; filename="resume.pdf"
+Content-Type: application/pdf
+
+<binary file content>
+------Boundary--
 ```
+
+The text fields have no `Content-Type`; the `file` part carries the file's content type.
 
 </details>
 

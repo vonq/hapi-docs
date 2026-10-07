@@ -52,6 +52,18 @@ The following settings are configured by your account manager-they are not contr
 
 ## Payload Structure
 
+### OpenAPI Contract
+
+The public OpenAPI schema includes these outgoing request models:
+
+| Model | Sent by HAPI |
+|-------|--------------|
+| [`ScreeningApplicationWebhookData`](../../../schema/build/public.json/components/schemas/ScreeningApplicationWebhookData) | Candidate screening result, including `payload.screening_evaluation` |
+| [`ScreeningApplicationWebhookFile`](../../../schema/build/public.json/components/schemas/ScreeningApplicationWebhookFile) | Separate Base64 file request |
+| [`ScreeningJobWebhookData`](../../../schema/build/public.json/components/schemas/ScreeningJobWebhookData) | Job event such as `ai_requirements_ready` |
+
+The `ScreeningApplication` and `ScreeningJob` callbacks on job creation describe delivery to your configured URL, including multipart application delivery. See [Webhook payload schemas](../../13-machine-readable-resources.md#webhook-payload-schemas) for finding these models on GitHub or Stoplight.
+
 The main webhook request contains candidate data, status, and attachment metadata.
 
 ```json
@@ -87,9 +99,10 @@ The main webhook request contains candidate data, status, and attachment metadat
 | `job_id` | UUID | Parent screening job |
 | `application_id` | UUID | Specific application |
 | `status` | string | `screened_success` or `screened_timeout` |
-| `metadata` | object | Passthrough metadata from job creation |
+| `metadata` | object | Passthrough metadata from application creation |
 | `payload` | object | Candidate data: name, phone numbers, email addresses, attachments |
 | `payload.attachments` | array | File metadata-each entry has `type` and `filename` |
+| `payload.screening_evaluation` | object \| null | Scores and evaluation-completion flags; `null` when no evaluation is available |
 | `type` | string | `"payload"` for the main request, `"file"` for split file requests |
 
 ### Attachment Types
@@ -106,6 +119,8 @@ Your account manager configures one of four modes for how attachments are delive
 ### Mode 1: Single Multipart Request
 
 JSON payload and all files in one `multipart/form-data` POST. The JSON is sent in the `json` form field; files are sent as additional form fields.
+
+The `json` part is sent with `Content-Type: application/json`, also with forced multipart delivery. Each file part carries the file's content type.
 
 Best for systems that handle multipart natively.
 

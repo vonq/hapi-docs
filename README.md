@@ -13,10 +13,10 @@ The same content is published in two places - pick whichever fits your workflow:
 
 **New to HAPI?** Start with [Introduction](docs/01-introduction.md), then [API Overview](docs/02-api-overview.md).
 
-**Building an integration?** Jump to the [OpenAPI schema](schema/build/public.json) and the [guides](docs/guides/).
+**Building an integration?** Jump to the [OpenAPI schema](https://github.com/vonq/hapi-docs/blob/master/schema/build/public.json) and the [guides](docs/01-introduction.md#documentation-map).
 
 **AI agent or code generator?** Clone this repository, then start with
-[`llms.txt`](llms.txt) or [`docs-manifest.jsonl`](docs-manifest.jsonl). See
+[`llms.txt`](https://github.com/vonq/hapi-docs/blob/master/llms.txt) or [`docs-manifest.jsonl`](https://github.com/vonq/hapi-docs/blob/master/docs-manifest.jsonl). See
 [`AGENTS.md`](AGENTS.md) for selective search commands and source authority.
 
 ## Table of Contents
@@ -40,7 +40,7 @@ The high-level layout:
   - [Scenarios](docs/guides/14-scenarios/01-introduction.md) - end-to-end integration walkthroughs
 - **Reference**
   - [Machine-Readable Resources](docs/13-machine-readable-resources.md) - manifest, OpenAPI, API map, glossary, llms.txt
-  - [API Schema](schema/build/public.json) - OpenAPI 3.0.3 spec
+  - [API Schema](https://github.com/vonq/hapi-docs/blob/master/schema/build/public.json) - OpenAPI 3.0.3 spec
 
 ## Repository Layout
 
@@ -66,7 +66,7 @@ The high-level layout:
 
 ## OpenAPI Schema
 
-The canonical API specification lives at [`schema/build/public.json`](schema/build/public.json):
+The canonical API specification lives at [`schema/build/public.json`](https://github.com/vonq/hapi-docs/blob/master/schema/build/public.json):
 
 | Property | Value |
 |----------|-------|
@@ -79,12 +79,12 @@ Use it directly with any OpenAPI-aware tool (Postman, Insomnia, openapi-generato
 
 Clone the repository and select sources locally:
 
-1. Use [`llms.txt`](llms.txt) to choose a guide or scenario.
-2. Query [`docs-manifest.jsonl`](docs-manifest.jsonl) to find documents by ID,
+1. Use [`llms.txt`](https://github.com/vonq/hapi-docs/blob/master/llms.txt) to choose a guide or scenario.
+2. Query [`docs-manifest.jsonl`](https://github.com/vonq/hapi-docs/blob/master/docs-manifest.jsonl) to find documents by ID,
    concept, keyword, or OpenAPI operation ID.
 3. Use `rg` within `docs/` and open only the matching pages.
 4. Use `jq` to select the needed operation or component from
-   [`schema/build/public.json`](schema/build/public.json).
+   [`schema/build/public.json`](https://github.com/vonq/hapi-docs/blob/master/schema/build/public.json).
 
 [`AGENTS.md`](AGENTS.md) has ready-to-run commands. Every documentation page
 also has YAML frontmatter for filtering and navigation.
