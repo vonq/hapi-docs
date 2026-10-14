@@ -26,7 +26,7 @@ This endpoint catches errors early-detailed, per-question validation messages ra
 |-------|------|----------|-------------|
 | `product_id` | string | Yes | Product ID to validate against |
 | `contract_id` | string | Conditional | Contract ID for My Contract/Job Post products. Omit for Job Marketing products. |
-| `facet` | string | Yes | Questionnaire facet name from the posting requirements response (e.g., `questionnaire`, `customQuestions`) |
+| `facet` | string | Yes | Questionnaire facet name from the posting requirements response (e.g., `questionnaire`, `additionalQuestions`). On boards with several questionnaire facets, such as LinkedIn, send one request per facet. |
 | `questionnaire` | array | Yes | Native JSON array of question objects (NOT stringified) |
 
 <!-- theme: warning -->
@@ -156,5 +156,7 @@ Content-Type: application/json
   ]
 }
 ```
+
+`applicationMethod` and `questionnaire` are one board's facet names, not fixed keys. Use the facet names and option keys from the product's or contract's posting requirements. For LinkedIn, see [LinkedIn](./posting-requirements.md#linkedin).
 
 For Job Marketing products with Direct Apply posting requirements, include an `orderedProductsSpecs` entry with `productId` and `postingRequirements`, but omit `contractId`.
