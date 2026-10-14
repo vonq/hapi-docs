@@ -1,7 +1,7 @@
 ---
 id: direct-apply-posting-requirements
 title: Direct Apply-Posting Requirements
-description: Enabling Direct Apply when ordering-applicationMethod facet, questionnaire configuration.
+description: Enabling Direct Apply when ordering-apply-method facet, questionnaire configuration.
 category: guides/direct-apply
 endpoints:
 - POST /campaigns/validate-questionnaire/
@@ -28,8 +28,8 @@ keywords:
 
 When ordering a HAPI campaign with Direct Apply, two things happen through posting requirements:
 
-1. **Direct Apply is enabled**-either by selecting it as the application method or by filling in a questionnaire facet (depending on the job board).
-2. **A questionnaire is configured** (optional)-custom screening questions that candidates answer on the job board.
+1. **Direct Apply is enabled**-on most boards by selecting the Direct Apply option of the board's apply-method facet.
+2. **A questionnaire is configured** (optional)-custom screening questions that candidates answer on the job board, set in one or more questionnaire facets.
 
 Both are controlled through standard posting requirement facets. The questionnaire facet, its supported question types, and constraints are all returned dynamically by the API-always read them from the response, never hardcode.
 
@@ -39,48 +39,88 @@ For background on Direct Apply, see [Introduction](./01-introduction.md).
 
 ## Enabling Direct Apply
 
-How Direct Apply gets enabled depends on the job board:
+Most boards that support Direct Apply have an apply-method facet: a `SELECT` facet with a Direct Apply option, usually next to a link-out option. Selecting the Direct Apply option enables Direct Apply. The questionnaire facets then appear through display rules, either directly on the apply-method facet or through another facet in between (see [Indeed](#indeed)).
 
-**Boards with an `applicationMethod` facet** (Indeed, Seek, Naukri, Infojobs):
-- The posting requirements response includes a facet (typically `applicationMethod`) with options like `directapply` and `linkout`.
-- Selecting `directapply` enables Direct Apply. When selected, additional facets like the questionnaire may appear via display rules.
+The apply-method facet has no fixed name. It is `applicationMethod` on some boards and `applyMethod` on others, and the option keys are defined by the board. When the facet has an empty `options` array and a non-null `autocomplete` field, load its options through [Autocomplete](../07-posting-requirements/autocomplete.md).
 
-**Boards with implicit activation** (LinkedIn):
-- There is no `applicationMethod` toggle. Direct Apply activates automatically when you fill in any questionnaire facet (e.g., `customQuestions`).
+Identify the facets by their properties, not their names. Questionnaire facets have `type` `QUESTIONNAIRE`. The apply-method facet is the one the questionnaire facets' display rules lead back to, directly or through another facet. A few boards show the questionnaire without any display rule.
 
 <!-- theme: warning -->
 > ### Always Read Facets Dynamically
-> Facet names, option values, and display rules are returned by the API and vary by job board. Never hardcode facet names like `applicationMethod` or `questionnaire`-always read them from the posting requirements response.
+> Facet names, option values, and display rules are returned by the API and vary by job board. Never hardcode facet names like `applicationMethod`, `applyMethod` or `questionnaire`-always read them from the posting requirements response.
+
+### LinkedIn
+
+LinkedIn's apply-method facet is `applyMethod`. Its options are loaded through Autocomplete. The "On Site Apply (Apply Connect)" option sends `directapply`, which enables Direct Apply through LinkedIn Apply Connect.
+
+Selecting it shows seven questionnaire facets. Each one is a section of LinkedIn's Apply Connect application form, and a question appears in the section of the facet it is placed in:
+
+| Facet | Section of the LinkedIn application form |
+|-------|------------------------------------------|
+| `additionalQuestions` | Additional questions. Put general screening questions here. |
+| `contactInformationQuestions` | Contact information |
+| `resumeQuestions` | Resume |
+| `coverLetterQuestions` | Cover letter |
+| `workQuestions` | Work experience |
+| `educationQuestions` | Education |
+| `voluntarySelfIdentificationQuestions` | Voluntary self-identification |
+
+All seven are optional. Fill only the sections you need and leave the others out. Each facet holds its own questionnaire with its own constraints, so validate each one with its own `POST /campaigns/validate-questionnaire/` request and submit each as its own stringified value:
+
+```json
+{
+  "postingRequirements": {
+    "applyMethod": "directapply",
+    "additionalQuestions": "[{\"id\":\"question-work-permit\",\"question\":\"Do you have a valid work permit?\",\"type\":\"choice\",\"is_required\":true,\"answers\":[{\"id\":\"option-yes\",\"answer\":\"Yes\"},{\"id\":\"option-no\",\"answer\":\"No\"}]}]",
+    "workQuestions": "[{\"id\":\"question-years-experience\",\"question\":\"Years of relevant experience\",\"type\":\"int\"}]"
+  }
+}
+```
+
+<!-- theme: danger -->
+> ### Question IDs Must Be Unique Across All Sections
+> LinkedIn rejects a posting in which the same question `id` appears more than once, even in different sections, and the job is then not posted with onsite apply. HAPI validates each questionnaire facet separately, so neither `POST /campaigns/validate-questionnaire/` nor the campaign order catches a duplicate across facets. Keep question IDs unique across all seven facets of one posting.
+
+### Indeed
+
+On Indeed, the questionnaire depends on the apply-method facet through a `cv_required` facet. The apply-method facet is `applicationMethod` or `applyMethod`, depending on the Indeed integration. Selecting its Direct Apply option shows `cv_required`, and the `cv_required` value decides which of two questionnaire facets is shown:
+
+| `cv_required` value | Questionnaire facet shown | Facet required |
+|---------------------|---------------------------|----------------|
+| CV required | `questionnaire` | No |
+| CV optional or not asked | `questionnaire_required` | Yes |
+
+The `cv_required` option keys differ between Indeed integrations (for example `YES`, `OPTIONAL`, `NO` on one and `required`, `optional`, `hidden` on another), so evaluate the display rules rather than matching keys. Both questionnaire facets are labelled "Questionnaire" and only one is visible at a time. Fill the visible one and leave the hidden one out of the order, as described in [Hidden Facets and Submission](../07-posting-requirements/facets-display-rules.md#hidden-facets-and-submission).
 
 ### Display Rules
 
-Facets use [display rules](../07-posting-requirements/facets-display-rules.md) to control visibility. A questionnaire facet typically has a rule like:
+Facets use [display rules](../07-posting-requirements/facets-display-rules.md) to control visibility. Questionnaire facets usually depend on the apply-method facet. On LinkedIn, each questionnaire facet has this rule:
 
 ```json
 {
   "display_rules": {
     "show": [
       {
-        "op": "equal",
-        "facet": "applicationMethod",
-        "value": "directapply"
+        "op": "selected_option_show_contains",
+        "facet": "applyMethod",
+        "value": null
       }
     ]
   }
 }
 ```
 
-This means the questionnaire facet should only be shown in your UI when `applicationMethod` is set to `directapply`. The facet is always present in the API response-display rules tell you when to show it.
+This means the questionnaire facet should only be shown in your UI when the option selected in `applyMethod` lists the facet's `name` in its `show` array. The `show` arrays come with the options returned by Autocomplete. Other boards use other operators or facets (Indeed goes through `cv_required`), and some show the questionnaire without a rule, so evaluate the rules the API returns, including [chains](../07-posting-requirements/facets-display-rules.md#cascading-visibility). The facet is always present in the API response-display rules tell you when to show it.
 
 Facets also have a `sort` field that dictates their display order. Always respect this ordering in your UI.
 
 ### Prerequisite
 
-Your ATS must be onboarded and Direct Apply must be activated for the channel or product. If both are in place and the job board supports it, the questionnaire facet appears in the posting requirements response. See [Prerequisites](./01-introduction.md#prerequisites) for the full setup checklist.
+Your ATS must be onboarded and Direct Apply must be activated for the channel or product. If both are in place and the job board supports it, the questionnaire facets appear in the posting requirements response. See [Prerequisites](./01-introduction.md#prerequisites) for the full setup checklist.
 
 ## The Questionnaire Facet
 
-The questionnaire is a posting requirement facet of type `QUESTIONNAIRE`. It defines custom screening questions that candidates answer on the job board.
+The questionnaire is a posting requirement facet of type `QUESTIONNAIRE`. It defines custom screening questions that candidates answer on the job board. A board can have more than one questionnaire facet (LinkedIn has seven), and each holds its own questionnaire value.
 
 ### Facet Structure
 
@@ -125,9 +165,9 @@ When you fetch posting requirements, the questionnaire facet looks like this:
   "display_rules": {
     "show": [
       {
-        "op": "equal",
+        "op": "selected_option_show_contains",
         "facet": "applicationMethod",
-        "value": "directapply"
+        "value": null
       }
     ]
   }
@@ -146,7 +186,7 @@ The `questionnaire` object tells you everything you need to build your UI:
 | `questionnaire.*` | Constraints and capabilities that apply to the questionnaire as a whole; see below |
 
 <!-- theme: info -->
-> The facet name varies by board. For example, LinkedIn uses `customQuestions`. Always use the `name` field from the API response.
+> The facet name varies by board, and some boards have several questionnaire facets. Always use the `name` field from the API response.
 
 ### Questionnaire-Wide Constraints
 
@@ -309,7 +349,7 @@ When `supportsRequired` is `true`, initialize `is_required` from `defaultRequire
 
 Because posting requirement facets are key-value pairs, the questionnaire value must be a **stringified JSON string**-not a native JSON array.
 
-When submitting the questionnaire in a campaign order, wrap it with `JSON.stringify()`:
+When submitting the questionnaire in a campaign order, wrap it with `JSON.stringify()`. The example uses one board's facet names (`applicationMethod`, `questionnaire`); use the names from your posting requirements response:
 
 ```json
 {
@@ -343,9 +383,9 @@ sequenceDiagram
     participant HAPI
 
     ATS->>HAPI: Fetch posting requirements<br/>JM: GET /products/{product_id}/specs/<br/>JP/MC: GET /contracts/single/{contract_id}/
-    HAPI-->>ATS: Facets including applicationMethod + questionnaire
+    HAPI-->>ATS: Facets including apply-method + questionnaire facets
 
-    Note over ATS: Select directapply,<br/>build questionnaire from<br/>facet constraints
+    Note over ATS: Select the Direct Apply option,<br/>build questionnaire from<br/>facet constraints
 
     ATS->>HAPI: POST /campaigns/validate-questionnaire/<br/>(native JSON array)
     HAPI-->>ATS: Validation result
@@ -385,15 +425,15 @@ For a complete `POST /campaigns/order` request body with Direct Apply and a stri
 
 <!-- theme: warning -->
 > ### Facet Names Vary by Board
-> The questionnaire facet name differs across boards (e.g., `questionnaire` on Seek, `customQuestions` on LinkedIn). Always use the `name` field from the posting requirements response when calling the validate-questionnaire endpoint.
+> Facet names are not fixed keys. The apply-method facet is `applicationMethod` on some boards and `applyMethod` on others, and LinkedIn splits its questionnaire across seven facets. Always use the `name` field from the posting requirements response, including when calling the validate-questionnaire endpoint.
 
 <!-- theme: warning -->
 > ### Validation Error Keys Are Indices
 > Error keys in the validate-questionnaire response are zero-based string indices (`"0"`, `"1"`), not question IDs. Map them back to your questions by position in the array.
 
 <!-- theme: warning -->
-> ### LinkedIn Implicit Activation
-> LinkedIn does not have an `applicationMethod` facet. Direct Apply activates automatically when you fill in any questionnaire facet. Other boards require explicitly selecting `directapply`.
+> ### LinkedIn Question IDs Across Sections
+> On LinkedIn, a question `id` must be unique across all seven questionnaire facets of a posting. HAPI does not catch duplicates across facets, and LinkedIn then does not post the job with onsite apply. See [LinkedIn](#linkedin).
 
 <!-- theme: info -->
 > ### Validate Before Ordering

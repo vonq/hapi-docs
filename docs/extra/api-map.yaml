@@ -460,9 +460,9 @@ workflows:
       - action: Check product posting requirements for Direct Apply facets
         endpoint: GET /products/{product_id}/specs/
         note: |
-          Look for applicationMethod facet (some boards) or questionnaire facets (LinkedIn).
-          - Boards with applicationMethod: select "directapply" to enable
-          - Boards without: filling questionnaire facets implicitly enables it
+          Look for the apply-method facet (applicationMethod or applyMethod, depending on the board) and the questionnaire facets.
+          - Select the apply-method facet's Direct Apply option to enable it (LinkedIn: applyMethod = "directapply")
+          - Questionnaire facets (type QUESTIONNAIRE) appear through display rules, on Indeed via cv_required; LinkedIn has seven, one per application-form section, with question IDs unique across all of them
         docs: guides/10-direct-apply/posting-requirements.md
       - action: Configure questionnaire (optional)
         note: "Questionnaire value is a stringified JSON array of question objects. Question types and limits vary by board-always read from API."

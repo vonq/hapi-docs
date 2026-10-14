@@ -92,8 +92,8 @@ graph LR
 
 The mechanism for enabling Direct Apply differs across job boards:
 
-- **Some boards** (e.g., Indeed, Seek) expose an `applicationMethod` facet. Selecting `directapply` as the value activates Direct Apply. When selected, additional facets like the questionnaire appear via display rules.
-- **Other boards** (e.g., LinkedIn) activate Direct Apply automatically when you fill in any questionnaire facet-there is no separate toggle.
+- **Most boards** expose an apply-method facet, named `applicationMethod` or `applyMethod` depending on the board. Selecting its Direct Apply option activates Direct Apply. When selected, additional facets like the questionnaire appear via display rules.
+- **LinkedIn** uses `applyMethod`. Its "On Site Apply (Apply Connect)" option enables Direct Apply and shows seven questionnaire facets, one per section of LinkedIn's application form. See [Posting Requirements - LinkedIn](./posting-requirements.md#linkedin).
 
 <!-- theme: warning -->
 > ### Always Read Facets from the API
@@ -101,9 +101,9 @@ The mechanism for enabling Direct Apply differs across job boards:
 
 ## Key Concepts
 
-**Application Method**-A posting requirement facet that controls how candidates apply on a job board. Selecting `directapply` enables native apply on boards that use this toggle. Not all boards have this facet-some enable Direct Apply implicitly through questionnaire facets.
+**Application Method**-A posting requirement facet that controls how candidates apply on a job board. Its name varies by board (`applicationMethod` or `applyMethod`). Selecting its Direct Apply option enables native apply. Not all boards have this facet.
 
-**Questionnaire**-One or more posting requirement facets that define custom screening questions shown to candidates on the job board. The value is a stringified JSON array of question objects. Facet names vary by board (e.g., `questionnaire`, `customQuestions`). Each board has its own supported question types and limits.
+**Questionnaire**-One or more posting requirement facets that define custom screening questions shown to candidates on the job board. The value is a stringified JSON array of question objects. Facet names vary by board (e.g., `questionnaire`; LinkedIn has seven, such as `additionalQuestions` and `workQuestions`). Each board has its own supported question types and limits.
 
 **Question Types**-The types of questions you can include in a questionnaire. Common types are `text` (free text), `choice` (single-select), and `multi-choice` (multi-select). LinkedIn also supports `date`, `file`, `int`, and `float`. Types and limits are returned dynamically by the API.
 
@@ -119,11 +119,11 @@ The mechanism for enabling Direct Apply differs across job boards:
 
 | Board | Direct Apply Toggle | Questionnaire Support | Notable Constraints |
 |-------|--------------------|-----------------------|---------------------|
-| Indeed | `applicationMethod` facet | `text`, `choice`, `multi-choice` (up to 100 questions) | Conditional logic, required questions, file uploads up to 5MB |
+| Indeed | `applicationMethod` or `applyMethod` facet, depending on the integration | `text`, `choice`, `multi-choice`, plus `date` and `file` on some integrations (up to 100 questions) | Questionnaire shown through `cv_required`, and mandatory when a CV is optional or not asked; required questions; file uploads up to 5MB |
 | Seek | `applicationMethod` facet | `text`, `choice`, `multi-choice` (up to 100 questions) | Generous character limits |
-| LinkedIn | Implicit (via questionnaire) | `text`, `textarea`, `choice`, `date`, `file`, `int`, `float` (multiple facets) | Conditional logic and required questions |
-| Naukri | `applicationMethod` facet | `text`, `choice`, `multi-choice` (up to 10 questions, all required) | 150 character limit per question, all questions are required |
-| Infojobs | `applicationMethod` facet | `text`, `choice` (max 4 text + 8 choice = 12 questions) | Strict split: max 4 open-text + max 8 closed-choice |
+| LinkedIn | `applyMethod` facet | `text`, `choice`, `multi-choice`, `date`, `file`, `int`, `float` (seven section facets) | Conditional logic and required questions; question IDs must be unique across all sections |
+| Naukri | No apply-method facet | `text`, `choice`, `multi-choice` (up to 10 questions) | 150 character limit per question; questions are required by default |
+| Infojobs | `applyMethod` facet | `text`, `choice` (max 4 text + 8 choice = 12 questions) | Strict split: max 4 open-text + max 8 closed-choice |
 
 <!-- theme: info -->
 > These constraints are returned dynamically by the API. Always read the posting requirements response for the authoritative question types and limits.
