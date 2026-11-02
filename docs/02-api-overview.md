@@ -169,6 +169,9 @@ Supported values:
 | `fr` | French |
 | `es` | Spanish |
 | `it` | Italian |
+| `fi` | Finnish |
+| `sv` | Swedish |
+| `no` | Norwegian |
 
 ```
 Accept-Language: de

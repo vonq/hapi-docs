@@ -249,7 +249,10 @@ X-Auth-Token: <your Partner token here>
       { "languageCode": "nl_NL", "value": "Master / Postdoctoraal" },
       { "languageCode": "fr_FR", "value": "Master / Postgraduate / Doctorat" },
       { "languageCode": "es_ES", "value": "Máster / Postgrado / Doctorado" },
-      { "languageCode": "it_IT", "value": "Laurea Magistrale / Post-Laurea / Dottorato" }
+      { "languageCode": "it_IT", "value": "Laurea Magistrale / Post-Laurea / Dottorato" },
+      { "languageCode": "fi_FI", "value": "Maisteri / Jatkotutkinto / Tohtori" },
+      { "languageCode": "sv_SE", "value": "Master / Forskarutbildning / Doktor" },
+      { "languageCode": "no_NO", "value": "Master / Videreutdanning / PhD" }
     ]
   },
   {
@@ -285,7 +288,7 @@ X-Auth-Token: <your Partner token here>
 |-------|------|-------------|
 | `id` | integer | Education level identifier-use as `vonqId` in campaign [target group](./08-campaigns/ordering.md) |
 | `name` | array | All available translations |
-| `name[].languageCode` | string | Locale code (`en_GB`, `de_DE`, `nl_NL`, `fr_FR`, `es_ES`, `it_IT`) |
+| `name[].languageCode` | string | Locale code (`en_GB`, `de_DE`, `nl_NL`, `fr_FR`, `es_ES`, `it_IT`, `fi_FI`, `sv_SE`, `no_NO`) |
 | `name[].value` | string | Translated name |
 
 **Notes**:

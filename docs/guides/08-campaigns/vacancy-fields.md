@@ -92,12 +92,12 @@ The `postingDetails` object contains the core job listing content.
 |-------|------|----------|-------------|
 | `title` | string | Yes | Job title |
 | `description` | string | Yes | Job description (HTML allowed-see [HTML in descriptions](#html-in-descriptions)) |
-| `organization.name` | string | Loose | Company name. Optional with `?loose=true`. |
-| `organization.companyLogo` | string | Loose | URL to the company logo. Optional with `?loose=true`. |
+| `organization.name` | string | Loose (Job Post) | Company name. Optional with `?loose=true` on Job Post orders. |
+| `organization.companyLogo` | string | Loose (Job Post) | URL to the company logo. Optional with `?loose=true` on Job Post orders. |
 | `workingLocation` | object | Yes | Job location (see [Working Location](#working-location)) |
 | `contactInfo` | object | No | Recruiter contact shown on the listing (see [Contact Info](#contact-info)) |
 | `yearsOfExperience` | integer | Loose | Required years of experience. Optional with `?loose=true`. |
-| `employmentType` | string | Loose | Employment type (see [Employment Types](#employment-types)). Optional with `?loose=true`. |
+| `employmentType` | string | Loose (Job Post) | Employment type (see [Employment Types](#employment-types)). Optional with `?loose=true` on Job Post orders. |
 | `weeklyWorkingHours` | object | Yes* | Working hours range: `from` and `to` (integers, 1–168) |
 | `weeklyWorkingMinutes` | object | Yes* | Working minutes range: `from` and `to` (integers, 60–10080) |
 | `salaryIndication` | object | No | Salary range (see [Salary Indication](#salary-indication)) |
@@ -114,11 +114,11 @@ The `postingDetails` object contains the core job listing content.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `addressLine1` | string | Loose | Street address. Optional with `?loose=true`. |
+| `addressLine1` | string | Loose (Job Post) | Street address. Optional with `?loose=true` on Job Post orders. |
 | `addressLine2` | string | No | Secondary address line |
-| `postcode` | string | Loose | Postal code. Optional with `?loose=true`. |
-| `city` | string | Loose | City name. Optional with `?loose=true`. |
-| `country` | string | Loose | Country name or ISO code. Optional with `?loose=true`. |
+| `postcode` | string | Loose (Job Post) | Postal code. Optional with `?loose=true` on Job Post orders. |
+| `city` | string | Loose (Job Post) | City name. Optional with `?loose=true` on Job Post orders. |
+| `country` | string | Loose (Job Post) | Country name or ISO code. Optional with `?loose=true` on Job Post orders. |
 | `allowsRemoteWork` | boolean | No | Whether the position allows remote work |
 
 <!-- theme: info -->
@@ -194,10 +194,10 @@ Each field is an array containing exactly **one** taxonomy reference object with
 |-------|----------|-------------------|-------------|
 | `educationLevel` | Loose | `GET /taxonomy/education-levels` | Minimum education level |
 | `seniority` | Loose | `GET /taxonomy/seniority` | Career experience level |
-| `industry` | Loose | `GET /products/industries/` | Business sector |
-| `jobCategory` | Loose | Not resolved through taxonomy endpoints | Compatibility field |
+| `industry` | Loose (Job Post) | `GET /products/industries/` | Business sector |
+| `jobCategory` | Loose (Job Post) | Not resolved through taxonomy endpoints | Compatibility field |
 
-All four fields are required by default but may be omitted with `?loose=true` when listed in your loose-validation settings.
+All four fields are required by default. With `?loose=true`, `educationLevel` and `seniority` may be omitted on any order, while `industry` and `jobCategory` may be omitted on Job Post orders only. See [Loose Validation](#loose-validation).
 
 <!-- theme: warning -->
 > ### Exactly One Value Per Dimension
@@ -237,22 +237,26 @@ The `companyId` identifies the company posting the job. This is the same as your
 
 ## Loose Validation
 
-By default, all fields marked "Loose" in the tables above are required. Adding `?loose=true` to the ordering endpoint allows configured fields to be omitted, so you can submit a campaign before all vacancy details are available.
+By default, every field marked "Loose" or "Loose (Job Post)" in the tables above is required. Adding `?loose=true` to the ordering endpoint allows configured fields to be omitted, so you can submit a campaign before all vacancy details are available.
 
-Possible fields for loose validation:
+Which fields may be omitted depends on the order type:
 
-- `postingDetails.yearsOfExperience`
-- `postingDetails.workingLocation.addressLine1`
-- `targetGroup.educationLevel`
-- `targetGroup.seniority`
-- `targetGroup.industry`
-- `targetGroup.jobCategory`
-- `postingDetails.employmentType`
-- `postingDetails.organization.name`
-- `postingDetails.organization.companyLogo`
-- `postingDetails.workingLocation.postcode`
-- `postingDetails.workingLocation.city`
-- `postingDetails.workingLocation.country`
+| Field | Marketplace orders | Job Post orders |
+|-------|--------------------|-----------------|
+| `postingDetails.yearsOfExperience` | Yes | Yes |
+| `targetGroup.educationLevel` | Yes | Yes |
+| `targetGroup.seniority` | Yes | Yes |
+| `postingDetails.workingLocation.addressLine1` | No | Yes |
+| `targetGroup.industry` | No | Yes |
+| `targetGroup.jobCategory` | No | Yes |
+| `postingDetails.employmentType` | No | Yes |
+| `postingDetails.organization.name` | No | Yes |
+| `postingDetails.organization.companyLogo` | No | Yes |
+| `postingDetails.workingLocation.postcode` | No | Yes |
+| `postingDetails.workingLocation.city` | No | Yes |
+| `postingDetails.workingLocation.country` | No | Yes |
+
+"Yes" means the field can be enabled for your account. On Marketplace orders, `targetGroup.industry`, `targetGroup.jobCategory` and `postingDetails.workingLocation.addressLine1` must be sent even with `?loose=true`.
 
 <!-- theme: info -->
 > ### Loose Validation Requires Account Configuration
