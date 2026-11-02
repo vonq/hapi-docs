@@ -10129,7 +10129,7 @@
             "type": "object"
           },
           "name": {
-            "maxLength": 100,
+            "maxLength": 255,
             "type": "string"
           }
         },
@@ -12959,9 +12959,12 @@
                 "de",
                 "en",
                 "es",
+                "fi",
                 "fr",
                 "it",
-                "nl"
+                "nl",
+                "no",
+                "sv"
               ],
               "type": "string"
             }
@@ -13058,9 +13061,12 @@
                 "de",
                 "en",
                 "es",
+                "fi",
                 "fr",
                 "it",
-                "nl"
+                "nl",
+                "no",
+                "sv"
               ],
               "type": "string"
             }
@@ -13170,9 +13176,12 @@
                 "de",
                 "en",
                 "es",
+                "fi",
                 "fr",
                 "it",
-                "nl"
+                "nl",
+                "no",
+                "sv"
               ],
               "type": "string"
             }
@@ -13240,9 +13249,12 @@
                 "de",
                 "en",
                 "es",
+                "fi",
                 "fr",
                 "it",
-                "nl"
+                "nl",
+                "no",
+                "sv"
               ],
               "type": "string"
             }
@@ -13295,9 +13307,12 @@
                 "de",
                 "en",
                 "es",
+                "fi",
                 "fr",
                 "it",
-                "nl"
+                "nl",
+                "no",
+                "sv"
               ],
               "type": "string"
             }
@@ -13390,9 +13405,12 @@
                 "de",
                 "en",
                 "es",
+                "fi",
                 "fr",
                 "it",
-                "nl"
+                "nl",
+                "no",
+                "sv"
               ],
               "type": "string"
             }
@@ -13454,9 +13472,12 @@
                 "de",
                 "en",
                 "es",
+                "fi",
                 "fr",
                 "it",
-                "nl"
+                "nl",
+                "no",
+                "sv"
               ],
               "type": "string"
             }
@@ -13519,7 +13540,7 @@
     },
     "/products/search/": {
       "get": {
-        "description": "This endpoint exposes a list of Products with the options to search by Location, Job Title, Job Function and Industry.\nProducts are ranked by their relevancy to the search terms.\n\nOptionally, products can be filtered by Channel to retrieve the products for a particular job board.\n\nBesides the default English, Dutch, German, French and Spanish languages are supported by adding the `Accept-Language` header.\n\nAlso supports bulk retrieval via `/products/multiple/{products_ids_or_portfolio_id}/` for product IDs, favorites, top-ordered products, and portfolio selectors.",
+        "description": "This endpoint exposes a list of Products with the options to search by Location, Job Title, Job Function and Industry.\nProducts are ranked by their relevancy to the search terms.\n\nOptionally, products can be filtered by Channel to retrieve the products for a particular job board.\n\nBesides the default English, German, Dutch, French, Spanish, Italian, Finnish, Swedish and Norwegian are supported by adding the `Accept-Language` header.\n\nAlso supports bulk retrieval via `/products/multiple/{products_ids_or_portfolio_id}/` for product IDs, favorites, top-ordered products, and portfolio selectors.",
         "operationId": "products_search_list",
         "parameters": [
           {
@@ -13531,9 +13552,12 @@
                 "de",
                 "en",
                 "es",
+                "fi",
                 "fr",
                 "it",
-                "nl"
+                "nl",
+                "no",
+                "sv"
               ],
               "type": "string"
             }
@@ -13840,7 +13864,7 @@
     },
     "/products/single/{product_id}/": {
       "get": {
-        "description": "Retrieve full details for a single product by `product_id`.\n\nThe response contains one Product object. The endpoint returns `404` when the product is not visible to the caller or does not exist.\n\nBesides the default English, Dutch, German, French and Spanish languages are supported by adding the `Accept-Language` header.\n\nFor bulk retrieval, use `/products/multiple/{products_ids_or_portfolio_id}/`.",
+        "description": "Retrieve full details for a single product by `product_id`.\n\nThe response contains one Product object. The endpoint returns `404` when the product is not visible to the caller or does not exist.\n\nBesides the default English, German, Dutch, French, Spanish, Italian, Finnish, Swedish and Norwegian are supported by adding the `Accept-Language` header.\n\nFor bulk retrieval, use `/products/multiple/{products_ids_or_portfolio_id}/`.",
         "operationId": "products_single_retrieve",
         "parameters": [
           {
@@ -13852,9 +13876,12 @@
                 "de",
                 "en",
                 "es",
+                "fi",
                 "fr",
                 "it",
-                "nl"
+                "nl",
+                "no",
+                "sv"
               ],
               "type": "string"
             }

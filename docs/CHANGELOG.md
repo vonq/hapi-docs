@@ -7,6 +7,15 @@ category: resources
 
 # Changelog
 
+## 2026-10-22
+### Added
+- Finnish (`fi`), Swedish (`sv`) and Norwegian (`no`) as partially supported languages: accepted in `Accept-Language` and returned as `fi_FI`, `sv_SE` and `no_NO` entries in taxonomy `name` arrays. Values not yet translated fall back to English.
+
+## 2026-10-19
+### Changed
+- Loose validation on Marketplace orders: `?loose=true` may omit only `postingDetails.yearsOfExperience`, `targetGroup.seniority` and `targetGroup.educationLevel`. `targetGroup.industry`, `targetGroup.jobCategory` and `postingDetails.workingLocation.addressLine1` must be sent on Marketplace orders. Job Post orders are unchanged. See [Vacancy Fields-Loose Validation](guides/08-campaigns/vacancy-fields.md#loose-validation).
+- Fixed the mixed-campaign scenario, which still said mixed campaigns use the union of both loose-validation lists. They use the intersection, as announced on 2026-09-17.
+
 ## 2026-10-06
 ### Changed
 - Direct Apply and Screening webhooks in single multipart mode, including forced multipart, now send the `json` part with `Content-Type: application/json`. It previously had no type, so endpoints that bind parts by content type rejected it; endpoints that read the field as text are unaffected. The multipart callbacks declare it as `encoding.json.contentType`. See [Direct Apply-Webhooks - Endpoint Reference](guides/10-direct-apply/webhooks.endpoints.md#mode-1-single-multipart-request).

@@ -129,7 +129,7 @@ The vacancy fields (`postingDetails`, `targetGroup`, `recruiterInfo`) are shared
 
 <!-- theme: info -->
 > ### Loose Validation for Mixed Campaigns
-> If you use `?loose=true`, HAPI combines `settings.campaigns.loose_validation.marketplace.fields` and `settings.campaigns.loose_validation.job_post.fields`. Only fields in that union may be omitted. Retrieve these settings from [GET /v3/ats/atsuser/me/settings/](../03-authentication-and-users/authentication.endpoints.md).
+> If you use `?loose=true`, only fields listed in both `settings.campaigns.loose_validation.marketplace.fields` and `settings.campaigns.loose_validation.job_post.fields` may be omitted. In practice that is the Marketplace set: see [Vacancy Fields - Loose Validation](../08-campaigns/vacancy-fields.md#loose-validation). Retrieve these settings from [GET /v3/ats/atsuser/me/settings/](../03-authentication-and-users/authentication.endpoints.md).
 
 ## Validation
 
