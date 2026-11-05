@@ -1,7 +1,7 @@
 ---
 id: posting-requirements-ai-ad-creatives
 title: AI Ad Creatives
-description: Generate ad copy for a social product, compare alternatives, and apply one to the posting requirements.
+description: Generate ad text for a social product, compare alternatives, and apply one to the posting requirements.
 category: guides/posting-requirements
 endpoints:
 - GET /products/{product_id}/specs/
@@ -60,7 +60,7 @@ sequenceDiagram
         ATS->>HAPI: GET /v3/smartfill/posting-requirements/{task_id}/
         HAPI-->>ATS: { status, prefill_data, generator }
     end
-    Note over ATS,HAPI: Copy lands first.<br/>Pictures are made together<br/>and arrive as each finishes.
+    Note over ATS,HAPI: Text lands first.<br/>Pictures are made together<br/>and arrive as each finishes.
 
     opt Render a preview
         ATS->>HAPI: POST /products/{id}/specs/facets/{preview}/data/
@@ -72,7 +72,7 @@ sequenceDiagram
 
 1. **Discover** the generator facet in the product's posting requirements.
 2. **Generate** alternatives from job context.
-3. **Poll** until the generation is finished, showing copy as soon as it arrives.
+3. **Poll** until the generation is finished, showing the text as soon as it arrives.
 4. **Preview** an alternative, if you want to show the advert as it will appear.
 5. **Apply** the chosen one to the posting requirements and order as usual.
 
@@ -132,7 +132,7 @@ POST /v3/smartfill/posting-requirements/
 }
 ```
 
-`generator.facet` is the only required part. Add `generator.angle` with one of the declared angle keys to ask a rerun for a different slant. `language` takes an ISO 639-1 code; leave it out and the copy is written in the language the job description is written in. A location in another country does not change that: an English description for a role in Amsterdam gets English copy.
+`generator.facet` is the only required part. Add `generator.angle` with one of the declared angle keys to ask a rerun for a different slant. `language` takes an ISO 639-1 code; leave it out and the text is written in the language the job description is written in. A location in another country does not change that: an English description for a role in Amsterdam gets English text.
 
 A run writes the facet's `count` of alternatives. Send `generator.count` to ask for fewer, for example one to replace an alternative the recruiter turned down. Asking for more than the facet's `count` is rejected with `400`.
 
@@ -152,6 +152,24 @@ A task runs the form fill, the generation, or both. Naming neither runs both whe
 ```
 
 Ask for `["generator"]` alone when the recruiter wants another set of adverts and already has the form filled: a second fill would cost a request and produce values nobody reads. `prefill_data` comes back empty on such a task. Ask for `["fill"]` to fill the form on a product whose channel offers a generator without running one.
+
+### Text or Pictures Alone
+
+A generation writes the text and renders a picture for each alternative. Send `generator.outputs` to ask for only one of them:
+
+```json
+{
+  "product_id": "085db062-4d4a-47f2-bf33-5d511bd089bd",
+  "context": { "unstructured": "<the full job description>" },
+  "generator": { "facet": "__ad_creatives__", "outputs": ["text"] },
+  "jobs": ["generator"]
+}
+```
+
+- `["text"]` writes the text fields and renders nothing. Use it when the recruiter has uploaded a picture of their own: pictures are the slow and costly part, and one nobody uses is still billed. `generator.media` is `null`.
+- `["media"]` renders pictures and writes no text. Each picture arrives as an alternative of its own, with an empty `angle` and empty `values`, as soon as it lands. `generator.media.total` says how many are on their way. Asking a generator that declares no `media` for pictures is rejected with `400`.
+
+Leave `outputs` out, or send both, for the usual text with pictures.
 
 ## Polling
 
@@ -180,12 +198,12 @@ Poll the task as you would any Smartfill task. The response carries the ordinary
 
 `status` covers every job the task was asked for, so polling it until it is terminal waits for the adverts as well as the form fill. A task asked for nothing but the fill reports the fill, exactly as a Smartfill task always has.
 
-`generator.status` is the narrower answer: the generation alone, copy and pictures together. Read it when you want to show the form the moment it is filled without waiting for the deck.
+`generator.status` is the narrower answer: the generation alone, text and pictures together. Read it when you want to show the form the moment it is filled without waiting for the deck.
 
 <!-- theme: warning -->
 > **A task that ran no generator carries no `generator` key at all.** It is absent rather than null, so a response for a product without one is the same shape it has always been. Check for the key before reading it.
 
-Copy arrives well before pictures. Alternatives therefore appear with their `values` filled in and no `media` yet, then gain one as each render lands. Show the copy as soon as it arrives rather than waiting for a complete deck: `generator.media` reports `completed` of `total` if you want to say how far along the pictures are.
+Text arrives well before pictures. Alternatives therefore appear with their `values` filled in and no `media` yet, then gain one as each render lands. Show the text as soon as it arrives rather than waiting for a complete deck: `generator.media` reports `completed` of `total` if you want to say how far along the pictures are.
 
 ### How Long It Takes
 
@@ -193,7 +211,7 @@ Measured against a three-alternative generator, as a shape to design around rath
 
 | | roughly |
 |---|---|
-| copy, all alternatives at once | 10 to 15 seconds |
+| text, all alternatives at once | 10 to 15 seconds |
 | one picture | 50 to 60 seconds at the default quality, 20 seconds at `quality: "low"` |
 | a whole deck | about as long as one picture |
 
@@ -201,7 +219,7 @@ Pictures are rendered concurrently, so a deck of three costs about what one cost
 
 `quality` is the one setting that moves this materially, and it is a trade against how the picture looks. A generator that declares no `quality` renders at the service default.
 
-A run that produced no usable alternatives ends with `generator.status` of `errored` and an empty `alternatives`, however many pictures were made, since a picture is only shown with the copy written for it. When the generation was the task's only job, `status` is `errored` too. Say so and offer the form; do not leave a spinner running.
+A run that produced no usable alternatives ends with `generator.status` of `errored` and an empty `alternatives`, however many pictures were made, since a picture is only shown with the text written for it. When the generation was the task's only job, `status` is `errored` too. Say so and offer the form; do not leave a spinner running. A generation asked for pictures alone fails the same way when not one picture was made.
 
 ## Rendering a Preview
 
@@ -232,7 +250,7 @@ Send only the facets the preview declares in its own `autocomplete.parameters_so
 Write the chosen alternative's `values` into the facets listed in `targets`, exactly as if the recruiter had typed them, and leave every other posting requirement untouched. Order the campaign as you do today. Nothing downstream changes.
 
 <!-- theme: warning -->
-> **Filling the fields is not the same as submitting them.** In most form implementations the values on screen and the values the campaign is ordered from are two different pieces of state, kept in step by whatever runs when a recruiter types. An advert applied straight into the fields skips that, and the order goes out missing the copy the recruiter picked while the form in front of them looks complete. Report an applied result through the same path a typed value takes.
+> **Filling the fields is not the same as submitting them.** In most form implementations the values on screen and the values the campaign is ordered from are two different pieces of state, kept in step by whatever runs when a recruiter types. An advert applied straight into the fields skips that, and the order goes out missing the text the recruiter picked while the form in front of them looks complete. Report an applied result through the same path a typed value takes.
 
 An alternative that has a picture carries it separately:
 
@@ -276,7 +294,7 @@ graph TD
     E --> F[Recruiter reviews the brief]
     F --> G[Create the task, naming the facet]
     G --> H[Poll until status is terminal]
-    H --> I[Show alternatives as copy arrives, pictures after]
+    H --> I[Show alternatives as text arrives, pictures after]
     I --> J[Recruiter picks one]
     J --> K[Write values, and media.value, to the declared targets]
     K --> L[Order the campaign]
@@ -294,11 +312,11 @@ Nothing in this flow requires one. A bulk integration can read the specs, genera
 <!-- theme: warning -->
 > **Some facets are not fields.** A facet carrying `is_data: true`, and the generator facet itself, are configuration rather than input. Do not render them as form fields. Clients that render every returned facet will show an empty control to the recruiter. See [Derived Facets](facets.md#derived-facets).
 
-- **Check the length rules on your targets.** A target's `rules` may carry a `maxlength`, and generated copy has to fit it. An alternative that overruns is discarded rather than trimmed, and a run whose alternatives all overrun fails outright. A target with a very short limit is a poor thing to generate.
+- **Check the length rules on your targets.** A target's `rules` may carry a `maxlength`, and generated text has to fit it. An alternative that overruns is discarded rather than trimmed, and a run whose alternatives all overrun fails outright. A target with a very short limit is a poor thing to generate.
 - **Write only the declared targets.** A product's posting requirements include fields the generator does not produce, such as page selection or the display URL. Those stay with the recruiter.
-- **Language follows the campaign.** Copy is written in the requested language rather than translated afterwards. Send the context in the language you want back, or name it in `language`.
-- **Adverts must comply.** Generated copy is filtered for employment advertising rules. Copy the recruiter adds by hand is not, so keep your own validation.
-- **A picture can fail on its own.** Copy that arrived is still usable when a render did not: an alternative simply has no `media`. Let the recruiter supply an image themselves rather than discarding the alternative.
+- **Language follows the campaign.** Text is written in the requested language rather than translated afterwards. Send the context in the language you want back, or name it in `language`.
+- **Adverts must comply.** Generated text is filtered for employment advertising rules. Text the recruiter adds by hand is not, so keep your own validation.
+- **A picture can fail on its own.** Text that arrived is still usable when a render did not: an alternative simply has no `media`. Let the recruiter supply an image themselves rather than discarding the alternative.
 - **Expect fewer alternatives than `count`.** Ask for three and plan to render however many arrive.
 
 ## Related

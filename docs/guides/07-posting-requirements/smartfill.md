@@ -151,6 +151,19 @@ graph TD
 - **`errored` status**-AI processing failed. No error details are provided. Fall back to manual input-do not retry the same task.
 - **Empty `prefill_data`**-Smartfill may return no suggestions if the context is insufficient or the channel's facets don't match the provided data. This is not an error.
 
+## Hiding Pre-filled Fields
+
+Some required posting requirements follow from the job, so the recruiter has nothing to decide. An example is the Facebook page a Meta ad runs from (`whitelabelPageId`), which depends on the job's function and language. Smartfill can fill a field like this, and your UI can keep it out of sight:
+
+1. **Send what the choice depends on.** Include `jobFunction` in `context.structured`, and send the job description in the language the ad is written in.
+2. **Fill when the form opens.** Create the Smartfill task as soon as the recruiter opens the product's posting requirements, not only when they press a button, so the field is filled whatever they do next.
+3. **Hide the field while the task runs and once it holds a value.** If the task ends (`completed` or `errored`, or you stop polling) and the field is still empty, show it so the recruiter can fill it in.
+4. **Keep submitting it.** A field your UI hides is still part of the order. This is the opposite of a facet hidden by display rules, which must be left out (see [Hidden Facets and Submission](facets-display-rules.md#hidden-facets-and-submission)).
+5. **Choose the fields by facet `name`, per product.** Hide only fields the recruiter does not need to review. Never hide ad text.
+
+<!-- theme: warning -->
+> **A hidden value is one nobody reviews.** Smartfill is best-effort and can pick a valid but less suitable option. If your recruiters may want to check the choice, show it as a summary with a way to change it instead of hiding it entirely.
+
 ## Edge Cases & Gotchas
 
 <!-- theme: warning -->

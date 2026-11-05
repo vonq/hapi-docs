@@ -215,10 +215,10 @@ terms:
     not: [cpa_plus]
     note: "CPA+ includes screening automatically. Screening is a standalone service where you send candidates for evaluation yourself."
     key_concepts:
-      screening_job: Immutable job definition with optional requirements. Created once, receives many applications.
+      screening_job: Job definition whose content and settings are fixed after creation. The AI writes its requirements. Created once, receives many applications.
       application: A candidate's screening session. States-created, screened_success, screened_timeout, deleted.
       dossier: AI-generated PDF with interview transcript, scores, and evaluation summary.
-      requirement: Screening criterion with summary, description, and question. Never shown to candidates.
+      requirement: Screening criterion with summary, description, and question. Candidates can be asked the question, as written or rephrased by the AI.
     related_endpoints:
       - POST /v3/screening/jobs/
       - GET /v3/screening/jobs/

@@ -7,7 +7,6 @@ related:
 - product-posting-requirements
 endpoints:
 - GET /products/{product_id}/specs/
-- GET /products/{product_id}/specs/facets/{facet_name}/options/
 - POST /products/{product_id}/specs/facets/{facet_name}/options/
 ---
 
@@ -104,7 +103,7 @@ X-Customer-Id: customer-123
 
 ---
 
-## GET/POST /products/{product_id}/specs/facets/{facet_name}/options/
+## POST /products/{product_id}/specs/facets/{facet_name}/options/
 
 - **Auth**: token + `X-Customer-Id`, or JWT
 - **Description**: Fetch autocomplete options for a facet. Use this when the facet has a non-null `autocomplete` object. Call as the user types to provide search-as-you-type suggestions.

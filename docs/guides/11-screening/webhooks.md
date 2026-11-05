@@ -23,7 +23,7 @@ keywords:
 
 ## Overview
 
-HAPI's screening webhooks push results to your system as soon as they are available, eliminating the need to poll the API. Application webhooks fire in two situations: when a candidate completes screening (`screened_success`) and when the `finalization_time_hours` window expires without completion (`screened_timeout`). In addition, opt-in [job events](#job-events) notify you about job-level changes, such as the screening questions becoming available.
+HAPI's screening webhooks push results to your system as soon as they are available, eliminating the need to poll the API. Application webhooks fire in two situations: when a candidate completes screening (`screened_success`) and when the `finalization_time_hours` window expires without completion (`screened_timeout`). In addition, [job events](#job-events) notify you about job-level changes, such as the screening questions becoming available.
 
 For background on screening concepts, see [Screening-Introduction](./01-introduction.md).
 
@@ -48,7 +48,7 @@ The following settings are configured by your account manager-they are not contr
 | Status | Trigger | Dossier Available? |
 |--------|---------|-------------------|
 | `screened_success` | Candidate completed screening | Yes-dossier + results in payload |
-| `screened_timeout` | `finalization_time_hours` expired | No-no collected information to generate from |
+| `screened_timeout` | `finalization_time_hours` expired | Only when one could be generated from what was collected |
 
 ## Payload Structure
 
@@ -102,14 +102,14 @@ The main webhook request contains candidate data, status, and attachment metadat
 | `metadata` | object | Passthrough metadata from application creation |
 | `payload` | object | Candidate data: name, phone numbers, email addresses, attachments |
 | `payload.attachments` | array | File metadata-each entry has `type` and `filename` |
-| `payload.screening_evaluation` | object \| null | Scores and evaluation-completion flags; `null` when no evaluation is available |
+| `payload.screening_evaluation` | object \| null | Scores from 0 to 250 (higher is better, matching the dossier PDF) and evaluation-completion flags; `null` unless both the knockout and interview stages produced a score |
 | `type` | string | `"payload"` for the main request, `"file"` for split file requests |
 
 ### Attachment Types
 
 | Type | Description | When Present |
 |------|-------------|--------------|
-| `DOSSIER` | AI screening report PDF | Only on `screened_success` |
+| `DOSSIER` | AI screening report PDF | On `screened_success`, and on `screened_timeout` when one could be generated |
 | `RESUME` | Candidate's uploaded resume | Only if the candidate uploaded one |
 
 ## File Delivery Modes
@@ -157,8 +157,8 @@ Best for JSON-only systems with request size limits.
 Job events are webhooks about the **screening job itself** rather than an individual application. They share the webhook URL, retry behavior, and HMAC signing with application webhooks, but carry a different payload and are distinguished by `type: "job_event"`.
 
 <!-- theme: warning -->
-> ### Opt-In Required
-> Job events are **opt-in** and disabled by default. Contact your VONQ account manager to enable them for your account. Application webhooks are unaffected either way.
+> ### Check Your Account
+> Job events are on for new accounts. Accounts created before job events launched have them off until your VONQ account manager enables them. Application webhooks are unaffected either way.
 
 ### `ai_requirements_ready`
 
@@ -305,7 +305,7 @@ sequenceDiagram
 ## Edge Cases & Gotchas
 
 <!-- theme: warning -->
-> **No dossier on timeout.** When `status` is `screened_timeout`, the payload contains no attachments-there is no collected information to generate a dossier from.
+> **Partial results on timeout.** When `status` is `screened_timeout`, attachments such as the resume and dossier can still be present, based only on what was collected before the deadline. `payload.screening_evaluation` is `null`. Do not assume attachments are present.
 
 - **Deduplication**-`request_id` is your idempotency key. Handle duplicate deliveries gracefully.
 - **Retry behavior**-retry count and intervals are configured by your account manager, not controllable via the API.

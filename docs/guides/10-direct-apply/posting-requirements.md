@@ -43,6 +43,8 @@ Most boards that support Direct Apply have an apply-method facet: a `SELECT` fac
 
 The apply-method facet has no fixed name. It is `applicationMethod` on some boards and `applyMethod` on others, and the option keys are defined by the board. When the facet has an empty `options` array and a non-null `autocomplete` field, load its options through [Autocomplete](../07-posting-requirements/autocomplete.md).
 
+The Direct Apply option can come with `"default": "1"`. Pre-select it while the facet has no value, and let the user switch to another option.
+
 Identify the facets by their properties, not their names. Questionnaire facets have `type` `QUESTIONNAIRE`. The apply-method facet is the one the questionnaire facets' display rules lead back to, directly or through another facet. A few boards show the questionnaire without any display rule.
 
 <!-- theme: warning -->

@@ -174,7 +174,7 @@ Each entry in the `options` array contains:
 | `key` | string | Value to submit when selected. Case-sensitive. |
 | `label` | string | Display text |
 | `sort` | string | Sort order (string-parse as integer). Lower values first. |
-| `default` | string | If present, pre-select this option |
+| `default` | string | `"1"` when present, absent otherwise. If present, pre-select this option while the facet has no value; the user can still pick another one. Also sent on options loaded through Autocomplete. |
 | `parent` | string or null | Parent option key (`HIER` facets only). Null for root nodes. |
 | `show` | array of strings | Facet names to reveal when this option is selected (used with `selected_option_show_contains` display rule) |
 | `requires` | array or null | Vacancy fields that become required when this option is selected (see [Vacancy Field Requirements](#vacancy-field-requirements-on-options) below) |

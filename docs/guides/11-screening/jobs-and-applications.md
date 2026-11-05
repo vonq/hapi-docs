@@ -13,6 +13,7 @@ endpoints:
 - PATCH /v3/screening/jobs/{id}/interview-questions/
 - POST /v3/screening/jobs/{id}/interview-questions/
 - DELETE /v3/screening/jobs/{id}/interview-questions/{question_id}/
+- PATCH /v3/screening/jobs/{id}/settings/
 - DELETE /v3/screening/jobs/{id}/
 - POST /v3/screening/jobs/{job_id}/applications/
 - GET /v3/screening/jobs/{job_id}/applications/
@@ -34,6 +35,8 @@ keywords:
 - interview_question
 - dossier
 - finalization_time_hours
+- knockout_difficulty
+- interview_difficulty
 - application_status
 ---
 
@@ -43,7 +46,7 @@ keywords:
 
 ## Overview
 
-A **screening job** defines what you are hiring for-the title, description and company info, from which the AI writes the criteria candidates are evaluated against. The job's own content is fixed once created: you cannot change the title, description or company, only soft-delete the job. Its requirements and interview questions _can_ be edited, added to and removed once the AI has finished preparing them.
+A **screening job** defines what you are hiring for-the title, description and company info, from which the AI writes the criteria candidates are evaluated against. The job's own content is fixed once created: you cannot change the title, description or company, only soft-delete the job. Its requirements and interview questions _can_ be edited, added to and removed once the AI has finished preparing them, and from then on its knockout and interview difficulty can be changed too.
 
 An **application** represents a single candidate screening session tied to a job. You submit the candidate's contact details and resume, the candidate completes the screening flow, and HAPI returns an enriched dossier with scores and parsed data.
 
@@ -51,13 +54,14 @@ For background on how screening fits into HAPI, see [Screening-Introduction](./0
 
 ## Key Concepts
 
-- **Requirements**-criteria the AI uses to evaluate candidates. Requirements are _not_ shown to candidates. Each requirement has a `summary`, a `question` and an optional `description`.
-- **Screening requirements**-shortly after job creation, the AI writes the requirement set from the job description. A job therefore starts with none, and you cannot supply them when creating it. Once ready, `requirements_ready_at` is set and the job's `requirements` list holds the final version. Opt-in [job event webhooks](./webhooks.md#job-events) can notify you when this happens.
+- **Requirements**-criteria the AI uses to evaluate candidates. Candidates can be asked a requirement's `question`, as written or rephrased by the AI. Each requirement has a `summary`, a `question` and an optional `description`.
+- **Screening requirements**-shortly after job creation, the AI writes the requirement set from the job description. A job therefore starts with none, and you cannot supply them when creating it. Once ready, `requirements_ready_at` is set and the job's `requirements` list holds the final version. [Job event webhooks](./webhooks.md#job-events) can notify you when this happens.
 - **Editing questions**-once `requirements_ready_at` is set, you can reword the requirements and interview questions to be more specific, stricter, or to fix a typo. `PATCH` the entries you are changing, each with its `id`; omitted entries and omitted fields are left untouched. Only applications created after the change are assessed against the updated wording-candidates who already went through screening are not re-assessed.
 - **Adding and removing questions**-`POST` to the same collection to add one requirement or interview question, and `DELETE` the entry to remove it. What you add is used exactly as written: the AI does not rewrite it, generate an interview question for it, or send another `ai_requirements_ready` webhook. Deleting a requirement also deletes the interview questions assessing it.
 - **Interview questions**-the questions the AI interview agent asks during the screening conversation. They are generated from your requirements and become available on the job at the same time as the final `requirements`, in the job's `interview_questions` list. Each question assesses one requirement, and a requirement holds at most one question. Jobs with the interview agent disabled return an empty list.
+- **Difficulty**-two settings decide how tough the screening is. `knockout_difficulty` caps the knockout questions the AI asks each candidate about what their resume leaves open: `quick` (up to 1, the default), `medium` (up to 3) or `comprehensive` (up to 5); a question the resume already answers is skipped. `interview_difficulty` picks which of the AI's interview question sets the interview agent asks: `EASY` (1 question), `MEDIUM` (up to 3, the default) or `HARD` (up to 5). The AI writes a set for every difficulty, so `interview_questions` always lists the set for the job's current `interview_difficulty`. Set both in `settings` when creating the job, and change them with `PATCH /v3/screening/jobs/{id}/settings/` once `requirements_ready_at` is set. A change applies to applications evaluated or interviewed after it. Each difficulty keeps its own interview questions, so edits made to one set stay with it and come back when you switch back to that difficulty. Some jobs report no `knockout_difficulty`; you can still set one.
 - **Finalization**-the point at which screening completes and the dossier becomes available. Controlled by `finalization_time_hours` (default: 168 hours / 7 days).
-- **Dossier**-the enriched candidate profile available after successful screening. Includes `screened_payload` (same shape as `initial_payload`, enriched) and `screened_files`.
+- **Dossier**-the enriched candidate profile available after finalization. Includes `screened_payload` (same shape as `initial_payload`, enriched) and `screened_files`.
 - **Attachments**-optional files submitted with an application (e.g. resume, cover letter). Accepted extensions: `.pdf`, `.docx`, `.jpg`, `.jpeg`, `.png`, `.txt`. Upload directly via `multipart/form-data` (`files`) or reference remote URLs via JSON (`remote_files`, 10 MB / 10-second download limit). Every entry in `initial_payload.attachments` must correspond to an uploaded or remote file, and vice versa.
 - **ATS-collected pattern**-your ATS collects candidate data and submits it via the API. The candidate receives an `application_url` to complete screening.
 - **HAPI-collected pattern**-you share the `job_screening_url` and candidates apply directly. These applications have `is_external_application: true`.
@@ -75,6 +79,7 @@ For background on how screening fits into HAPI, see [Screening-Introduction](./0
 | `PATCH /v3/screening/jobs/{id}/interview-questions/` | Edit the wording of the job's interview questions |
 | `POST /v3/screening/jobs/{id}/interview-questions/` | Add one interview question, assessing one requirement |
 | `DELETE /v3/screening/jobs/{id}/interview-questions/{question_id}/` | Delete one interview question |
+| `PATCH /v3/screening/jobs/{id}/settings/` | Change the job's knockout and interview difficulty |
 | `DELETE /v3/screening/jobs/{id}/` | Soft-delete a screening job |
 | `POST /v3/screening/jobs/{job_id}/applications/` | Create a candidate screening application (supports multipart upload or remote file URLs) |
 | `GET /v3/screening/jobs/{job_id}/applications/` | List applications with filtering by `status`, `screened_stage`, `is_external_application`, and sorting |
@@ -165,8 +170,8 @@ sequenceDiagram
 > When `allow_duplicate_applies` is `false` on a job, submitting a second application from the same candidate returns `400`. The default is `true`.
 
 <!-- theme: warning -->
-> ### Dossier Availability
-> The `screened_payload` and `screened_files` are only available when the application status is `screened_success`. Applications that time out (`screened_timeout`) do not produce a dossier-no collected information is returned.
+> ### Partial Results on Timeout
+> A `screened_timeout` application can still carry `screened_score`, `screened_payload` and `screened_files`, including a dossier. They reflect only what was collected before the deadline, usually the resume, so do not rank them alongside candidates who completed screening. Do not assume they are present, either: an application can time out with no score or dossier at all.
 
 <!-- theme: warning -->
 > ### Deleted Jobs

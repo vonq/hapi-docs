@@ -7,6 +7,21 @@ category: resources
 
 # Changelog
 
+## 2026-11-04
+### Changed
+- Screening chats now run in the language of the job description, as the guides already stated. Jobs were previously always created in English. Applies to new jobs only: Dutch, English, French, German, Portuguese and Spanish are detected, and anything else falls back to English.
+- **Breaking:** `screened_score` and the `overall_score`, `knockout_score` and `interview_score` in `screening_evaluation` now range from 0 to 250 instead of 0 to 100, in API responses and webhooks, so they match the dossier PDF. This applies to every application, including existing ones: each value is the previous one multiplied by 2.5 and rounded to a whole number. Review any score thresholds in your integration.
+- Corrected the screening guides. A `screened_timeout` application can carry a score and dossier based on what was collected before the deadline. The deadline has no buffer for mid-conversation candidates. Candidates can be asked a requirement's `question`. Job events are on for new accounts.
+
+## 2026-11-02
+### Added
+- `settings.knockout_difficulty` and `settings.interview_difficulty` on `POST /v3/screening/jobs/` - choose how many knockout questions the AI may ask each candidate (`quick`, `medium` or `comprehensive`, up to 1, 3 or 5) and which interview question set the interview agent asks (`EASY`, `MEDIUM` or `HARD`). Leaving them out keeps `quick` and `MEDIUM`, as before.
+- `PATCH /v3/screening/jobs/{id}/settings/` - change either difficulty once `requirements_ready_at` is set. A new interview difficulty swaps in the AI's question set for it, and each difficulty keeps its own edited questions. See [Screening-Jobs & Applications](guides/11-screening/jobs-and-applications.md).
+
+## 2026-10-30
+### Added
+- `generator.outputs` on `POST /v3/smartfill/posting-requirements/` - ask an AI ad generation for its text alone (`["text"]`), so no picture is rendered for a recruiter who brings their own, or for pictures alone (`["media"]`), each arriving as an alternative with empty `values`. Left out, both are made as before. See [AI Ad Creatives-Text or Pictures Alone](guides/07-posting-requirements/ai-ad-creatives.md#text-or-pictures-alone).
+
 ## 2026-10-22
 ### Added
 - Finnish (`fi`), Swedish (`sv`) and Norwegian (`no`) as partially supported languages: accepted in `Accept-Language` and returned as `fi_FI`, `sv_SE` and `no_NO` entries in taxonomy `name` arrays. Values not yet translated fall back to English.
