@@ -135,7 +135,7 @@ X-Customer-Id: customer-123
 **Notes**:
 - `includeLocationId` broadens results to nearby locations. Use `exactLocationId` when you need a strict geographic match.
 - `jobFunctionId` and `jobTitleId` are mutually exclusive. The API returns a `400` error if both are provided.
-- Products with `allow_orders: false` are visible in search but cannot be ordered-filter these out before presenting them as orderable options.
+- Products that cannot be ordered are left out of the results.
 - The response uses standard pagination with `count`, `next`, and `previous` fields.
 
 ---
@@ -228,7 +228,7 @@ X-Customer-Id: customer-123
 ```
 
 **Notes**:
-- This endpoint may return products with `allow_orders: false`. Filter these out before presenting them as orderable.
+- Products that cannot be ordered, and unknown IDs, are left out of the results without an error. Compare the returned IDs with the ones you requested.
 - Maximum 50 product IDs per request.
 - Pass `products_ids_or_portfolio_id` only in the URL path. Requests that also send `products_ids_or_portfolio_id` as a query parameter are rejected. The legacy typo `product_ids_or_portfolio_id` is rejected the same way.
 

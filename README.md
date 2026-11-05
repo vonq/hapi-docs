@@ -15,6 +15,8 @@ The same content is published in two places - pick whichever fits your workflow:
 
 **Building an integration?** Jump to the [OpenAPI schema](https://github.com/vonq/hapi-docs/blob/master/schema/build/public.json) and the [guides](docs/01-introduction.md#documentation-map).
 
+**Implementing the integration with an AI coding agent?** Point it at the [recipes](docs/recipes/01-introduction.md): one per screen of a standard ATS ordering flow, each with its API calls, rules and test scenarios.
+
 **AI agent or code generator?** Clone this repository, then start with
 [`llms.txt`](https://github.com/vonq/hapi-docs/blob/master/llms.txt) or [`docs-manifest.jsonl`](https://github.com/vonq/hapi-docs/blob/master/docs-manifest.jsonl). See
 [`AGENTS.md`](AGENTS.md) for selective search commands and source authority.

@@ -130,20 +130,20 @@ sequenceDiagram
     YourUI->>User: Show "Connect to LinkedIn" button
     User->>Board: Click opens OAuth URL
     Board->>Board: User authenticates & authorizes
-    Board->>YourUI: Redirect back with token in URL hash
-    YourUI->>YourUI: Extract token from URL hash
+    Board->>YourUI: Redirect back with token in hash query parameter
+    YourUI->>YourUI: Extract token from ?hash=
     Note over YourUI: Use extracted token as<br/>the credential field value
 ```
 
-1. The user clicks a link/button that opens the `url` from the credential field
+1. The user clicks a link/button that opens the `url` from the credential field, with a `callbackUrl` parameter pointing at your redirect handler
 2. They authenticate on the job board and authorize access
-3. The job board redirects back to your application with a token in the URL hash (fragment)
-4. Your UI extracts the hash value-this becomes the credential field value
+3. The job board redirects back to your `callbackUrl` with a token in the `hash` query parameter (`?hash=<token>`)
+4. Your UI extracts the `hash` value-this becomes the credential field value
 5. Submit this value as the credential when creating the contract
 
 <!-- theme: warning -->
-> ### The Token Is in the Hash
-> The OAuth token is in the URL **hash** (after `#`), not in query parameters. Make sure your redirect handler reads `window.location.hash`, not `window.location.search`.
+> ### The Token Is in the `hash` Query Parameter
+> The OAuth token arrives as a query parameter named `hash` (`?hash=<token>`), not in the URL fragment after `#`. Read it from the query string, for example `new URLSearchParams(window.location.search).get("hash")`. See [Contract Caveats & Notes - OAuth Credentials](../06-contracts/notes.md#oauth-credentials).
 
 ## Step 4: Create the Contract
 
@@ -196,7 +196,7 @@ The response includes:
 | `contract_id` | Unique identifier for this contract-use when managing the contract |
 | `product.product_id` | The product ID tied to this contract-**use this in `orderedProducts` when ordering campaigns** |
 | `channel` | Confirms which channel this contract is for |
-| `credentials` | Masked values (`***`)-confirms credentials were stored |
+| `credentials` | Encrypted text values and plain select values-confirms credentials were stored; the original text values cannot be read back |
 | `posting_requirements` | Channel-specific fields you will need to fill when ordering (see [Contract Posting Requirements](../06-contracts/posting-requirements.md)) |
 
 <!-- theme: danger -->

@@ -91,9 +91,9 @@ GET /campaigns?sortBy=createdOn.desc
 
 ## Rate Limits
 
-All endpoints are rate limited to **60 requests per 60 seconds** per partner (per API token). The limit resets on a rolling window.
+Campaign ordering, listing, status and cancellation requests are rate limited to **60 requests per 60 seconds** per partner (per API token). The limit resets on a rolling window. Plan the rest of your traffic within the same budget: cache taxonomy, debounce search-as-you-type, and prefer webhooks over polling.
 
-When you exceed the rate limit, the API returns `429 Too Many Requests`. Back off and retry after the window resets.
+When you exceed the rate limit, the API returns `429 Too Many Requests`; the response body may not be JSON. Back off and retry after the window resets.
 
 ## Error Handling
 

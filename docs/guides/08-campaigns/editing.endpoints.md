@@ -74,7 +74,7 @@ Content-Type: application/json
       "postcode": "10117",
       "city": "Berlin",
       "country": "DE",
-      "allowsRemoteWork": true
+      "allowsRemoteWork": 1
     },
     "contactInfo": {
       "name": "HR Department",

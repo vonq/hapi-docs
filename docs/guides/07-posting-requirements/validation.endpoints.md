@@ -24,7 +24,7 @@ endpoints:
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `product_id` | string | Yes | The product ID |
-| `contract_id` | string (UUID) | Yes | The contract ID |
+| `contract_id` | string (UUID) | Conditional | The contract ID. Required for contract products. Marketplace products that VONQ validates through its own contract do not need it; any other product sent without it returns `400` "Contract ID is required for this product" |
 | `posting_requirements` | array | Yes | List of `{name, value}` objects for each posting requirement |
 | `vacancy` | array | No | List of `{name, value}` objects for vacancy fields that certain facets depend on |
 
@@ -92,8 +92,11 @@ Errors are split into `credentials` and `posting_requirements`:
 
 | Status | Cause |
 |--------|-------|
-| 422 | Posting requirements or credentials are invalid |
+| 200 | No errors (`has_errors: false`), including products without posting requirements |
+| 400 | Invalid input (for example camelCase field names), a missing or unknown `contract_id`, a contract with errors, or a product and contract from different channels |
 | 401 | Invalid or missing authentication |
+| 422 | Posting requirements or credentials are invalid (`has_errors: true`) |
+| 5xx | The board's validation is temporarily unavailable; retry later |
 
 ## POST /campaigns/validate-questionnaire/
 

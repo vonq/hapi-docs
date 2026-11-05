@@ -109,7 +109,7 @@ graph TD
 
 <!-- theme: warning -->
 > ### Always check `has_product_specs` first
-> Calling `/specs/` on a product without posting requirements returns an empty or minimal response. Check `has_product_specs` before making the call.
+> Calling `/specs/` on a product without posting requirements returns `404`. Check `has_product_specs` before making the call.
 
 <!-- theme: info -->
 > ### `STATISCH` facets are display-only

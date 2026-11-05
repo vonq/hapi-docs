@@ -59,7 +59,7 @@ The `postingDetails` object contains the core job listing content.
       "postcode": "1015 AA",
       "city": "Amsterdam",
       "country": "NL",
-      "allowsRemoteWork": true
+      "allowsRemoteWork": 1
     },
     "contactInfo": {
       "name": "Jane Recruiter",
@@ -119,7 +119,7 @@ The `postingDetails` object contains the core job listing content.
 | `postcode` | string | Loose (Job Post) | Postal code. Optional with `?loose=true` on Job Post orders. |
 | `city` | string | Loose (Job Post) | City name. Optional with `?loose=true` on Job Post orders. |
 | `country` | string | Loose (Job Post) | Country name or ISO code. Optional with `?loose=true` on Job Post orders. |
-| `allowsRemoteWork` | boolean | No | Whether the position allows remote work |
+| `allowsRemoteWork` | integer or string | No | Remote work: `0` no, `1` yes, `"hybrid"` hybrid. `"0"` and `"1"` are also accepted. |
 
 <!-- theme: info -->
 > The API response also returns a `postCode` field (camelCase) as a legacy duplicate of `postcode`. Use `postcode` when sending requests - both are returned in responses.
@@ -195,13 +195,13 @@ Each field is an array containing exactly **one** taxonomy reference object with
 | `educationLevel` | Loose | `GET /taxonomy/education-levels` | Minimum education level |
 | `seniority` | Loose | `GET /taxonomy/seniority` | Career experience level |
 | `industry` | Loose (Job Post) | `GET /products/industries/` | Business sector |
-| `jobCategory` | Loose (Job Post) | Not resolved through taxonomy endpoints | Compatibility field |
+| `jobCategory` | Loose (Job Post) | `GET /products/job-functions/` | Job function; a job title's `job_function.id` also works |
 
 All four fields are required by default. With `?loose=true`, `educationLevel` and `seniority` may be omitted on any order, while `industry` and `jobCategory` may be omitted on Job Post orders only. See [Loose Validation](#loose-validation).
 
 <!-- theme: warning -->
 > ### Exactly One Value Per Dimension
-> Each taxonomy field is an array that must contain exactly one object - not zero, not several. Two or more entries fail validation with `"Maximum number of items is 1."`. An **empty array is not valid either**: `POST /campaigns/validate-campaign/` may let `[]` pass, but `POST /campaigns/order` rejects it with an error like `"A Target Group entity should contain an EducationLevel"`. Do not rely on an empty array as a way to skip a dimension - to omit these fields you need [loose validation](#loose-validation), and then omit the key entirely rather than sending `[]`.
+> Each taxonomy field is an array that must contain exactly one object - not zero, not several. Two or more entries fail validation with `"Maximum number of items is 1."`. An **empty array is not valid either**: validation and ordering both reject `[]`. Do not rely on an empty array as a way to skip a dimension - to omit these fields you need [loose validation](#loose-validation), and then omit the key entirely rather than sending `[]`.
 
 To look up available taxonomy values and their IDs, see [Taxonomy](../04-taxonomy.md).
 
@@ -221,9 +221,9 @@ The `recruiterInfo` object identifies the recruiter managing this vacancy.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `id` | string | Yes | Recruiter identifier (your internal ID) |
+| `id` | string | No | Recruiter identifier (your internal ID) |
 | `name` | string | Yes | Recruiter full name |
-| `emailAddress` | string | Yes | Recruiter email address |
+| `emailAddress` | string | No | Recruiter email address; must be a valid address when sent |
 
 ## companyId
 

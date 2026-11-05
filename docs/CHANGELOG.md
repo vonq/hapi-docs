@@ -7,6 +7,19 @@ category: resources
 
 # Changelog
 
+## 2026-11-05
+### Added
+- [Recipes](recipes/01-introduction.md): screen-by-screen guides for implementing an ATS integration, written so a coding agent can follow them. They cover customer accounts, job to vacancy, channel selection, job board connections, the posting requirements form, checkout, campaign tracking and end-to-end testing. Each recipe lists the calls per screen, what to store, integration variants, rules, and test scenarios with stable IDs.
+
+### Fixed
+- The OpenAPI schema now passes OpenAPI Generator validation: the `json` part of multipart Direct Apply and Screening webhooks is declared where generators expect it.
+- `POST /campaigns/order` documents what the endpoint returns: `200` with `{"errors": {}, "has_errors": false}` for a valid `validateOnly` call, and `400` for validation errors in either of their two shapes (top-level field errors, or `errors` with `has_errors: true`). It never returned `422`; duplicate submissions also return `400`, and `loose=true` on an account without loose validation returns `403`. `validateOnly` is read by presence, so `validateOnly=false` also only validates.
+- `postingRequirements` and `postingRequirementsLabels` are free-form objects keyed by facet name; the schema listed placeholder fields only.
+- `allowsRemoteWork` accepts `0`, `1`, `"0"`, `"1"` and `"hybrid"`; the schema allowed integers 0 and 1 only.
+- `postingDurationDays` on ordered products accepts `-1`; the schema set a minimum of 7.
+- `PATCH /contracts/single/{contract_id}/` no longer shows a default for `posting_duration_days`, so generated clients stop sending `-1` on every update. An omitted value keeps the current one.
+- `jobBoardLink` on the sandbox status simulation (`PATCH /campaigns/{campaignId}/edit`) is one nullable string instead of a `oneOf` of two strings.
+
 ## 2026-11-04
 ### Changed
 - Screening chats now run in the language of the job description, as the guides already stated. Jobs were previously always created in English. Applies to new jobs only: Dutch, English, French, German, Portuguese and Spanish are detected, and anything else falls back to English.

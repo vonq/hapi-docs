@@ -51,7 +51,7 @@ See [Marketplace - Endpoint Reference](./02-marketplace.endpoints.md) for full r
 
 ## Product Search
 
-Use `GET /products/search/` to find channels relevant to a vacancy. The endpoint accepts filters for location, job function, industry, duration, price, and more. Results are paginated and ranked by relevance.
+Use `GET /products/search/` to find channels relevant to a vacancy. The endpoint accepts filters for location, job title or job function, industry, duration, and more. Results are paginated and ranked by relevance.
 
 For an AI-ranked starting set, first create a [Product Recommendation](./05.recommendations.md), then pass its completed job ID as `recommendationId`. Search returns full product objects in recommendation order and rechecks their current visibility.
 
@@ -236,7 +236,7 @@ graph TD
 1. **Collect vacancy details**-job title, location, industry from the user. These map to HAPI taxonomy values, which have their own dedicated endpoints and IDs separate from your internal data model.
 2. **Resolve taxonomy IDs**-use [Taxonomy](../04-taxonomy.md) endpoints to convert user input into HAPI taxonomy IDs (`jobTitleId`, `includeLocationId`, `industryId`). These IDs are also used separately in the campaign `targetGroup` when ordering.
 3. **Search products**-call `GET /products/search/` with the taxonomy IDs as filters.
-4. **Review results**-display products with pricing, duration, and channel info. Filter out products with `allow_orders: false`.
+4. **Review results**-display products with pricing, duration, and channel info.
 5. **Select products**-the user picks one or more products for their campaign.
 6. **Check posting requirements**-for products with `has_product_specs: true`, fetch specs via `GET /products/{product_id}/specs/`. See [Posting Requirements](./04-posting-requirements.md).
 7. **Proceed to ordering**-pass selected product IDs and filled posting requirements to the campaign order. See [Campaign Ordering](../08-campaigns/ordering.md).
@@ -244,8 +244,8 @@ graph TD
 ## Edge Cases & Gotchas
 
 <!-- theme: warning -->
-> ### Products with `allow_orders: false`
-> These products appear in search results but cannot be ordered. Always check this field before presenting a product as orderable.
+> ### Unavailable products are left out
+> Products that cannot be ordered are not returned by search or by `GET /products/multiple/{products_ids_or_portfolio_id}/`, and `GET /products/single/{product_id}/` returns `404` for them. When you restore a saved selection, treat a missing product as no longer available.
 
 <!-- theme: warning -->
 > ### `mc_only` products require a contract

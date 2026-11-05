@@ -123,9 +123,9 @@ Content-Type: application/json
 
 | Field | In | Type | Required | Description |
 |-------|------|------|----------|-------------|
-| `customer_id` | body | string | Yes | Your identifier for the customer (max 255 characters) |
+| `customer_id` | body | string | Yes | Your identifier for the customer (max 255 characters, without `/`) |
 
-**Response**: `201 Created` - returns the ATSUser object.
+**Response**: `201 Created` with the new ATSUser, or `200 OK` with the existing one when the `customer_id` already exists.
 
 ---
 

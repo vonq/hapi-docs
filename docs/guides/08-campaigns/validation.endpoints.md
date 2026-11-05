@@ -285,4 +285,4 @@ X-Customer-Id: <customer-id>
 Content-Type: application/json
 ```
 
-The request body is identical to a real campaign order (see [Ordering](./ordering.md)). The error response format matches `validate-campaign`. The `?loose=true` query parameter is supported here as well and behaves exactly as it does on the order endpoint-see [Ordering-Loose Validation](./ordering.md#loose-validation).
+The request body is identical to a real campaign order (see [Ordering](./ordering.md)). A valid payload returns `200` with `{"errors": {}, "has_errors": false}`. Errors return `400` in one of two shapes: while basic campaign fields fail they are returned at the top level, nested like the request; once those pass, the format matches `validate-campaign` (`errors` plus `has_errors: true`). See [Ordering](./ordering.endpoints.md) for examples of both. The `?loose=true` query parameter is supported here as well and behaves exactly as it does on the order endpoint-see [Ordering-Loose Validation](./ordering.md#loose-validation).

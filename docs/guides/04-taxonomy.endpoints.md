@@ -44,7 +44,7 @@ keywords:
 |-----------|------|----------|-------------|
 | `text` | string | yes | Search text for a job title name |
 | `sortBy` | string | no | Ordering applied after matching the search text. Default: `relevance`. See sort options below. |
-| `limit` | integer | no | Results per page (default: 10, max: 20) |
+| `limit` | integer | no | Results per page (default: 10, max: 20). The search returns at most 10 matching titles in total, so a larger `limit` or an `offset` of 10 or more adds no results |
 | `offset` | integer | no | Starting index for pagination (default: 0) |
 | `Accept-Language` | header | no | Language code for localized names. See [Localization](../02-api-overview.md#localization). |
 
@@ -368,7 +368,7 @@ X-Auth-Token: <your Partner token here>
 ### GET /products/location/search/
 
 - **Auth**: token | jwt
-- **Description**: Search for geographic locations by name. Returns a ranked list of matching locations with the full place hierarchy. Use the returned `id` when filtering products by geography (`includeLocationId`, `exactLocationId`) or when specifying a working location in a campaign.
+- **Description**: Search for geographic locations by name. Returns a ranked list of matching locations with the full place hierarchy. Use the returned `id` when filtering products by geography (`includeLocationId`, `exactLocationId`).
 
 **Query Parameters**:
 
@@ -451,11 +451,11 @@ X-Customer-Id: customer-123
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | integer | Location identifier-use in [product search](./05-products/02-marketplace.md) filters and campaign working location |
+| `id` | integer | Location identifier-use in [product search](./05-products/02-marketplace.md) filters |
 | `fully_qualified_place_name` | string | Full name including parent hierarchy (e.g., `"Amsterdam, North Holland, Netherlands"`) |
 | `canonical_name` | string \| null | Short name (e.g., `"Amsterdam"`) |
 | `place_type` | array\<string\> | Classification: `place`, `district`, `region`, `country`, `continent`, or `world` |
-| `area` | number \| absent | Area in km². Present on some entries (e.g., `312.0` for Amsterdam), absent on others. |
+| `area` | number \| null | Area in km². Set on some entries (e.g., `312.0` for Amsterdam), `null` on others. |
 | `bounding_box` | array | Geographic bounding box as `[west, south, east, north]`. Empty array `[]` when not available. |
 | `within` | object \| absent | Parent location in the hierarchy. The chain goes place → country → continent → world. Absent on the `world`-type entry at the root. |
 
@@ -463,4 +463,4 @@ X-Customer-Id: customer-123
 - Results are ranked by relevance. There is no pagination-the endpoint returns a small, relevance-ranked set.
 - Minimum useful input is ~3 characters. Short queries may return broad results.
 - Each location nests its full geographic context via the `within` field. The hierarchy goes up to 4 levels deep: place → country → continent → world. Region-level entries (e.g., "North Holland") may be skipped.
-- The `bounding_box` and `area` fields are present when geographic data is available; `bounding_box` is an empty array and `area` is absent when not.
+- The `bounding_box` and `area` fields are present when geographic data is available; `bounding_box` is an empty array and `area` is `null` when not.

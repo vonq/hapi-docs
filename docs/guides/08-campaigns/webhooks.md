@@ -50,7 +50,7 @@ The account-level callback URL applies to every campaign you order. To send the 
 
 When present, that URL replaces the account-level one for that campaign only. Everything else stays the same: campaign webhooks must still be enabled for your account, the payload is unchanged, custom headers configured by your account manager are still sent, and the no-retry policy still applies.
 
-Omit `notifications` (or leave `webhookUrl` empty) to use the account-level URL.
+Omit `notifications` entirely to use the account-level URL. Once `notifications` is present, `webhookUrl` is required.
 
 ### Authenticating Deliveries
 
@@ -91,8 +91,8 @@ Your callback endpoint must:
 - Accept HTTP `POST` requests
 - Accept `Content-Type: application/json`
 - Return a `2xx` status code to acknowledge receipt
-- Respond within a reasonable timeout (30 seconds)
-- Handle duplicate deliveries idempotently-use `request_id` to detect duplicates
+- Respond within 10 seconds
+- Handle duplicate deliveries idempotently-use `campaign_id` and `modified_on` to detect duplicates
 
 <!-- theme: danger -->
 > ### No Retries
@@ -128,7 +128,7 @@ graph TD
 > ### Notifications Are Not Guaranteed
 > Due to the no-retry policy, treat webhooks as a best-effort optimization. Always have a polling fallback to ensure you eventually capture all status changes.
 
-- **Deduplication**-the same `request_id` may arrive more than once in edge cases. Store processed request IDs and skip duplicates.
+- **Deduplication**-every delivery carries a new `request_id`, so the same change can arrive twice under different IDs. Deduplicate on `campaign_id` and `modified_on`, and skip a delivery whose `modified_on` is not newer than the one you already processed.
 - **Notification does not mean final state**-a campaign may receive multiple notifications as different products transition. Always fetch the latest state from the API.
 - **Other webhook types exist**-Direct Apply and Screening have their own webhook mechanisms with different payloads, file delivery, and retry behavior. See [Direct Apply-Webhooks](../10-direct-apply/webhooks.md) and [Screening-Webhooks](../11-screening/webhooks.md).
 

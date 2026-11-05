@@ -33,7 +33,7 @@ terms:
       - mc_only: Can only be ordered via contract
       - has_product_specs: Has posting requirements
       - cpa: Non-null for CPA+ products
-      - allow_orders: false means visible but not orderable
+      - allow_orders: unavailable products are left out of search results instead of being returned with false
     related_endpoints:
       - GET /products/search/
       - GET /products/single/{product_id}/

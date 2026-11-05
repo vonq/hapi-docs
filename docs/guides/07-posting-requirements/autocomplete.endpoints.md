@@ -43,8 +43,6 @@ Content-Type: application/json
 ]
 ```
 
-Also supports `GET` with `?search=Amsterdam` query parameter.
-
 ## POST /contracts/posting-requirements/{channel_id_or_contract_id}/{posting-requirement-name}/
 
 - **Auth**: token

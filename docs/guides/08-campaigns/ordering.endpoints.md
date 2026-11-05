@@ -28,7 +28,7 @@ endpoints:
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `validateOnly` | boolean | When `true`, runs full validation without creating the campaign. See [Validation](./validation.md). |
+| `validateOnly` | boolean | When `true`, runs full validation without creating the campaign; a valid payload returns `200`. The parameter is read by presence, so `validateOnly=false` also only validates. See [Validation](./validation.md). |
 | `loose` | boolean | When `true`, vacancy fields listed in ATS settings may be omitted from the payload. See [Loose Validation](./ordering.md#loose-validation). |
 
 **Request Headers**
@@ -69,7 +69,7 @@ endpoints:
 | `postingRequirements` | object | Conditional | Channel-specific field values as key-value pairs. Required when the selected JP contract or JM product has posting requirements. |
 | `postingRequirementsLabels` | object | No | Human-readable labels for posting requirement values |
 | `utm` | string | No | UTM tracking parameters |
-| `postingDurationDays` | integer | No | Override posting duration (JP only) |
+| `postingDurationDays` | integer | No | Override posting duration (JP only): `-1` for no expiration, or 7 to 365 |
 
 **Example-JM Campaign (marketplace products only, no product-level posting requirements)**
 
@@ -217,34 +217,45 @@ Content-Type: application/json
 
 The response contains only the campaign ID. To get full campaign details (status, per-product statuses, delivery dates), call `GET /campaigns/{campaignId}`. See [Status & Lifecycle](./status.md).
 
-**Error Response (422)**
+**Error Response (400)**
 
-Validation errors are returned as a nested object matching the request structure:
+Validation errors come in one of two shapes. While basic campaign fields fail, they are returned at the top level, nested like the request:
 
 ```json
 {
   "postingDetails": {
-    "title": ["This field is required."]
-  },
-  "orderedProductsSpecs": [
-    {
-      "credentials": {},
-      "posting_requirements": {
-        "location": "The field \"Location\" must have a value"
-      }
-    }
-  ]
+    "title": ["A Title of the Posting is required"]
+  }
 }
 ```
 
-The `orderedProductsSpecs` error array is positional-the first object corresponds to the first product in your request. See [Validation](./validation.md) for error format details.
+Once those pass, the remaining checks (products, posting requirements, payment) return the errors wrapped in `errors`, with `has_errors: true`:
+
+```json
+{
+  "errors": {
+    "orderedProducts": [{}],
+    "orderedProductsSpecs": [
+      {
+        "credentials": {},
+        "posting_requirements": {
+          "location": "The field \"Location\" must have a value"
+        }
+      }
+    ]
+  },
+  "has_errors": true
+}
+```
+
+Read `errors` when it is present, otherwise the top-level fields. The `orderedProducts` and `orderedProductsSpecs` error arrays are positional-the first entry corresponds to the first product in your request, and `{}` means no errors for it. See [Validation](./validation.md) for error format details.
 
 **Errors**
 
 | Status | Cause |
 |--------|-------|
+| 200 | `validateOnly` only: the payload is valid (`{"errors": {}, "has_errors": false}`) |
 | 201 | Campaign created successfully |
-| 400 | Invalid request (e.g., loose validation is not enabled for the account, `walletId` sent with `ats_managed`, or `contractId` on a JM product) |
+| 400 | Validation errors in vacancy fields, products, posting requirements or payment (e.g., `walletId` sent with `ats_managed`, or `contractId` on a JM product). Accounts configured with duplicate-submission prevention (off by default) also get `400` `"A campaign with the same payload was already submitted recently. Please wait before resubmitting."` when the same payload is re-sent within the configured window |
 | 401 | Invalid or missing authentication |
-| 403 | Contract customer group mismatch |
-| 422 | Validation errors in vacancy fields or posting requirements. Accounts configured with duplicate-submission prevention (off by default) also get `422` `"A campaign with the same payload was already submitted recently. Please wait before resubmitting."` when the same payload is re-sent within the configured window |
+| 403 | Contract customer group mismatch, or `?loose=true` on an account without loose validation |

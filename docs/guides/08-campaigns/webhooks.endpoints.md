@@ -28,7 +28,7 @@ HAPI sends HTTP POST requests to your configured callback URL when a campaign is
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `request_id` | string (UUID) | Unique identifier for this notification-use for deduplication |
+| `request_id` | string (UUID) | Unique identifier for this delivery; a new value is generated on every send |
 | `campaign_id` | string (UUID) | The campaign that was modified |
 | `modified_on` | string (ISO 8601) | When the campaign was last modified |
 
@@ -41,8 +41,8 @@ The payload is intentionally lightweight-it tells you *which* campaign changed a
 | Method | Must accept HTTP `POST` requests |
 | Content type | Must accept `Content-Type: application/json` |
 | Response | Must return a `2xx` status code to acknowledge receipt |
-| Timeout | Must respond within 30 seconds |
-| Idempotency | Must handle duplicate deliveries-use `request_id` to detect duplicates |
+| Timeout | Must respond within 10 seconds |
+| Idempotency | Must handle duplicate deliveries-use `campaign_id` and `modified_on` to detect duplicates |
 
 ### Fetching Campaign Details After Notification
 
