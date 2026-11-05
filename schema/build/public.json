@@ -1632,22 +1632,6 @@
         ],
         "type": "object"
       },
-      "ApplyFeedbackLogSubmit": {
-        "properties": {
-          "request_id": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "status": {
-            "$ref": "#/components/schemas/ApplyFeedbackStatusEnum"
-          }
-        },
-        "required": [
-          "request_id",
-          "status"
-        ],
-        "type": "object"
-      },
       "ApplyFeedbackLogSubmitRequest": {
         "properties": {
           "request_id": {
@@ -1674,6 +1658,17 @@
           "closed_hired"
         ],
         "type": "string"
+      },
+      "ApplyFeedbackSubmitted": {
+        "properties": {
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "type": "object"
       },
       "AtsContract": {
         "properties": {
@@ -1889,9 +1884,78 @@
         ],
         "type": "object"
       },
-      "AtsContractUpdate": {
+      "AtsCredentialsValidationEnum": {
+        "description": "* `CredentialsValidationEnum.IF_SUPPORTED` - CredentialsValidationEnum.IF_SUPPORTED\n* `CredentialsValidationEnum.DISABLED` - CredentialsValidationEnum.DISABLED",
+        "enum": [
+          "CredentialsValidationEnum.IF_SUPPORTED",
+          "CredentialsValidationEnum.DISABLED"
+        ],
+        "type": "string"
+      },
+      "AtsEncryptedContract": {
         "properties": {
           "alias": {
+            "maxLength": 128,
+            "nullable": true,
+            "type": "string"
+          },
+          "channel": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Channel"
+              }
+            ],
+            "readOnly": true
+          },
+          "channel_id": {
+            "nullable": true,
+            "readOnly": true,
+            "type": "integer"
+          },
+          "class_name": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "contract_id": {
+            "maxLength": 48,
+            "type": "string"
+          },
+          "credentials": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "readOnly": true,
+            "type": "object"
+          },
+          "credits": {
+            "format": "int64",
+            "maximum": 9223372036854775807,
+            "minimum": -9223372036854775808,
+            "nullable": true,
+            "type": "integer"
+          },
+          "customer_id": {
+            "maxLength": 80,
+            "type": "string"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "expiry_date": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "facets": {
+            "nullable": true
+          },
+          "feed_url": {
+            "nullable": true,
+            "readOnly": true,
             "type": "string"
           },
           "group": {
@@ -1902,8 +1966,8 @@
             ],
             "readOnly": true
           },
-          "group_id": {
-            "format": "uuid",
+          "igb_customer_id": {
+            "readOnly": true,
             "type": "string"
           },
           "labels": {
@@ -1912,27 +1976,49 @@
             "type": "object"
           },
           "posting_duration_days": {
-            "default": -1,
+            "maximum": 2147483647,
+            "minimum": -2147483648,
             "type": "integer"
+          },
+          "posting_requirements": {
+            "items": {
+              "$ref": "#/components/schemas/Facet"
+            },
+            "readOnly": true,
+            "type": "array"
           },
           "posting_requirements_defaults": {
             "additionalProperties": {},
             "nullable": true,
             "type": "object"
+          },
+          "product": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ContractProduct"
+              }
+            ],
+            "nullable": true,
+            "readOnly": true
+          },
+          "purchase_price": {
+            "nullable": true
           }
         },
         "required": [
-          "group"
+          "channel",
+          "channel_id",
+          "class_name",
+          "credentials",
+          "customer_id",
+          "errors",
+          "feed_url",
+          "group",
+          "igb_customer_id",
+          "posting_requirements",
+          "product"
         ],
         "type": "object"
-      },
-      "AtsCredentialsValidationEnum": {
-        "description": "* `CredentialsValidationEnum.IF_SUPPORTED` - CredentialsValidationEnum.IF_SUPPORTED\n* `CredentialsValidationEnum.DISABLED` - CredentialsValidationEnum.DISABLED",
-        "enum": [
-          "CredentialsValidationEnum.IF_SUPPORTED",
-          "CredentialsValidationEnum.DISABLED"
-        ],
-        "type": "string"
       },
       "AtsListContract": {
         "properties": {
@@ -2395,15 +2481,6 @@
         ],
         "type": "object"
       },
-      "AtsTypeEnum": {
-        "description": "* `None` - (Unknown)\n* `career level` - Career level\n* `diversity` - Diversity\n* `job type` - Job type\n* `industry` - Industry",
-        "enum": [
-          "career level",
-          "diversity",
-          "job type",
-          "industry"
-        ]
-      },
       "Autocomplete": {
         "properties": {
           "parameters_source": {
@@ -2455,10 +2532,8 @@
           }
         },
         "required": [
-          "errorDetails",
           "errors",
-          "has_errors",
-          "status_code"
+          "has_errors"
         ],
         "type": "object"
       },
@@ -2532,14 +2607,6 @@
           "type",
           "url"
         ],
-        "type": "object"
-      },
-      "Consent": {
-        "properties": {
-          "has_accepted_privacy_policy_and_terms": {
-            "type": "boolean"
-          }
-        },
         "type": "object"
       },
       "ConsentRequest": {
@@ -3047,6 +3114,45 @@
           "internship"
         ],
         "type": "string"
+      },
+      "ErrorResponse": {
+        "additionalProperties": true,
+        "description": "Error body. Validation errors carry one `{field: [messages]}` entry per invalid field.",
+        "properties": {
+          "error": {
+            "description": "Human-readable error message.",
+            "type": "string"
+          },
+          "errorDetails": {
+            "description": "Machine-readable errors, added to 400, 404 and 422 responses when the account has error codes enabled.",
+            "items": {
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "params": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "path": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path",
+                "code",
+                "message",
+                "params"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
       },
       "Facet": {
         "properties": {
@@ -5908,6 +6014,14 @@
         ],
         "type": "string"
       },
+      "OutputsEnum": {
+        "description": "* `text` - text\n* `media` - media",
+        "enum": [
+          "text",
+          "media"
+        ],
+        "type": "string"
+      },
       "PaginatedATSUserList": {
         "properties": {
           "count": {
@@ -5960,6 +6074,37 @@
           "results": {
             "items": {
               "$ref": "#/components/schemas/ProductsSpecsChannelList"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "results"
+        ],
+        "type": "object"
+      },
+      "PaginatedEncryptedContractList": {
+        "properties": {
+          "count": {
+            "example": 123,
+            "type": "integer"
+          },
+          "next": {
+            "example": "http://api.example.org/accounts/?offset=400&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "previous": {
+            "example": "http://api.example.org/accounts/?offset=200&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/AtsEncryptedContract"
             },
             "type": "array"
           }
@@ -6038,14 +6183,13 @@
         ],
         "type": "object"
       },
-      "PaginatedProductJmpProduct": {
+      "PaginatedProductList": {
         "properties": {
           "count": {
             "type": "integer"
           },
           "debug": {
             "additionalProperties": {},
-            "nullable": true,
             "type": "object"
           },
           "facets": {
@@ -6065,13 +6209,16 @@
           },
           "results": {
             "items": {
-              "$ref": "#/components/schemas/ProductJmpProduct"
+              "$ref": "#/components/schemas/Product"
             },
             "type": "array"
           }
         },
         "required": [
           "count",
+          "facets",
+          "next",
+          "previous",
           "results"
         ],
         "type": "object"
@@ -6185,73 +6332,6 @@
         },
         "type": "object"
       },
-      "PatchedContractRequest": {
-        "properties": {
-          "alias": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "channel_id": {
-            "type": "integer"
-          },
-          "credentials": {
-            "additionalProperties": {},
-            "type": "object"
-          },
-          "credentials_validation": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/AtsCredentialsValidationEnum"
-              },
-              {
-                "$ref": "#/components/schemas/HapiNullEnum"
-              }
-            ],
-            "writeOnly": true
-          },
-          "credits": {
-            "format": "int64",
-            "maximum": 9223372036854775807,
-            "minimum": 0,
-            "type": "integer"
-          },
-          "expiry_date": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "facets": {
-            "nullable": true
-          },
-          "followed_instructions": {
-            "nullable": true,
-            "type": "boolean",
-            "writeOnly": true
-          },
-          "group_id": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "labels": {
-            "additionalProperties": {},
-            "nullable": true,
-            "type": "object"
-          },
-          "posting_duration_days": {
-            "default": -1,
-            "type": "integer"
-          },
-          "posting_requirements_defaults": {
-            "additionalProperties": {},
-            "nullable": true,
-            "type": "object"
-          },
-          "purchase_price": {
-            "$ref": "#/components/schemas/AtsPurchasePriceRequest"
-          }
-        },
-        "type": "object"
-      },
       "PatchedContractUpdateRequest": {
         "properties": {
           "alias": {
@@ -6296,26 +6376,14 @@
         },
         "type": "object"
       },
-      "PatchedScreeningJobInterviewQuestionsUpdateRequest": {
-        "description": "Partial update of one editable collection on a screening job.\n\nSend only the entries you are changing, each keyed by its `id`. Omitting an entry leaves\nit alone and omitting a field leaves that field alone, so adding and removing entries is\nnot expressible. Each changed entry is PATCHed to Metis individually.",
+      "PatchedScreeningJobSettingsUpdateRequest": {
+        "description": "Change a screening job's knockout and interview difficulty.\n\nA question set is kept per interview difficulty, so a new difficulty swaps in that set -\nwith any edits made to it earlier - rather than writing a new one.",
         "properties": {
-          "interview_questions": {
-            "items": {
-              "$ref": "#/components/schemas/ScreeningJobInterviewQuestionItemRequest"
-            },
-            "type": "array"
-          }
-        },
-        "type": "object"
-      },
-      "PatchedScreeningJobRequirementsUpdateRequest": {
-        "description": "Partial update of one editable collection on a screening job.\n\nSend only the entries you are changing, each keyed by its `id`. Omitting an entry leaves\nit alone and omitting a field leaves that field alone, so adding and removing entries is\nnot expressible. Each changed entry is PATCHed to Metis individually.",
-        "properties": {
-          "requirements": {
-            "items": {
-              "$ref": "#/components/schemas/ScreeningJobRequirementItemRequest"
-            },
-            "type": "array"
+          "interview_difficulty": {
+            "$ref": "#/components/schemas/ScreeningInterviewDifficultyEnum"
+          },
+          "knockout_difficulty": {
+            "$ref": "#/components/schemas/ScreeningKnockoutDifficultyEnum"
           }
         },
         "type": "object"
@@ -6354,120 +6422,7 @@
         },
         "type": "object"
       },
-      "ProductAudienceGroupEnum": {
-        "description": "* `generic` - generic\n* `niche` - niche",
-        "enum": [
-          "generic",
-          "niche"
-        ],
-        "type": "string"
-      },
-      "ProductCategory": {
-        "properties": {
-          "name": {
-            "readOnly": true,
-            "type": "string"
-          },
-          "type": {
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/AtsTypeEnum"
-              },
-              {
-                "$ref": "#/components/schemas/HapiNullEnum"
-              }
-            ],
-            "readOnly": true
-          }
-        },
-        "required": [
-          "name",
-          "type"
-        ],
-        "type": "object"
-      },
-      "ProductChannelCategoryEnum": {
-        "description": "* `None` - --None--\n* `Wallet` - Wallet\n* `Internal Product` - Internal Product\n* `Generic Product` - Generic Product\n* `Customer Specific Product` - Customer Specific Product",
-        "enum": [
-          "Wallet",
-          "Internal Product",
-          "Generic Product",
-          "Customer Specific Product"
-        ]
-      },
-      "ProductChannelTypeEnum": {
-        "description": "* `None` - --None--\n* `Social` - Social\n* `Print / Offline` - Print / Offline\n* `Handling fee` - Handling fee\n* `Image creation` - Image creation\n* `Website creation` - Website creation\n* `VONQ Services/Hours` - VONQ Services/Hours\n* `Video creation` - Video creation\n* `Text services` - Text services\n* `Other` - Other\n* `Finance` - Finance\n* `Jobboard` - Jobboard\n* `Subscription` - Subscription\n* `Wallet` - Wallet\n* `Google` - Google",
-        "enum": [
-          "Social",
-          "Print / Offline",
-          "Handling fee",
-          "Image creation",
-          "Website creation",
-          "VONQ Services/Hours",
-          "Video creation",
-          "Text services",
-          "Other",
-          "Finance",
-          "Jobboard",
-          "Subscription",
-          "Wallet",
-          "Google"
-        ]
-      },
-      "ProductFavorite": {
-        "properties": {
-          "created_on": {
-            "format": "date-time",
-            "readOnly": true,
-            "type": "string"
-          },
-          "product_id": {
-            "readOnly": true,
-            "type": "string"
-          }
-        },
-        "required": [
-          "created_on",
-          "product_id"
-        ],
-        "type": "object"
-      },
-      "ProductFavoriteCreateRequest": {
-        "properties": {
-          "product_id": {
-            "minLength": 1,
-            "type": "string"
-          }
-        },
-        "required": [
-          "product_id"
-        ],
-        "type": "object"
-      },
-      "ProductFeatures": {
-        "properties": {
-          "direct_apply": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/DirectApplyEnum"
-              }
-            ],
-            "default": "n/a",
-            "readOnly": true
-          },
-          "requires_salary_indication": {
-            "default": false,
-            "readOnly": true,
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "direct_apply",
-          "requires_salary_indication"
-        ],
-        "type": "object"
-      },
-      "ProductJmpProduct": {
+      "Product": {
         "properties": {
           "allow_orders": {
             "readOnly": true,
@@ -6492,12 +6447,6 @@
             "readOnly": true,
             "type": "array"
           },
-          "categories": {
-            "items": {
-              "$ref": "#/components/schemas/ProductCategory"
-            },
-            "type": "array"
-          },
           "channel": {
             "allOf": [
               {
@@ -6505,28 +6454,6 @@
               }
             ],
             "readOnly": true
-          },
-          "channel_category": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/ProductChannelCategoryEnum"
-              },
-              {
-                "$ref": "#/components/schemas/HapiNullEnum"
-              }
-            ]
-          },
-          "channel_type": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/ProductChannelTypeEnum"
-              },
-              {
-                "$ref": "#/components/schemas/HapiNullEnum"
-              }
-            ]
           },
           "cpa": {
             "additionalProperties": {},
@@ -6539,10 +6466,6 @@
               "type": "string"
             },
             "type": "array"
-          },
-          "customer_id": {
-            "readOnly": true,
-            "type": "string"
           },
           "debug": {
             "additionalProperties": {},
@@ -6557,10 +6480,6 @@
             "additionalProperties": {},
             "readOnly": true,
             "type": "object"
-          },
-          "excluded_from_discounts": {
-            "readOnly": true,
-            "type": "boolean"
           },
           "features": {
             "allOf": [
@@ -6639,10 +6558,6 @@
             "readOnly": true,
             "type": "boolean"
           },
-          "multiple_working_location_support": {
-            "readOnly": true,
-            "type": "boolean"
-          },
           "ordering_source": {
             "description": "Why this product was promoted to the top of the results: `favorite` for `injectFavorites`, `top_ordered` for `injectTopOrdered`. Null when not promoted.\n\n* `favorite` - Favorited by the user\n* `top_ordered` - Most ordered by the user",
             "nullable": true,
@@ -6660,17 +6575,6 @@
             "readOnly": true,
             "type": "string"
           },
-          "product_solution": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/ProductSolutionEnum"
-              },
-              {
-                "$ref": "#/components/schemas/HapiNullEnum"
-              }
-            ]
-          },
           "product_specs": {
             "additionalProperties": {},
             "nullable": true,
@@ -6685,6 +6589,19 @@
             "readOnly": true,
             "type": "array"
           },
+          "stats": {
+            "description": "The customer's own orders of this product. Only for ATS users who ordered it.",
+            "properties": {
+              "user_orders": {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "description": "Order count per time window (`1w`, `1m`, `6m`, `12m`). Zero counts are left out.",
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
           "time_to_process": {
             "additionalProperties": {},
             "readOnly": true,
@@ -6698,9 +6615,6 @@
           "title": {
             "readOnly": true,
             "type": "string"
-          },
-          "tracking_method": {
-            "$ref": "#/components/schemas/ProductTrackingMethodEnum"
           },
           "type": {
             "nullable": true,
@@ -6721,17 +6635,11 @@
           "allows_edit",
           "audience_group",
           "bundle_products_ids",
-          "categories",
           "channel",
-          "channel_category",
-          "channel_type",
           "cpa",
           "cross_postings",
-          "customer_id",
-          "debug",
           "description",
           "duration",
-          "excluded_from_discounts",
           "features",
           "homepage",
           "industries",
@@ -6743,18 +6651,76 @@
           "logo_url",
           "mc_enabled",
           "mc_only",
-          "multiple_working_location_support",
           "ordering_source",
           "product_id",
-          "product_solution",
           "product_specs",
           "ratecard_price",
           "time_to_process",
           "time_to_setup",
           "title",
-          "tracking_method",
           "type",
           "vonq_price"
+        ],
+        "type": "object"
+      },
+      "ProductAudienceGroupEnum": {
+        "description": "* `generic` - generic\n* `niche` - niche",
+        "enum": [
+          "generic",
+          "niche"
+        ],
+        "type": "string"
+      },
+      "ProductFavorite": {
+        "properties": {
+          "created_on": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "product_id": {
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "created_on",
+          "product_id"
+        ],
+        "type": "object"
+      },
+      "ProductFavoriteCreateRequest": {
+        "properties": {
+          "product_id": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_id"
+        ],
+        "type": "object"
+      },
+      "ProductFeatures": {
+        "properties": {
+          "direct_apply": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DirectApplyEnum"
+              }
+            ],
+            "default": "n/a",
+            "readOnly": true
+          },
+          "requires_salary_indication": {
+            "default": false,
+            "readOnly": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "direct_apply",
+          "requires_salary_indication"
         ],
         "type": "object"
       },
@@ -6819,17 +6785,6 @@
         ],
         "type": "object"
       },
-      "ProductSolutionEnum": {
-        "description": "* `None` - --None--\n* `Awareness` - Awareness\n* `Job Marketing` - Job Marketing\n* `Always on` - Always on\n* `My Own Channel` - My Own Channel\n* `Subscription` - Subscription\n* `Internal` - Internal",
-        "enum": [
-          "Awareness",
-          "Job Marketing",
-          "Always on",
-          "My Own Channel",
-          "Subscription",
-          "Internal"
-        ]
-      },
       "ProductSpecs": {
         "description": "This is a mixin class that can be used to rename fields in a serializer.\nuseful when you need to use reserved words as the field",
         "properties": {
@@ -6882,58 +6837,6 @@
         ],
         "type": "object"
       },
-      "ProductSpecsRequest": {
-        "description": "This is a mixin class that can be used to rename fields in a serializer.\nuseful when you need to use reserved words as the field",
-        "properties": {
-          "class": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "id": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "logo_square_url": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "logo_url": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "name": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "product": {
-            "$ref": "#/components/schemas/ProductsSpecsProductRequest"
-          },
-          "product_id": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "type": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "url": {
-            "minLength": 1,
-            "type": "string"
-          }
-        },
-        "required": [
-          "class",
-          "id",
-          "logo_square_url",
-          "logo_url",
-          "name",
-          "product",
-          "product_id",
-          "type",
-          "url"
-        ],
-        "type": "object"
-      },
       "ProductTotalDeliveryTime": {
         "properties": {
           "days_to_process": {
@@ -6952,17 +6855,6 @@
           "total_days"
         ],
         "type": "object"
-      },
-      "ProductTrackingMethodEnum": {
-        "description": "* `Fixed duration` - Fixed duration\n* `Slots` - Slots\n* `Organic` - Organic\n* `Programmatic` - Programmatic\n* `N/A` - N/A",
-        "enum": [
-          "Fixed duration",
-          "Slots",
-          "Organic",
-          "Programmatic",
-          "N/A"
-        ],
-        "type": "string"
       },
       "ProductValidation": {
         "description": "Serializer that takes the input of a product validation and returns the result.",
@@ -6991,7 +6883,6 @@
           }
         },
         "required": [
-          "errorDetails",
           "errors",
           "has_errors"
         ],
@@ -7260,11 +7151,39 @@
         ],
         "type": "object"
       },
+      "ProductsSpecsFacetData": {
+        "properties": {
+          "data": {},
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "data",
+          "type"
+        ],
+        "type": "object"
+      },
+      "ProductsSpecsFacetDataRequest": {
+        "description": "Values for a data facet, keyed by the facet each value belongs to.\n\nDistinct from the autocomplete `term` serializers: those carry a search\nstring, while a data facet carries the current values of sibling facets.",
+        "properties": {
+          "values": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "values"
+        ],
+        "type": "object"
+      },
       "ProductsSpecsFacetOptions": {
         "properties": {
           "data": {},
           "default": {
-            "description": "Return the default value to use when validating data if no input\nis provided for this field.\n\nIf a default has not been set for this field then this will simply\nraise `SkipField`, indicating that no value should be set in the\nvalidated data for this field.",
+            "description": "`\"1\"` when the option is selected by default; omitted otherwise.",
             "nullable": true,
             "readOnly": true,
             "type": "string"
@@ -7294,29 +7213,31 @@
           }
         },
         "required": [
-          "default",
-          "label",
-          "parent"
+          "label"
         ],
         "type": "object"
       },
-      "ProductsSpecsFacetOptionsRequest": {
+      "ProductsSpecsFacetSearchRequest": {
+        "description": "`term` is a string for single-term facets and a list of strings for multi-term facets.",
         "properties": {
-          "data": {},
-          "key": {
-            "minLength": 1,
+          "campaignId": {
+            "format": "uuid",
+            "nullable": true,
             "type": "string"
           },
-          "requires": {
-            "items": {
-              "$ref": "#/components/schemas/ProductsSpecsRequiresRequest"
-            },
-            "type": "array"
-          },
-          "show": {},
-          "sort": {
-            "minLength": 1,
-            "type": "string"
+          "credentials": {},
+          "term": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            ]
           }
         },
         "type": "object"
@@ -7362,27 +7283,6 @@
         ],
         "type": "object"
       },
-      "ProductsSpecsProductRequest": {
-        "properties": {
-          "allows_edit": {
-            "type": "boolean"
-          },
-          "product_id": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "title": {
-            "minLength": 1,
-            "type": "string"
-          }
-        },
-        "required": [
-          "allows_edit",
-          "product_id",
-          "title"
-        ],
-        "type": "object"
-      },
       "ProductsSpecsRequires": {
         "properties": {
           "field": {
@@ -7400,26 +7300,6 @@
         "required": [
           "name"
         ],
-        "type": "object"
-      },
-      "ProductsSpecsRequiresFieldRequest": {
-        "properties": {
-          "name": {
-            "minLength": 1,
-            "type": "string"
-          }
-        },
-        "required": [
-          "name"
-        ],
-        "type": "object"
-      },
-      "ProductsSpecsRequiresRequest": {
-        "properties": {
-          "field": {
-            "$ref": "#/components/schemas/ProductsSpecsRequiresFieldRequest"
-          }
-        },
         "type": "object"
       },
       "PublicAuthenticatedATSUser": {
@@ -7540,9 +7420,9 @@
             "type": "string"
           },
           "screened_score": {
-            "maximum": 32767,
-            "minimum": -32768,
+            "description": "Overall AI score from 0 to 250, higher is better, matching the dossier PDF. Null until a score is available.",
             "nullable": true,
+            "readOnly": true,
             "type": "integer"
           },
           "screened_stage": {
@@ -7582,31 +7462,9 @@
           "id",
           "job_id",
           "modified_on",
+          "screened_score",
           "screening_evaluation",
           "timeout_at"
-        ],
-        "type": "object"
-      },
-      "ScreeningApplicationCreate": {
-        "properties": {
-          "consent": {
-            "$ref": "#/components/schemas/Consent"
-          },
-          "initial_payload": {
-            "$ref": "#/components/schemas/ScreeningInitialPayload"
-          },
-          "metadata": {
-            "additionalProperties": {},
-            "type": "object"
-          },
-          "notes": {
-            "maxLength": 2000,
-            "nullable": true,
-            "type": "string"
-          }
-        },
-        "required": [
-          "initial_payload"
         ],
         "type": "object"
       },
@@ -7737,9 +7595,9 @@
             "readOnly": true
           },
           "screened_score": {
-            "maximum": 32767,
-            "minimum": -32768,
+            "description": "Overall AI score from 0 to 250, higher is better, matching the dossier PDF. Null until a score is available.",
             "nullable": true,
+            "readOnly": true,
             "type": "integer"
           },
           "screened_stage": {
@@ -7781,6 +7639,7 @@
           "job_id",
           "modified_on",
           "screened_payload",
+          "screened_score",
           "screening_evaluation",
           "timeout_at"
         ],
@@ -7837,6 +7696,23 @@
         "required": [
           "initial_files",
           "screened_files"
+        ],
+        "type": "object"
+      },
+      "ScreeningApplicationMultipartRequest": {
+        "additionalProperties": {
+          "format": "binary",
+          "type": "string"
+        },
+        "description": "A `json` part holding the whole request body, plus at least one file part. Give every file part its own name and filename.",
+        "properties": {
+          "json": {
+            "description": "JSON-encoded ScreeningApplicationCreateRequest object. `remote_files` is not allowed.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "json"
         ],
         "type": "object"
       },
@@ -8163,23 +8039,6 @@
         ],
         "type": "object"
       },
-      "ScreeningCompany": {
-        "properties": {
-          "logo_url": {
-            "format": "uri",
-            "type": "string"
-          },
-          "name": {
-            "maxLength": 255,
-            "type": "string"
-          }
-        },
-        "required": [
-          "logo_url",
-          "name"
-        ],
-        "type": "object"
-      },
       "ScreeningCompanyRequest": {
         "properties": {
           "logo_url": {
@@ -8205,15 +8064,18 @@
             "type": "boolean"
           },
           "interview_score": {
+            "description": "From 0 to 250, higher is better.",
             "type": "integer"
           },
           "knockout_evaluation_done": {
             "type": "boolean"
           },
           "knockout_score": {
+            "description": "From 0 to 250, higher is better.",
             "type": "integer"
           },
           "overall_score": {
+            "description": "From 0 to 250, higher is better.",
             "type": "integer"
           }
         },
@@ -8903,6 +8765,15 @@
         ],
         "type": "object"
       },
+      "ScreeningInterviewDifficultyEnum": {
+        "description": "* `EASY` - Easy\n* `MEDIUM` - Medium\n* `HARD` - Hard",
+        "enum": [
+          "EASY",
+          "MEDIUM",
+          "HARD"
+        ],
+        "type": "string"
+      },
       "ScreeningJob": {
         "properties": {
           "company_logo_url": {
@@ -8974,39 +8845,6 @@
           "requirements_ready_at",
           "stats",
           "status"
-        ],
-        "type": "object"
-      },
-      "ScreeningJobCreate": {
-        "properties": {
-          "data": {
-            "$ref": "#/components/schemas/ScreeningJobCreateData"
-          },
-          "metadata": {
-            "additionalProperties": {},
-            "type": "object"
-          },
-          "settings": {
-            "$ref": "#/components/schemas/ScreeningJobSettings"
-          }
-        },
-        "required": [
-          "data"
-        ],
-        "type": "object"
-      },
-      "ScreeningJobCreateData": {
-        "properties": {
-          "company": {
-            "$ref": "#/components/schemas/ScreeningCompany"
-          },
-          "job": {
-            "$ref": "#/components/schemas/ScreeningJobInfo"
-          }
-        },
-        "required": [
-          "company",
-          "job"
         ],
         "type": "object"
       },
@@ -9095,7 +8933,7 @@
             "type": "string"
           },
           "requirements": {
-            "description": "The job's screening requirements. Starts as the entries supplied at creation; once requirements_ready_at is set, holds the final list including AI-generated entries.",
+            "description": "The job's screening requirements. Empty until requirements_ready_at is set, then holds the AI-written requirements and any you have added.",
             "items": {
               "$ref": "#/components/schemas/ScreeningQuestionRequirement"
             },
@@ -9145,28 +8983,6 @@
           "settings",
           "stats",
           "status"
-        ],
-        "type": "object"
-      },
-      "ScreeningJobInfo": {
-        "properties": {
-          "description": {
-            "maxLength": 10000,
-            "type": "string"
-          },
-          "notes": {
-            "maxLength": 2000,
-            "nullable": true,
-            "type": "string"
-          },
-          "title": {
-            "maxLength": 255,
-            "type": "string"
-          }
-        },
-        "required": [
-          "description",
-          "title"
         ],
         "type": "object"
       },
@@ -9231,22 +9047,6 @@
         ],
         "type": "object"
       },
-      "ScreeningJobInterviewQuestionItem": {
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "question": {
-            "maxLength": 2000,
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "question"
-        ],
-        "type": "object"
-      },
       "ScreeningJobInterviewQuestionItemRequest": {
         "properties": {
           "id": {
@@ -9264,12 +9064,12 @@
         ],
         "type": "object"
       },
-      "ScreeningJobInterviewQuestionsUpdate": {
+      "ScreeningJobInterviewQuestionsUpdateRequest": {
         "description": "Partial update of one editable collection on a screening job.\n\nSend only the entries you are changing, each keyed by its `id`. Omitting an entry leaves\nit alone and omitting a field leaves that field alone, so adding and removing entries is\nnot expressible. Each changed entry is PATCHed to Metis individually.",
         "properties": {
           "interview_questions": {
             "items": {
-              "$ref": "#/components/schemas/ScreeningJobInterviewQuestionItem"
+              "$ref": "#/components/schemas/ScreeningJobInterviewQuestionItemRequest"
             },
             "type": "array"
           }
@@ -9303,29 +9103,6 @@
         ],
         "type": "object"
       },
-      "ScreeningJobRequirementItem": {
-        "properties": {
-          "description": {
-            "maxLength": 1000,
-            "type": "string"
-          },
-          "id": {
-            "type": "integer"
-          },
-          "question": {
-            "maxLength": 1000,
-            "type": "string"
-          },
-          "summary": {
-            "maxLength": 255,
-            "type": "string"
-          }
-        },
-        "required": [
-          "id"
-        ],
-        "type": "object"
-      },
       "ScreeningJobRequirementItemRequest": {
         "properties": {
           "description": {
@@ -9351,12 +9128,12 @@
         ],
         "type": "object"
       },
-      "ScreeningJobRequirementsUpdate": {
+      "ScreeningJobRequirementsUpdateRequest": {
         "description": "Partial update of one editable collection on a screening job.\n\nSend only the entries you are changing, each keyed by its `id`. Omitting an entry leaves\nit alone and omitting a field leaves that field alone, so adding and removing entries is\nnot expressible. Each changed entry is PATCHed to Metis individually.",
         "properties": {
           "requirements": {
             "items": {
-              "$ref": "#/components/schemas/ScreeningJobRequirementItem"
+              "$ref": "#/components/schemas/ScreeningJobRequirementItemRequest"
             },
             "type": "array"
           }
@@ -9387,6 +9164,22 @@
             "maximum": 168,
             "minimum": 1,
             "type": "integer"
+          },
+          "interview_difficulty": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScreeningInterviewDifficultyEnum"
+              }
+            ],
+            "default": "MEDIUM"
+          },
+          "knockout_difficulty": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScreeningKnockoutDifficultyEnum"
+              }
+            ],
+            "default": "quick"
           },
           "skip_phone_validation": {
             "default": true,
@@ -9420,6 +9213,22 @@
             "maximum": 168,
             "minimum": 1,
             "type": "integer"
+          },
+          "interview_difficulty": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScreeningInterviewDifficultyEnum"
+              }
+            ],
+            "default": "MEDIUM"
+          },
+          "knockout_difficulty": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScreeningKnockoutDifficultyEnum"
+              }
+            ],
+            "default": "quick"
           },
           "skip_phone_validation": {
             "default": true,
@@ -9518,6 +9327,15 @@
         ],
         "type": "object"
       },
+      "ScreeningKnockoutDifficultyEnum": {
+        "description": "* `quick` - Quick\n* `medium` - Medium\n* `comprehensive` - Comprehensive",
+        "enum": [
+          "quick",
+          "medium",
+          "comprehensive"
+        ],
+        "type": "string"
+      },
       "ScreeningQuestionRequirement": {
         "properties": {
           "description": {
@@ -9548,23 +9366,6 @@
         },
         "type": "object"
       },
-      "ScreeningRemoteFile": {
-        "properties": {
-          "filename": {
-            "maxLength": 255,
-            "type": "string"
-          },
-          "remoteUrl": {
-            "format": "uri",
-            "type": "string"
-          }
-        },
-        "required": [
-          "filename",
-          "remoteUrl"
-        ],
-        "type": "object"
-      },
       "ScreeningRemoteFileRequest": {
         "properties": {
           "filename": {
@@ -9581,6 +9382,17 @@
         "required": [
           "filename",
           "remoteUrl"
+        ],
+        "type": "object"
+      },
+      "ScreeningSoftDeleted": {
+        "properties": {
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
         ],
         "type": "object"
       },
@@ -9640,7 +9452,7 @@
         "description": "One way of filling the fields a generator declares as its targets.",
         "properties": {
           "angle": {
-            "description": "Which of the angles the facet declares this one leans on.",
+            "description": "Which of the angles the facet declares this one leans on. Empty on a picture asked for alone.",
             "type": "string"
           },
           "media": {
@@ -9656,7 +9468,7 @@
             "additionalProperties": {
               "type": "string"
             },
-            "description": "Copy to apply, keyed by the target posting requirement it belongs to.",
+            "description": "Text to apply, keyed by the target posting requirement it belongs to. Empty on a picture asked for alone.",
             "type": "object"
           }
         },
@@ -9738,7 +9550,7 @@
             "type": "integer"
           },
           "status": {
-            "description": "Just the pictures, for a client that wants to show copy before they arrive. Waiting on the generation as a whole needs only the status above.",
+            "description": "Just the pictures, for a client that wants to show the text before they arrive. Waiting on the generation as a whole needs only the status above.",
             "type": "string"
           },
           "total": {
@@ -9770,6 +9582,14 @@
             "minLength": 1,
             "type": "string",
             "writeOnly": true
+          },
+          "outputs": {
+            "description": "What to make: `text` writes the text fields, `media` the pictures. Left out, both. Send `[\"text\"]` when the recruiter has a picture of their own, so no picture is rendered and billed for nothing; send `[\"media\"]` for pictures alone, which arrive as alternatives with empty `values`.",
+            "items": {
+              "$ref": "#/components/schemas/OutputsEnum"
+            },
+            "type": "array",
+            "writeOnly": true
           }
         },
         "required": [
@@ -9795,7 +9615,7 @@
             "nullable": true
           },
           "status": {
-            "description": "The generation alone, copy and pictures together: terminal only once there is nothing left to arrive. Narrower than the task status above, which covers every job the task was asked for.",
+            "description": "The generation alone, text and pictures together: terminal only once there is nothing left to arrive. Narrower than the task status above, which covers every job the task was asked for.",
             "type": "string"
           }
         },
@@ -9905,9 +9725,7 @@
         },
         "required": [
           "channel_id",
-          "contract_id",
           "created_at",
-          "generator",
           "id",
           "prefill_data",
           "status",
@@ -9963,6 +9781,18 @@
           "prefill_data",
           "status",
           "updated_at"
+        ],
+        "type": "object"
+      },
+      "SmartfillTaskCreated": {
+        "properties": {
+          "smartfill_task_id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "smartfill_task_id"
         ],
         "type": "object"
       },
@@ -10279,7 +10109,6 @@
           }
         },
         "required": [
-          "errorDetails",
           "errors",
           "has_errors"
         ],
@@ -10315,8 +10144,7 @@
           }
         },
         "required": [
-          "billingPortalLink",
-          "billingPortalLinks"
+          "billingPortalLink"
         ],
         "type": "object"
       },
@@ -10384,16 +10212,22 @@
       "WalletDetails": {
         "properties": {
           "balance": {
-            "additionalProperties": {
-              "type": "integer"
-            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HapiMoney"
+              }
+            ],
+            "description": "USD wallets also carry a deprecated `USD` key holding the balance in cents.",
             "nullable": true,
-            "readOnly": true,
-            "type": "object"
+            "readOnly": true
           },
           "created_date": {
             "format": "date-time",
             "type": "string"
+          },
+          "has_billing_details": {
+            "readOnly": true,
+            "type": "boolean"
           },
           "id": {
             "format": "uuid",
@@ -10408,15 +10242,24 @@
           },
           "min_topup": {
             "$ref": "#/components/schemas/HapiMoney"
+          },
+          "missing_billing_keys": {
+            "items": {
+              "type": "string"
+            },
+            "readOnly": true,
+            "type": "array"
           }
         },
         "required": [
           "balance",
           "created_date",
+          "has_billing_details",
           "id",
           "max_outstanding_balance",
           "max_purchase_order",
-          "min_topup"
+          "min_topup",
+          "missing_billing_keys"
         ],
         "type": "object"
       },
@@ -10963,6 +10806,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "description": "Allow the vacancy fields listed in `settings.campaigns.loose_validation` to be omitted. Returns `400` when the account is not enabled for loose validation.",
+            "in": "query",
+            "name": "loose",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "requestBody": {
@@ -10995,6 +10846,16 @@
               }
             },
             "description": ""
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignValidation"
+                }
+              }
+            },
+            "description": "The payload has errors: `has_errors` is true."
           }
         },
         "security": [
@@ -11022,6 +10883,14 @@
             "name": "X-Customer-Id",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "description": "Allow the vacancy fields listed in `settings.campaigns.loose_validation` to be omitted. Returns `400` when the account is not enabled for loose validation.",
+            "in": "query",
+            "name": "loose",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -11055,6 +10924,16 @@
               }
             },
             "description": ""
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductValidation"
+                }
+              }
+            },
+            "description": "The payload has errors: `has_errors` is true."
           }
         },
         "security": [
@@ -11082,6 +10961,14 @@
             "name": "X-Customer-Id",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "description": "Allow the vacancy fields listed in `settings.campaigns.loose_validation` to be omitted. Returns `400` when the account is not enabled for loose validation.",
+            "in": "query",
+            "name": "loose",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -11115,6 +11002,16 @@
               }
             },
             "description": ""
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionnaireValidation"
+                }
+              }
+            },
+            "description": "The payload has errors: `has_errors` is true."
           }
         },
         "security": [
@@ -11142,6 +11039,14 @@
             "name": "X-Customer-Id",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "description": "Allow the vacancy fields listed in `settings.campaigns.loose_validation` to be omitted. Returns `400` when the account is not enabled for loose validation.",
+            "in": "query",
+            "name": "loose",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -11175,6 +11080,16 @@
               }
             },
             "description": ""
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VacancyValidation"
+                }
+              }
+            },
+            "description": "The payload has errors: `has_errors` is true."
           }
         },
         "security": [
@@ -12058,7 +11973,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AtsContract"
+                  "$ref": "#/components/schemas/AtsEncryptedContract"
                 }
               }
             },
@@ -12123,7 +12038,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AtsContract"
+                  "$ref": "#/components/schemas/PaginatedEncryptedContractList"
                 }
               }
             },
@@ -12145,60 +12060,6 @@
       }
     },
     "/contracts/posting-requirements/{channel_id_or_contract_id}/{posting-requirement-name}/": {
-      "get": {
-        "description": "This endpoint exposes autocomplete items given a `channel_id` or `contract_id` and a posting requirement name.\n\nWhen `channel_id` is used, the credentials are required. When using `contract_id`, since the credentials are already known, only the posting requirement name is required.",
-        "operationId": "contracts_posting_requirements_retrieve",
-        "parameters": [
-          {
-            "description": "Identifies the ATS end-user. Required for Contracts functionality.",
-            "in": "header",
-            "name": "X-Customer-Id",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "channel_id_or_contract_id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "posting-requirement-name",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductsSpecsFacetOptions"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "ATSUser-APIKey": []
-          },
-          {
-            "ATSUser-JWT": []
-          }
-        ],
-        "summary": "Posting Requirements - Autocomplete",
-        "tags": [
-          "\u00bb Contracts"
-        ]
-      },
       "post": {
         "description": "This endpoint exposes autocomplete items given a `channel_id` or `contract_id` and a posting requirement name.\n\nWhen `channel_id` is used, the credentials are required. When using `contract_id`, since the credentials are already known, only the posting requirement name is required.",
         "operationId": "contracts_posting_requirements_create",
@@ -12232,17 +12093,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ProductsSpecsFacetOptionsRequest"
+                "$ref": "#/components/schemas/ProductsSpecsFacetSearchRequest"
               }
             },
             "application/x-www-form-urlencoded": {
               "schema": {
-                "$ref": "#/components/schemas/ProductsSpecsFacetOptionsRequest"
+                "$ref": "#/components/schemas/ProductsSpecsFacetSearchRequest"
               }
             },
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/ProductsSpecsFacetOptionsRequest"
+                "$ref": "#/components/schemas/ProductsSpecsFacetSearchRequest"
               }
             }
           }
@@ -12252,11 +12113,24 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProductsSpecsFacetOptions"
+                  "items": {
+                    "$ref": "#/components/schemas/ProductsSpecsFacetOptions"
+                  },
+                  "type": "array"
                 }
               }
             },
             "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request could not be served."
           }
         },
         "security": [
@@ -12300,7 +12174,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AtsContract"
+                  "$ref": "#/components/schemas/AtsEncryptedContract"
                 }
               }
             },
@@ -12345,17 +12219,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PatchedContractRequest"
+                "$ref": "#/components/schemas/PatchedContractUpdateRequest"
               }
             },
             "application/x-www-form-urlencoded": {
               "schema": {
-                "$ref": "#/components/schemas/PatchedContractRequest"
+                "$ref": "#/components/schemas/PatchedContractUpdateRequest"
               }
             },
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/PatchedContractRequest"
+                "$ref": "#/components/schemas/PatchedContractUpdateRequest"
               }
             }
           }
@@ -12365,7 +12239,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AtsContract"
+                  "$ref": "#/components/schemas/AtsEncryptedContract"
                 }
               }
             },
@@ -12452,7 +12326,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AtsContract"
+                  "$ref": "#/components/schemas/AtsEncryptedContract"
                 }
               }
             },
@@ -12517,73 +12391,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AtsContractUpdate"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "ATSUser-APIKey": []
-          },
-          {
-            "ATSUser-JWT": []
-          }
-        ],
-        "summary": "Contract - Update",
-        "tags": [
-          "\u00bb Contracts"
-        ]
-      },
-      "put": {
-        "description": "This endpoint exposes a list of contracts available to a particular customer.\n\nIt requires a reference to a channel, a credential payload, and the facets set for the contracted product. When deleted, all corresponding jobs can't be deleted anymore.\n\nSupports listing, creating, retrieving, updating (PATCH), and deleting contracts, as well as bulk retrieval by comma-separated contract IDs.",
-        "operationId": "contracts_update",
-        "parameters": [
-          {
-            "description": "Identifies the ATS end-user. Required for Contracts functionality.",
-            "in": "header",
-            "name": "X-Customer-Id",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "contract_id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AtsContractRequest"
-              }
-            },
-            "application/x-www-form-urlencoded": {
-              "schema": {
-                "$ref": "#/components/schemas/AtsContractRequest"
-              }
-            },
-            "multipart/form-data": {
-              "schema": {
-                "$ref": "#/components/schemas/AtsContractRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AtsContract"
+                  "$ref": "#/components/schemas/AtsEncryptedContract"
                 }
               }
             },
@@ -13513,7 +13321,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PaginatedProductJmpProduct"
+                  "$ref": "#/components/schemas/PaginatedProductList"
                 }
               }
             },
@@ -13834,10 +13642,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/ProductJmpProduct"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/PaginatedProductList"
                 }
               }
             },
@@ -13900,7 +13705,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProductJmpProduct"
+                  "$ref": "#/components/schemas/Product"
                 }
               }
             },
@@ -13977,64 +13782,6 @@
       }
     },
     "/products/{product_id}/specs/facets/{facet_name}/data/": {
-      "get": {
-        "description": "Some posting requirements are not fields to fill in, but describe something derived from the values of other fields. This endpoint returns that derived result.\n\nSend the current values of the sibling facets the requirement declares, keyed by facet name:\n\n```json\n{ \"values\": { \"headline1\": \"Care that fits your life\", \"image1\": \"https://\u2026\" } }\n```\n\nThe response is a typed envelope, so a client branches on `type` to decide how to render `data`:\n\n```json\n{ \"type\": \"preview\", \"data\": { \"url\": \"https://\u2026#headline1=\u2026&image1=\u2026\" } }\n```\n\n`type: preview` returns a URL that renders the posting requirement as the end user will see it. The values travel in the URL fragment, so they are never sent to a server. Render it in an iframe, or ignore the URL and render the values yourself.\n\nOnly facets the requirement declares are accepted; unknown names are rejected. Values may be omitted, so a partially completed form still previews.",
-        "operationId": "products_specs_facets_data_retrieve",
-        "parameters": [
-          {
-            "description": "Identifies the ATS end-user. Required for Contracts functionality.",
-            "in": "header",
-            "name": "X-Customer-Id",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "facet_name",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "product_id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductSpecs"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "Partner-APIKey": []
-          },
-          {
-            "ATSUser-APIKey": []
-          },
-          {
-            "ATSUser-JWT": []
-          }
-        ],
-        "summary": "Product Posting Requirements - Facet Data",
-        "tags": [
-          "\u00bb Products"
-        ],
-        "x-internal": false
-      },
       "post": {
         "description": "Some posting requirements are not fields to fill in, but describe something derived from the values of other fields. This endpoint returns that derived result.\n\nSend the current values of the sibling facets the requirement declares, keyed by facet name:\n\n```json\n{ \"values\": { \"headline1\": \"Care that fits your life\", \"image1\": \"https://\u2026\" } }\n```\n\nThe response is a typed envelope, so a client branches on `type` to decide how to render `data`:\n\n```json\n{ \"type\": \"preview\", \"data\": { \"url\": \"https://\u2026#headline1=\u2026&image1=\u2026\" } }\n```\n\n`type: preview` returns a URL that renders the posting requirement as the end user will see it. The values travel in the URL fragment, so they are never sent to a server. Render it in an iframe, or ignore the URL and render the values yourself.\n\nOnly facets the requirement declares are accepted; unknown names are rejected. Values may be omitted, so a partially completed form still previews.",
         "operationId": "products_specs_facets_data_create",
@@ -14068,17 +13815,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ProductSpecsRequest"
+                "$ref": "#/components/schemas/ProductsSpecsFacetDataRequest"
               }
             },
             "application/x-www-form-urlencoded": {
               "schema": {
-                "$ref": "#/components/schemas/ProductSpecsRequest"
+                "$ref": "#/components/schemas/ProductsSpecsFacetDataRequest"
               }
             },
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/ProductSpecsRequest"
+                "$ref": "#/components/schemas/ProductsSpecsFacetDataRequest"
               }
             }
           },
@@ -14089,11 +13836,21 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProductSpecs"
+                  "$ref": "#/components/schemas/ProductsSpecsFacetData"
                 }
               }
             },
             "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request could not be served."
           }
         },
         "security": [
@@ -14115,63 +13872,6 @@
       }
     },
     "/products/{product_id}/specs/facets/{facet_name}/options/": {
-      "get": {
-        "description": "Allows retrieving the posting requirements associated to a product.\n\nThe `facets/{name}/options/` sub-resource exposes autocomplete items given a `product_id` and a posting requirement name.",
-        "operationId": "products_specs_facets_options_retrieve",
-        "parameters": [
-          {
-            "description": "Identifies the ATS end-user. Required for Contracts functionality.",
-            "in": "header",
-            "name": "X-Customer-Id",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "facet_name",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "product_id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductSpecs"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "Partner-APIKey": []
-          },
-          {
-            "ATSUser-APIKey": []
-          },
-          {
-            "ATSUser-JWT": []
-          }
-        ],
-        "summary": "Product Posting Requirements - Autocomplete",
-        "tags": [
-          "\u00bb Products"
-        ]
-      },
       "post": {
         "description": "Allows retrieving the posting requirements associated to a product.\n\nThe `facets/{name}/options/` sub-resource exposes autocomplete items given a `product_id` and a posting requirement name.",
         "operationId": "products_specs_facets_options_create",
@@ -14205,32 +13905,54 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ProductSpecsRequest"
+                "$ref": "#/components/schemas/ProductsSpecsFacetSearchRequest"
               }
             },
             "application/x-www-form-urlencoded": {
               "schema": {
-                "$ref": "#/components/schemas/ProductSpecsRequest"
+                "$ref": "#/components/schemas/ProductsSpecsFacetSearchRequest"
               }
             },
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/ProductSpecsRequest"
+                "$ref": "#/components/schemas/ProductsSpecsFacetSearchRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProductSpecs"
+                  "items": {
+                    "$ref": "#/components/schemas/ProductsSpecsFacetOptions"
+                  },
+                  "type": "array"
                 }
               }
             },
             "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request could not be served."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The options search failed. Retry later."
           }
         },
         "security": [
@@ -14362,11 +14084,11 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApplyFeedbackLogSubmit"
+                  "$ref": "#/components/schemas/ApplyFeedbackSubmitted"
                 }
               }
             },
@@ -14793,7 +14515,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -15626,7 +15348,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ScreeningJobCreate"
+                  "$ref": "#/components/schemas/ScreeningJobDetails"
                 }
               }
             },
@@ -15672,8 +15394,15 @@
           }
         ],
         "responses": {
-          "204": {
-            "description": "No response body"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScreeningSoftDeleted"
+                }
+              }
+            },
+            "description": ""
           }
         },
         "security": [
@@ -15766,27 +15495,28 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PatchedScreeningJobInterviewQuestionsUpdateRequest"
+                "$ref": "#/components/schemas/ScreeningJobInterviewQuestionsUpdateRequest"
               }
             },
             "application/x-www-form-urlencoded": {
               "schema": {
-                "$ref": "#/components/schemas/PatchedScreeningJobInterviewQuestionsUpdateRequest"
+                "$ref": "#/components/schemas/ScreeningJobInterviewQuestionsUpdateRequest"
               }
             },
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/PatchedScreeningJobInterviewQuestionsUpdateRequest"
+                "$ref": "#/components/schemas/ScreeningJobInterviewQuestionsUpdateRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ScreeningJobInterviewQuestionsUpdate"
+                  "$ref": "#/components/schemas/ScreeningJobDetails"
                 }
               }
             },
@@ -15962,27 +15692,28 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PatchedScreeningJobRequirementsUpdateRequest"
+                "$ref": "#/components/schemas/ScreeningJobRequirementsUpdateRequest"
               }
             },
             "application/x-www-form-urlencoded": {
               "schema": {
-                "$ref": "#/components/schemas/PatchedScreeningJobRequirementsUpdateRequest"
+                "$ref": "#/components/schemas/ScreeningJobRequirementsUpdateRequest"
               }
             },
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/PatchedScreeningJobRequirementsUpdateRequest"
+                "$ref": "#/components/schemas/ScreeningJobRequirementsUpdateRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ScreeningJobRequirementsUpdate"
+                  "$ref": "#/components/schemas/ScreeningJobDetails"
                 }
               }
             },
@@ -16130,6 +15861,75 @@
         ]
       }
     },
+    "/v3/screening/jobs/{id}/settings/": {
+      "patch": {
+        "description": "Change the job's knockout and interview difficulty.\n\nSend `knockout_difficulty`, `interview_difficulty` or both; no other setting is editable. A new interview difficulty replaces `interview_questions` with the questions written for it, including any edits made to them earlier: each difficulty keeps its own questions. Only applications evaluated or interviewed after the change use the new difficulty. Available once `requirements_ready_at` is set.",
+        "operationId": "v3_screening_jobs_settings_partial_update",
+        "parameters": [
+          {
+            "description": "Identifies the ATS end-user. Required for Contracts functionality.",
+            "in": "header",
+            "name": "X-Customer-Id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "A UUID string identifying this screening job.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedScreeningJobSettingsUpdateRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedScreeningJobSettingsUpdateRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedScreeningJobSettingsUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScreeningJobDetails"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "ATSUser-APIKey": []
+          },
+          {
+            "ATSUser-JWT": []
+          }
+        ],
+        "summary": "Screening Job Settings - Update",
+        "tags": [
+          "\u00bb Screening"
+        ]
+      }
+    },
     "/v3/screening/jobs/{job_id}/applications/": {
       "get": {
         "description": "Manage screening applications within a screening job.\n\nCreate, list, retrieve, delete applications and download the `initial` or `screened` file attachments.",
@@ -16269,14 +16069,14 @@
                 "$ref": "#/components/schemas/ScreeningApplicationCreateRequest"
               }
             },
-            "application/x-www-form-urlencoded": {
-              "schema": {
-                "$ref": "#/components/schemas/ScreeningApplicationCreateRequest"
-              }
-            },
             "multipart/form-data": {
+              "encoding": {
+                "json": {
+                  "contentType": "application/json"
+                }
+              },
               "schema": {
-                "$ref": "#/components/schemas/ScreeningApplicationCreateRequest"
+                "$ref": "#/components/schemas/ScreeningApplicationMultipartRequest"
               }
             }
           },
@@ -16287,7 +16087,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ScreeningApplicationCreate"
+                  "$ref": "#/components/schemas/ScreeningApplicationDetails"
                 }
               }
             },
@@ -16342,8 +16142,15 @@
           }
         ],
         "responses": {
-          "204": {
-            "description": "No response body"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScreeningSoftDeleted"
+                }
+              }
+            },
+            "description": ""
           }
         },
         "security": [
@@ -16530,13 +16337,44 @@
         "responses": {
           "200": {
             "content": {
-              "application/json": {
+              "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ScreeningApplication"
+                  "format": "binary",
+                  "type": "string"
                 }
               }
             },
-            "description": ""
+            "description": "The file, as an attachment. Content-Type is guessed from the filename, falling back to `application/octet-stream`."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The `filename` query parameter is missing."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The application or the attachment was not found."
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Candidate data was removed after the retention period."
           }
         },
         "security": [
@@ -16589,7 +16427,14 @@
         },
         "responses": {
           "201": {
-            "description": "No response body"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SmartfillTaskCreated"
+                }
+              }
+            },
+            "description": ""
           }
         },
         "security": [
@@ -16690,7 +16535,14 @@
         },
         "responses": {
           "201": {
-            "description": "No response body"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SmartfillTaskCreated"
+                }
+              }
+            },
+            "description": ""
           }
         },
         "security": [
@@ -16791,7 +16643,14 @@
         },
         "responses": {
           "201": {
-            "description": "No response body"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SmartfillTaskCreated"
+                }
+              }
+            },
+            "description": ""
           }
         },
         "security": [
@@ -16875,10 +16734,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/WalletDetails"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/WalletDetails"
                 }
               }
             },
@@ -16932,7 +16788,14 @@
         },
         "responses": {
           "201": {
-            "description": "No response body"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletDetails"
+                }
+              }
+            },
+            "description": ""
           }
         },
         "security": [

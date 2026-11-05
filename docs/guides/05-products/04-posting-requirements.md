@@ -41,7 +41,7 @@ For a detailed breakdown of facet types, validation rules, and display logic, se
 | Endpoint | Description |
 |----------|-------------|
 | `GET /products/{product_id}/specs/` | Retrieve posting requirements (facets) for a product |
-| `GET/POST /products/{product_id}/specs/facets/{facet_name}/options/` | Fetch autocomplete suggestions for a facet field |
+| `POST /products/{product_id}/specs/facets/{facet_name}/options/` | Fetch autocomplete suggestions for a facet field |
 
 See [Product Posting Requirements - Endpoint Reference](./04-posting-requirements.endpoints.md) for full request/response details.
 

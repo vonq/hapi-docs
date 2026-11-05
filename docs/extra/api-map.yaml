@@ -507,7 +507,7 @@ workflows:
         note: Results ready when candidate completes chat or finalization_time_hours expires.
       - action: Get results
         endpoint: GET /v3/screening/jobs/{job_id}/applications/{id}/
-        returns: "application with status (screened_success | screened_timeout), score (0-100)"
+        returns: "application with status (screened_success | screened_timeout), score (0-250)"
         docs: guides/11-screening/jobs-and-applications.md
       - action: Download dossier
         note: Available when status is screened_success. PDF with transcript, scores, evaluation.

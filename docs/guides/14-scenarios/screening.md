@@ -72,7 +72,7 @@ sequenceDiagram
     alt Candidate completes in time
         HAPI->>ATS: Webhook - screened_success + dossier
     else Candidate never starts or doesn't finish
-        HAPI->>ATS: Webhook - screened_timeout (no dossier)
+        HAPI->>ATS: Webhook - screened_timeout (partial results at most)
     end
 ```
 
@@ -94,17 +94,6 @@ POST /v3/screening/jobs/
       "logo_url": "https://your-company.example.com/logo.png"
     }
   },
-  "requirements": [
-    {
-      "summary": "Python experience",
-      "description": "At least 3 years of professional Python development",
-      "question": "How many years of Python experience do you have?"
-    },
-    {
-      "summary": "System design",
-      "question": "Can you describe a complex system you have designed?"
-    }
-  ],
   "settings": {
     "finalization_time_hours": 72,
     "webhook_url": "https://your-ats.example.com/webhooks/vonq/screening"
@@ -116,7 +105,6 @@ POST /v3/screening/jobs/
 |-------|-------------|
 | `data.job.title` / `data.job.description` | The AI uses these to guide the conversation and ask relevant questions |
 | `data.company.name` / `data.company.logo_url` | Company branding shown in the screening chat. `logo_url` must be a publicly reachable image URL |
-| `requirements` | Optional screening criteria - **never shown to candidates**. The AI uses them internally to ask targeted questions and score answers |
 | `settings.finalization_time_hours` | How many hours a candidate has to complete the screening (1–168, default 168 = 7 days). See [Finalization & Timeout](#finalization--timeout) |
 | `settings.duration_days` | How many days the screening job stays active before it expires (1–365, default 60) |
 | `settings.webhook_url` | Override the default webhook URL for this job |
@@ -124,8 +112,8 @@ POST /v3/screening/jobs/
 The response gives you the **job ID** for all subsequent calls.
 
 <!-- theme: info -->
-> ### Jobs Are Immutable
-> Once created, a screening job cannot be updated - only soft-deleted. Create a new job if you need to change requirements or settings.
+> ### Job Content Is Fixed
+> A screening job's content and settings cannot be updated after creation. Create a new job if you need to change them. You can still [edit its requirements and interview questions](../11-screening/jobs-and-applications.md), or soft-delete the job.
 
 ## Step 2: Collect Candidate Data on Your Side
 
@@ -235,7 +223,7 @@ When status is `screened_success`:
 
 | Field | Description |
 |-------|-------------|
-| `screened_score` | Integer 0–100 (higher is better) |
+| `screened_score` | Integer 0–250 (higher is better), matching the dossier PDF |
 | `screened_payload` | Enriched candidate data from the AI conversation |
 
 Download the dossier PDF via the attachments endpoint:
@@ -259,23 +247,24 @@ graph TD
     B -->|Yes| C["AI screening chat"]
     C --> D{"Completes in time?"}
     D -->|Yes| E["screened_success<br/>Dossier + score available"]
-    D -->|No| F["screened_timeout<br/>No dossier"]
+    D -->|No| F["screened_timeout<br/>Partial results at most"]
     B -->|"Never opens link"| F
 ```
 
 | Outcome | Status | Dossier? | When it happens |
 |---------|--------|----------|-----------------|
 | Candidate completes the chat | `screened_success` | Yes | As soon as the conversation ends |
-| Candidate starts but doesn't finish in time | `screened_timeout` | No | After `finalization_time_hours` expires (with a buffer for mid-conversation candidates) |
-| Candidate never opens the link | `screened_timeout` | No | After `finalization_time_hours` expires |
+| Candidate answers the screening questions but doesn't finish the interview | `screened_success` | Yes | After `finalization_time_hours` expires |
+| Candidate starts but doesn't get through the screening questions | `screened_timeout` | If one could be generated | After `finalization_time_hours` expires |
+| Candidate never opens the link | `screened_timeout` | If one could be generated | After `finalization_time_hours` expires |
 
 <!-- theme: warning -->
-> ### No Dossier on Timeout
-> When the status is `screened_timeout`, there is no dossier - HAPI has no collected information to evaluate. Your system should handle this gracefully (e.g., mark the candidate as "screening expired" in your ATS).
+> ### Partial Results on Timeout
+> When the status is `screened_timeout`, the candidate did not complete screening. A score and dossier can still be present, based only on what was collected before the deadline, usually the resume. Your system should handle this gracefully (e.g., mark the candidate as "screening expired" in your ATS) and not rank these candidates alongside those who completed screening.
 
 <!-- theme: info -->
-> ### Buffer for Active Candidates
-> If a candidate is mid-conversation when the timer runs out, HAPI provides an additional buffer period so they can finish. The timeout only applies hard when the candidate hasn't started or has been idle.
+> ### No Extension for Active Candidates
+> The deadline is not extended for a candidate who is mid-conversation when it passes. Results can arrive shortly after the deadline while answers already given are evaluated. Set `finalization_time_hours` with enough room for candidates to finish.
 
 ## What You Have Now
 
