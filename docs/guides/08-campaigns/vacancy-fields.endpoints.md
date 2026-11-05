@@ -31,7 +31,7 @@ Vacancy fields are submitted as part of `POST /campaigns/order`, `POST /campaign
       "postcode": "1015 AA",
       "city": "Amsterdam",
       "country": "NL",
-      "allowsRemoteWork": true
+      "allowsRemoteWork": 1
     },
     "contactInfo": {
       "name": "Jane Recruiter",

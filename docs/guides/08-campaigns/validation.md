@@ -68,7 +68,7 @@ All validation endpoints support the same `?loose=true` query parameter as the o
 
 `POST /campaigns/validate-vacancy-info/` has no products to pick a list from, so only the original six fields (`yearsOfExperience`, `workingLocation.addressLine1` and the four `targetGroup` fields) may be omitted there when they appear in either list. Use `POST /campaigns/validate-campaign/` to check the full product-dependent field set.
 
-Your account must be enabled for loose validation-the API returns `400` if `?loose=true` is used before it is. See [Ordering-Loose Validation](./ordering.md#loose-validation) for the settings that control which fields may be omitted, and [Vacancy Fields-Loose Validation](./vacancy-fields.md#loose-validation) for the possible field paths.
+Your account must be enabled for loose validation-the API returns `400` if `?loose=true` is used before it is (`403` on `POST /campaigns/order?validateOnly=true`). See [Ordering-Loose Validation](./ordering.md#loose-validation) for the settings that control which fields may be omitted, and [Vacancy Fields-Loose Validation](./vacancy-fields.md#loose-validation) for the possible field paths.
 
 ## Endpoints
 
@@ -104,7 +104,7 @@ See [Direct Apply-Posting Requirements](../10-direct-apply/posting-requirements.
 
 <!-- theme: warning -->
 > ### Error Structure Is Not Fully Standardized
-> The error format varies between validation endpoints. Vacancy validation returns nested errors matching the request structure. Channel posting validation returns `credentials` and `posting_requirements` sections. Full campaign validation combines both. Always check the `has_errors` boolean first, then parse the `errors` object based on which endpoint you called.
+> The error format varies between validation endpoints. Vacancy validation returns nested errors matching the request structure. Channel posting validation returns `credentials` and `posting_requirements` sections. Full campaign validation combines both. Always check the `has_errors` boolean first, then parse the `errors` object based on which endpoint you called. `?validateOnly=true` is the exception: while basic campaign fields fail, it returns their errors at the top level, without `errors` or `has_errors`.
 
 <!-- theme: warning -->
 > ### Positional Product Errors

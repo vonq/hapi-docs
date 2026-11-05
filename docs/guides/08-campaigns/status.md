@@ -201,7 +201,7 @@ Combine `modifiedOn_gte` with the other list filters to narrow the sync further-
 > ### Do Not Render Status Strings as HTML
 > Both `statusSolution` and `statusRawError` may contain HTML, XML, or other markup from the job board. Always display these as raw strings-do not render them as HTML in your UI.
 
-- **`deliveredOn` and `jobBoardLink` are null until online**-do not expect these fields to be populated while a product is `in progress`.
+- **`deliveredOn` is null until online, and `jobBoardLink` does not prove a live posting**-`jobBoardLink` can be a placeholder such as the board's homepage, even while a product is `in progress`, and some boards keep the placeholder once online. Use `status` to decide whether a posting is live.
 - **Click counts are cumulative and delayed**-the `clicks` field in `postings[]` is the aggregated total since the posting went live, not a delta. Expect some delay before new clicks appear.
 - **Campaign list includes full product details**-each campaign in `GET /campaigns` includes `orderedProductsSpecs` and `postings`, so you can update all statuses in a single paginated call.
 

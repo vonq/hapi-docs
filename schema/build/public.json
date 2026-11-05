@@ -67,7 +67,13 @@
                         ],
                         "type": "object"
                       }
-                    ]
+                    ],
+                    "properties": {
+                      "json": {
+                        "description": "JSON-encoded DirectApplyWebhookData object. Additional parts contain binary files, keyed by filename.",
+                        "type": "string"
+                      }
+                    }
                   }
                 }
               }
@@ -554,6 +560,7 @@
         "description": "View ATSUsers owned by the ATS",
         "properties": {
           "company_id": {
+            "description": "The ATS company this customer belongs to. `POST /v3/ats/users/` sets it only when it creates the customer; use `PATCH` to change it.",
             "nullable": true,
             "type": "string"
           },
@@ -579,10 +586,31 @@
         ],
         "type": "object"
       },
+      "ATSUserCreateRequest": {
+        "description": "Create an ATSUser by its customer_id, or return the existing one",
+        "properties": {
+          "company_id": {
+            "description": "The ATS company this customer belongs to. `POST /v3/ats/users/` sets it only when it creates the customer; use `PATCH` to change it.",
+            "minLength": 1,
+            "nullable": true,
+            "type": "string"
+          },
+          "customer_id": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "customer_id"
+        ],
+        "type": "object"
+      },
       "ATSUserRequest": {
         "description": "View ATSUsers owned by the ATS",
         "properties": {
           "company_id": {
+            "description": "The ATS company this customer belongs to. `POST /v3/ats/users/` sets it only when it creates the customer; use `PATCH` to change it.",
             "minLength": 1,
             "nullable": true,
             "type": "string"
@@ -1737,6 +1765,7 @@
           },
           "posting_duration_days": {
             "default": -1,
+            "description": "-1 for no expiration (used when omitted), or 7 to 365 days.",
             "type": "integer"
           },
           "posting_requirements": {
@@ -1868,6 +1897,7 @@
           },
           "posting_duration_days": {
             "default": -1,
+            "description": "-1 for no expiration (used when omitted), or 7 to 365 days.",
             "type": "integer"
           },
           "posting_requirements_defaults": {
@@ -1885,10 +1915,10 @@
         "type": "object"
       },
       "AtsCredentialsValidationEnum": {
-        "description": "* `CredentialsValidationEnum.IF_SUPPORTED` - CredentialsValidationEnum.IF_SUPPORTED\n* `CredentialsValidationEnum.DISABLED` - CredentialsValidationEnum.DISABLED",
+        "description": "* `if_supported` - if_supported\n* `disabled` - disabled",
         "enum": [
-          "CredentialsValidationEnum.IF_SUPPORTED",
-          "CredentialsValidationEnum.DISABLED"
+          "if_supported",
+          "disabled"
         ],
         "type": "string"
       },
@@ -4143,6 +4173,7 @@
         "type": "object"
       },
       "HAPIOrderCampaignErrorResponse": {
+        "description": "Validation errors, in one of two shapes. While basic campaign fields fail (for example a missing title or an invalid URL), the errors are returned at the top level, as in the properties below. Once those pass, the remaining checks return `{\"errors\": {...}, \"has_errors\": true}`, and `errors` can still contain campaign fields such as `targetGroup`. Read `errors` when it is present, otherwise the top-level fields.",
         "properties": {
           "campaignName": {
             "items": {
@@ -4162,6 +4193,15 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "errors": {
+            "additionalProperties": true,
+            "description": "Second-stage errors. Campaign fields use the same keys as the top level. `orderedProducts` and `orderedProductsSpecs` hold one entry per item, in request order, where `{}` means that item has no errors; posting requirement errors are under `orderedProductsSpecs[i].posting_requirements`, keyed by facet name.",
+            "type": "object"
+          },
+          "has_errors": {
+            "description": "Present together with `errors`; always `true` in an error response.",
+            "type": "boolean"
           },
           "orderReference": {
             "items": {
@@ -4305,6 +4345,29 @@
             }
           }
         }
+      },
+      "HAPIOrderCampaignValidateOnlyResponse": {
+        "description": "Returned when `validateOnly` is set and the payload is valid. No campaign is created.",
+        "example": {
+          "errors": {},
+          "has_errors": false
+        },
+        "properties": {
+          "errors": {
+            "description": "Always empty.",
+            "type": "object"
+          },
+          "has_errors": {
+            "description": "Always `false`.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "errors",
+          "has_errors"
+        ],
+        "title": "OrderCampaignValidateOnlyResponse",
+        "type": "object"
       },
       "HAPIOrderedProductStatus": {
         "description": "Status of the product. One of the following",
@@ -4462,10 +4525,8 @@
             }
           },
           "postingDurationDays": {
-            "description": "The number of days after which the ordered product shall be taken offline. Unless ommited, the allowed values are -1 for no custom expiration or between 7 and 365.\nThis is valid only for my contracts products",
+            "description": "Number of days after which the ordered product is taken offline: -1 for no expiration, or 7 to 365. Can be set only together with `contractId`.",
             "example": 30,
-            "maximum": 365,
-            "minimum": 7,
             "type": "integer",
             "x-stoplight": {
               "id": "qh1716cz7o5d4"
@@ -5066,54 +5127,22 @@
         "type": "object"
       },
       "HAPIPostingRequirements": {
-        "description": "optional key=>value object",
-        "properties": {
-          "multipleSelectField": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "someIntValue": {
-            "example": 22,
-            "type": "number"
-          },
-          "someText": {
-            "example": "example",
-            "type": "string"
-          }
+        "additionalProperties": true,
+        "description": "Posting requirements for this product, keyed by facet name. The facets and the type of each value (string, number, array or object) come from the product's specs (`GET /products/{product_id}/specs/`).",
+        "example": {
+          "hoursPerWeek": 40,
+          "seniority": "senior",
+          "skills": [
+            "php",
+            "python"
+          ]
         },
         "title": "PostingRequirements",
         "type": "object"
       },
       "HAPIPostingRequirementsLabels": {
-        "description": "optional key=>value object useful for restoring later the labels for autocomplete facets",
-        "properties": {
-          "multipleSelectField": {
-            "items": {
-              "type": "string",
-              "x-stoplight": {
-                "id": "qk9tg2466lw4z"
-              }
-            },
-            "type": "array",
-            "x-stoplight": {
-              "id": "h2c407wkfu64e"
-            }
-          },
-          "someIntValue": {
-            "type": "integer",
-            "x-stoplight": {
-              "id": "ehampssoowb33"
-            }
-          },
-          "someText": {
-            "type": "string",
-            "x-stoplight": {
-              "id": "7bz9yeeirme80"
-            }
-          }
-        },
+        "additionalProperties": true,
+        "description": "Display labels for autocomplete values in `postingRequirements`, keyed the same way, so the labels can be shown again later without a new autocomplete call.",
         "title": "PostingRequirementsLabels",
         "type": "object",
         "x-stoplight": {
@@ -5190,12 +5219,26 @@
             "type": "string"
           },
           "allowsRemoteWork": {
-            "description": "Optional parameter allowing remote work, possible values are 0 and 1, defaults to 0",
+            "description": "Remote work: `0` no, `1` yes, `\"hybrid\"` hybrid. `\"0\"` and `\"1\"` are also accepted.",
             "example": 0,
-            "maximum": 1,
-            "minimum": 0,
             "nullable": true,
-            "type": "integer"
+            "oneOf": [
+              {
+                "enum": [
+                  0,
+                  1
+                ],
+                "type": "integer"
+              },
+              {
+                "enum": [
+                  "0",
+                  "1",
+                  "hybrid"
+                ],
+                "type": "string"
+              }
+            ]
           },
           "city": {
             "example": "Rotterdam",
@@ -5968,18 +6011,10 @@
             "type": "string"
           },
           "jobBoardLink": {
+            "description": "URL of the live job ad. `null` and an empty string are accepted.",
+            "maxLength": 1024,
             "nullable": true,
-            "oneOf": [
-              {
-                "format": "uri",
-                "maxLength": 1024,
-                "type": "string"
-              },
-              {
-                "maxLength": 0,
-                "type": "string"
-              }
-            ]
+            "type": "string"
           },
           "productId": {
             "minLength": 1,
@@ -6289,6 +6324,7 @@
         "description": "View ATSUsers owned by the ATS",
         "properties": {
           "company_id": {
+            "description": "The ATS company this customer belongs to. `POST /v3/ats/users/` sets it only when it creates the customer; use `PATCH` to change it.",
             "minLength": 1,
             "nullable": true,
             "type": "string"
@@ -6365,7 +6401,7 @@
             "type": "object"
           },
           "posting_duration_days": {
-            "default": -1,
+            "description": "-1 for no expiration, or 7 to 365 days. Omit to keep the current value.",
             "type": "integer"
           },
           "posting_requirements_defaults": {
@@ -10597,7 +10633,7 @@
             }
           },
           {
-            "description": "dry-run /  only validation is performed; campaign creation is skipped",
+            "description": "Dry run: only validation is performed and no campaign is created. A valid payload returns `200` instead of `201`. The parameter is read by presence, so any value (even `false`) enables it.",
             "in": "query",
             "name": "validateOnly",
             "schema": {
@@ -10608,7 +10644,7 @@
             }
           },
           {
-            "description": "allow some of the vacancy fields to be omitted",
+            "description": "allow some of the vacancy fields to be omitted; returns `403` when loose validation is not enabled for the account",
             "in": "query",
             "name": "loose",
             "schema": {
@@ -10726,6 +10762,16 @@
           "required": true
         },
         "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HAPIOrderCampaignValidateOnlyResponse"
+                }
+              }
+            },
+            "description": "Validation passed (`validateOnly` only)."
+          },
           "201": {
             "content": {
               "application/json": {
@@ -10756,7 +10802,7 @@
                 }
               }
             },
-            "description": "",
+            "description": "Validation failed. The body has one of two shapes, see the schema.",
             "headers": {}
           },
           "403": {
@@ -10767,17 +10813,7 @@
                 }
               }
             },
-            "description": "Forbidden"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HAPIOrderCampaignErrorResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
+            "description": "The contracts belong to different contract groups, or `loose=true` was sent for an account without loose validation"
           }
         },
         "security": [
@@ -13348,7 +13384,7 @@
     },
     "/products/search/": {
       "get": {
-        "description": "This endpoint exposes a list of Products with the options to search by Location, Job Title, Job Function and Industry.\nProducts are ranked by their relevancy to the search terms.\n\nOptionally, products can be filtered by Channel to retrieve the products for a particular job board.\n\nBesides the default English, German, Dutch, French, Spanish, Italian, Finnish, Swedish and Norwegian are supported by adding the `Accept-Language` header.\n\nAlso supports bulk retrieval via `/products/multiple/{products_ids_or_portfolio_id}/` for product IDs, favorites, top-ordered products, and portfolio selectors.",
+        "description": "This endpoint exposes a list of Products with the options to search by Location, Job Title, Job Function and Industry.\nProducts are ranked by their relevancy to the search terms.\n\nBesides the default English, German, Dutch, French, Spanish, Italian, Finnish, Swedish and Norwegian are supported by adding the `Accept-Language` header.\n\nAlso supports bulk retrieval via `/products/multiple/{products_ids_or_portfolio_id}/` for product IDs, favorites, top-ordered products, and portfolio selectors.",
         "operationId": "products_search_list",
         "parameters": [
           {
@@ -14313,22 +14349,33 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ATSUserRequest"
+                "$ref": "#/components/schemas/ATSUserCreateRequest"
               }
             },
             "application/x-www-form-urlencoded": {
               "schema": {
-                "$ref": "#/components/schemas/ATSUserRequest"
+                "$ref": "#/components/schemas/ATSUserCreateRequest"
               }
             },
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/ATSUserRequest"
+                "$ref": "#/components/schemas/ATSUserCreateRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ATSUser"
+                }
+              }
+            },
+            "description": ""
+          },
           "201": {
             "content": {
               "application/json": {
@@ -15273,7 +15320,13 @@
                             ],
                             "type": "object"
                           }
-                        ]
+                        ],
+                        "properties": {
+                          "json": {
+                            "description": "JSON-encoded ScreeningApplicationWebhookData object. Additional parts contain binary files, keyed by filename.",
+                            "type": "string"
+                          }
+                        }
                       }
                     }
                   }

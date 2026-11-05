@@ -115,12 +115,11 @@ X-Customer-Id: customer-123
 | `product_id` | string (UUID) | Product ID |
 | `facet_name` | string | The facet's `name` value |
 
-**Query/Body Parameters**:
+**Body Parameters**:
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `term` / `search` | string | Search text for autocomplete |
-| _(dependent fields)_ | varies | Other facet values that may be needed as context |
+| `term` | string or string[] | Search text for autocomplete. Pass an array, in the order given by `autocomplete.parameters_source.term`, for facets whose options depend on other facet values |
 
 Search for city options:
 

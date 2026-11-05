@@ -203,7 +203,7 @@ X-Customer-Id: <customer-id>
 | `deliveredOn` | string\|null | ISO 8601 timestamp when posting went live-`null` until `online` |
 | `duration` | string | Posting duration as text (e.g., `"30 days"`) |
 | `durationPeriod` | object | Structured duration: `range` (`"days"`) and `period` (integer) |
-| `jobBoardLink` | string\|null | URL to the live posting-`null` until `online` |
+| `jobBoardLink` | string\|null | URL to the posting. Can be `null` or a placeholder such as the board's homepage, also before the product is `online`; use `status` to decide whether it is live |
 | `utm` | string\|null | UTM tracking parameters if provided during ordering |
 | `contractId` | string\|null | Contract ID for JP products, `null` for JM |
 | `metadata` | object | Custom metadata for this product spec entry (empty object `{}` when not set) |

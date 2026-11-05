@@ -90,7 +90,7 @@ GET /products/job-titles/?text=software+engineer
 
 <!-- theme: warning -->
 > ### Core Target Group Fields
-> For HAPI partners, populate `educationLevel`, `seniority`, and `industry`. The legacy `jobCategory` field is not resolved through taxonomy endpoints; leave it as an empty array unless VONQ explicitly provides a value for your integration. See [Vacancy Fields - Loose Validation](../08-campaigns/vacancy-fields.md#loose-validation).
+> Populate all four fields: `educationLevel`, `seniority`, `industry`, and `jobCategory`. `jobCategory` takes a job function ID, from `GET /products/job-functions/` or the `job_function.id` of a job title. An empty array fails validation; to leave a field out you need [loose validation](../08-campaigns/vacancy-fields.md#loose-validation).
 
 ## Step 2: Search for Products
 
@@ -164,7 +164,7 @@ The campaign order body has four main sections:
     "educationLevel": [{ "vonqId": "2", "description": "Bachelor / Graduate" }],
     "seniority": [{ "vonqId": "3", "description": "Mid-Senior level" }],
     "industry": [{ "vonqId": "48", "description": "Academic" }],
-    "jobCategory": []
+    "jobCategory": [{ "vonqId": "6", "description": "Software Development" }]
   },
   "orderedProducts": [
     "d1e2f3a4-b5c6-7890-abcd-ef1234567890"
@@ -175,14 +175,14 @@ The campaign order body has four main sections:
 Key points:
 
 - **`orderedProducts`** is a flat array of product IDs from step 2
-- **`targetGroup`** uses the taxonomy IDs from step 1 - populated fields are arrays with exactly one object
+- **`targetGroup`** uses the taxonomy IDs from step 1 - each field is an array with exactly one object
 - **`workingLocation`** is just an address and country - no taxonomy lookup needed
 - **`companyId`** must match your `X-Customer-Id` header
 - **`companyLogo`** is required and must be a publicly reachable URL - the API checks this server-side
 
 ### targetGroup - Use Taxonomy Endpoints
 
-Each populated `targetGroup` field takes an array of objects with `vonqId` (string) and `description` (string). The `vonqId` must be a valid taxonomy ID - the `description` is a freeform label for display purposes and is not validated. For HAPI partners, `jobCategory` remains an empty array unless VONQ explicitly provides a value for your integration.
+Each `targetGroup` field takes an array with one object holding `vonqId` (string) and `description` (string). The `vonqId` must be a valid taxonomy ID - the `description` is a freeform label for display purposes and is not validated. `jobCategory` takes a job function ID.
 
 To get valid `vonqId` values, use the [Taxonomy](../04-taxonomy.md) endpoints. Note that the taxonomy response format differs from what `targetGroup` expects:
 

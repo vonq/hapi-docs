@@ -8,7 +8,7 @@ api:
   base_urls:
     production: https://marketplace.api.vonq.com
     sandbox: https://marketplace-sandbox.api.vonq.com
-  rate_limit: 60 requests per 60 seconds per partner
+  rate_limit: 60 requests per 60 seconds per partner on campaign ordering, listing, status and cancellation
   auth_methods:
     secret_key:
       header: X-Auth-Token
@@ -274,7 +274,7 @@ workflows:
         endpoint: POST /campaigns/order
         params: { validateOnly: true }
         body: same as ordering payload
-        returns: 200 if valid, 422 with field-level errors if not
+        returns: 200 if valid, 400 with field-level errors if not
         docs: guides/08-campaigns/validation.md
       - action: Submit order
         endpoint: POST /campaigns/order

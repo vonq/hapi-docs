@@ -185,7 +185,7 @@ The applicable list is chosen from the products in the campaign: Marketplace-onl
 
 <!-- theme: warning -->
 > ### Restrictions
-> Your account must be enabled for loose validation. The API returns `400` if `?loose=true` is used before the account is enabled.
+> Your account must be enabled for loose validation. If `?loose=true` is used before the account is enabled, the order endpoint returns `403` and the validation endpoints return `400`.
 
 See [Vacancy Fields-Loose Validation](./vacancy-fields.md#loose-validation) for which fields each order type may omit. The same parameter is supported on the [validation endpoints](./validation.md#loose-validation) and the [edit endpoint](./editing.md#loose-validation).
 
@@ -236,7 +236,7 @@ sequenceDiagram
 
 <!-- theme: warning -->
 > ### Duplicate Orders May Be Throttled
-> Accounts can be configured with duplicate-submission prevention: when enabled, submitting the exact same order payload again within the configured window returns `422` with the message `"A campaign with the same payload was already submitted recently. Please wait before resubmitting."`. The window is set per partner by your account manager (off by default). Handle this `422` gracefully - it protects against accidental double-ordering (e.g. a double-click or a client retry after a timeout). If the user genuinely wants a second identical campaign, wait out the window or change the payload (e.g. the vacancy title).
+> Accounts can be configured with duplicate-submission prevention: when enabled, submitting the exact same order payload again within the configured window returns `400` with the message `"A campaign with the same payload was already submitted recently. Please wait before resubmitting."`. The window is set per partner by your account manager (off by default). Handle this `400` gracefully - it protects against accidental double-ordering (e.g. a double-click or a client retry after a timeout). If the user genuinely wants a second identical campaign, wait out the window or change the payload (e.g. the vacancy title).
 
 - **Campaign ordering can take time**-the API processes each product's posting. Expect response times up to 30 seconds for campaigns with many products.
 - **The response is minimal**-only `campaignId` is returned. Fetch full details with `GET /campaigns/{campaignId}` after ordering.

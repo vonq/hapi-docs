@@ -315,7 +315,8 @@ Content-Type: application/json
       "type": "AUTOCOMPLETE",
       "options": [],
       "autocomplete": {
-        "url": "/contracts/posting-requirements/c1d2e3f4-a5b6-7890-abcd-ef1234567890/location/"
+        "required_parameters": ["term"],
+        "parameters_source": null
       }
     }
   ],

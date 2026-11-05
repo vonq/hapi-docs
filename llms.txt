@@ -10,6 +10,18 @@ Clone `vonq/hapi-docs`, start with this index or `docs-manifest.jsonl`, then use
 - [API Overview](docs/02-api-overview.md): Base URLs, environments, HTTP conventions, pagination, rate limits, error handling, localization, CORS, and caching.
 - [Environments](docs/02b-environments.md): Production vs Sandbox-base URLs, separate provisioning, what sandbox does and does not do, and how to test campaign lifecycles without real deliveries.
 
+## Recipes
+
+- [Recipes-Introduction](docs/recipes/01-introduction.md): Implement a HAPI integration screen by screen. For each screen of a standard ATS ordering flow, the calls it makes, the data it keeps, and the tests that prove it works.
+- [Recipe-Customer Accounts](docs/recipes/02-customer-accounts.md): Link each customer account of your ATS to a HAPI customer once, read its feature settings, and set up the one server-side HTTP client every other recipe uses.
+- [Recipe-Job to Vacancy](docs/recipes/03-job-to-vacancy.md): Map an ATS job onto HAPI vacancy fields and taxonomy. Pickers for job title, location and targeting, what each ID is used for, the field rules, and Smartfill prefill.
+- [Recipe-Channel Selection](docs/recipes/04-channel-selection.md): Wizard step 1. Search the marketplace with filters taken from the job, show what bundles contain, offer favorites and AI recommendations, and keep a cart that survives a reload.
+- [Recipe-Job Board Connections](docs/recipes/05-job-board-connections.md): Let recruiters connect their own job board accounts as contracts, on a settings page or inside checkout, including OAuth, manual setup, groups and broken credentials.
+- [Recipe-Posting Requirements Form](docs/recipes/06-posting-requirements-form.md): Wizard step 2. Build the per-channel form from facet definitions, load options on demand, apply display rules, prefill with Smartfill, and validate before checkout.
+- [Recipe-Checkout and Order](docs/recipes/07-checkout-and-order.md): Wizard steps 3 and 4. Assemble the order from the job, cart and requirement answers, validate it, let the customer pay the way their account allows, and place it safely once.
+- [Recipe-Campaign Tracking](docs/recipes/08-campaign-tracking.md): Wizard step 5 and the job's campaign tab. Show per-channel status, links and clicks, keep them current with webhooks and an incremental sync, and let recruiters edit or take channels offline.
+- [Recipe-End-to-End Testing](docs/recipes/09-end-to-end-testing.md): Prove the integration before go-live. What Sandbox can and cannot test, how to run every recipe's scenarios as an automated suite, how to drive a campaign lifecycle, and what to switch for Production.
+
 ## Scenarios and workflows
 
 - [Scenarios-Introduction](docs/guides/14-scenarios/01-introduction.md): End-to-end walkthroughs showing how to accomplish common tasks with the VONQ Hiring API.

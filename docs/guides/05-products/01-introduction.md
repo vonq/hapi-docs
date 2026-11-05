@@ -81,7 +81,7 @@ Each price entry includes an `amount` (in the currency's standard unit, e.g., eu
 Not every product in VONQ's catalog is available to every partner:
 
 - Products can be **removed or disabled** from the catalog at any time-they disappear from search results. Your integration should handle products becoming unavailable without prior notice.
-- Some products are **seasonally or temporarily unavailable**. A product with `allow_orders: false` is visible in search results but cannot be ordered.
+- Some products are **seasonally or temporarily unavailable**. Search and bulk lookups leave unavailable products out of their results, and `GET /products/single/{product_id}/` returns `404` for them.
 - Certain products may require **partner-level enablement**-they exist in the VONQ portfolio but are not available to your ATS until specific onboarding is completed. Contact your account manager if you see products in the marketplace that you cannot order.
 
 ## What's Next

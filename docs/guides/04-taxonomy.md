@@ -41,7 +41,7 @@ HAPI provides a set of standardized taxonomies that classify jobs by title, indu
 
 Taxonomy values are managed by VONQ - you query them, select the appropriate IDs, and pass those IDs to other endpoints. You never create or modify taxonomy entries.
 
-Locations work the same way: search for a geographic place, get its ID, and use that ID when filtering products or specifying a working location in a campaign.
+Locations work the same way: search for a geographic place, get its ID, and use that ID when filtering products. A campaign's working location is the job's address as text, not a location ID; see [Vacancy Fields](./08-campaigns/vacancy-fields.md).
 
 ## Key Concepts
 
@@ -49,7 +49,7 @@ Locations work the same way: search for a geographic place, get its ID, and use 
 - **Industry**-a business sector (e.g., "Technology", "Healthcare"). Use industry IDs to filter products and to specify the target group when ordering a campaign.
 - **Education Level**-the minimum educational attainment for a vacancy (e.g., "Bachelor", "Master / Post-Graduate / PhD"). Used in the campaign target group.
 - **Seniority**-the career experience level (e.g., "Entry level", "Manager", "Executive/Director"). Used in the campaign target group.
-- **Location**-a geographic place identified by an integer ID. Locations follow a hierarchy: a city sits within a region, which sits within a country. Use location IDs when filtering products by geography or specifying where a job is based.
+- **Location**-a geographic place identified by an integer ID. Locations follow a hierarchy: a city sits within a region, which sits within a country. Use location IDs when filtering products by geography.
 
 ### Localization
 
@@ -115,7 +115,7 @@ See [Products](./05-products/02-marketplace.md) for the full product search docu
 
 ### Using Taxonomy in Campaign Ordering
 
-When ordering a campaign, the `targetGroup` field references taxonomy values by their `vonqId` (the `id` from the respective taxonomy endpoint) and a `description` (the human-readable name). HAPI partners normally populate `educationLevel`, `seniority`, and `industry`; `jobCategory` is a compatibility field and should be left empty unless VONQ explicitly provides a value for your integration.
+When ordering a campaign, the `targetGroup` field references taxonomy values by their `vonqId` (the `id` from the respective taxonomy endpoint) and a `description` (the human-readable name). Populate all four dimensions: `educationLevel`, `seniority`, `industry`, and `jobCategory`. `jobCategory` takes a job function ID, from `GET /products/job-functions/` or the `job_function.id` of a job title. Strict validation rejects an empty dimension; with [loose validation](./08-campaigns/validation.md#loose-validation), leave out the dimensions configured as loose instead of sending empty arrays.
 
 ```json
 {
@@ -129,12 +129,14 @@ When ordering a campaign, the `targetGroup` field references taxonomy values by 
     "industry": [
       { "vonqId": "48", "description": "Academic" }
     ],
-    "jobCategory": []
+    "jobCategory": [
+      { "vonqId": "6", "description": "Software Development" }
+    ]
   }
 }
 ```
 
-Each populated target group dimension is an array that enforces a maximum of **one item**. Pass an array with a single object where you have a supported taxonomy value.
+Each target group dimension is an array of exactly **one item**: a single object with a supported taxonomy value.
 
 <!-- theme: info -->
 > ### `vonqId` type

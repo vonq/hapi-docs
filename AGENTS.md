@@ -4,6 +4,9 @@ Start with [`llms.txt`](https://github.com/vonq/hapi-docs/blob/master/llms.txt) 
 [`docs-manifest.jsonl`](https://github.com/vonq/hapi-docs/blob/master/docs-manifest.jsonl) by document metadata and OpenAPI
 operation ID. Open only the sources needed for the task.
 
+To implement an ATS integration, follow the recipes in order, starting with
+[`docs/recipes/01-introduction.md`](docs/recipes/01-introduction.md).
+
 Use `rg` to find guide text:
 
 ```bash

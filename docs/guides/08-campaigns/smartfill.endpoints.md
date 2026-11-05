@@ -78,7 +78,7 @@ Use this `smartfill_task_id` value as the `{task_id}` path parameter when pollin
 - **Description**: Retrieve the status and results of a vacancy fields Smartfill task.
 
 ```http
-GET https://marketplace.api.vonq.com/v3/smartfill/vacancy-fields/b1c2d3e4-f5a6-7890-abcd-ef1234567890 HTTP/1.1
+GET https://marketplace.api.vonq.com/v3/smartfill/vacancy-fields/b1c2d3e4-f5a6-7890-abcd-ef1234567890/ HTTP/1.1
 X-Auth-Token: <your Partner token here>
 X-Customer-Id: <customer-id>
 ```
