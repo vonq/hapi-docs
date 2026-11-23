@@ -38,6 +38,7 @@ The high-level layout:
   - [CPA+](docs/guides/09-cpa.md) - cost-per-application campaigns, applications, attachments
   - [Direct Apply](docs/guides/10-direct-apply/01-introduction.md) - questionnaires, application webhooks, feedback
   - [Screening](docs/guides/11-screening/01-introduction.md) - AI screening, jobs, applications, dossiers
+  - [HAPI EQO Attract](docs/guides/15-eqo-attract/01-introduction.md) - AI-written social media job ads, the ad form
   - [Wallets & Payments](docs/guides/12-wallets-and-payments.md) - prepaid wallets, top-ups, billing portal
   - [Scenarios](docs/guides/14-scenarios/01-introduction.md) - end-to-end integration walkthroughs
 - **Reference**

@@ -313,7 +313,7 @@ Nothing in this flow requires one. A bulk integration can read the specs, genera
 > **Some facets are not fields.** A facet carrying `is_data: true`, and the generator facet itself, are configuration rather than input. Do not render them as form fields. Clients that render every returned facet will show an empty control to the recruiter. See [Derived Facets](facets.md#derived-facets).
 
 - **Check the length rules on your targets.** A target's `rules` may carry a `maxlength`, and generated text has to fit it. An alternative that overruns is discarded rather than trimmed, and a run whose alternatives all overrun fails outright. A target with a very short limit is a poor thing to generate.
-- **Write only the declared targets.** A product's posting requirements include fields the generator does not produce, such as page selection or the display URL. Those stay with the recruiter.
+- **Write only the declared targets.** A product's posting requirements include fields the generator does not produce, such as page selection or the display URL. Fill those with an ordinary Smartfill fill (`jobs: ["fill"]`) or leave them to the recruiter. See [Hiding Pre-filled Fields](smartfill.md#hiding-pre-filled-fields) for keeping a pre-filled one out of sight.
 - **Language follows the campaign.** Text is written in the requested language rather than translated afterwards. Send the context in the language you want back, or name it in `language`.
 - **Adverts must comply.** Generated text is filtered for employment advertising rules. Text the recruiter adds by hand is not, so keep your own validation.
 - **A picture can fail on its own.** Text that arrived is still usable when a render did not: an alternative simply has no `media`. Let the recruiter supply an image themselves rather than discarding the alternative.
@@ -321,6 +321,7 @@ Nothing in this flow requires one. A bulk integration can read the specs, genera
 
 ## Related
 
+- [HAPI EQO Attract](../15-eqo-attract/01-introduction.md), the feature this powers, with the recommended recruiter experience in [Building the Ad Form](../15-eqo-attract/ad-form.md)
 - [Facets](facets.md), the field types and value formats a posting requirement can have
 - [Smartfill](smartfill.md), the create-then-poll pattern this reuses
 - [Campaign Ordering](../08-campaigns/ordering.md), submitting the campaign once values are applied

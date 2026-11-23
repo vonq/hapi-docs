@@ -226,6 +226,16 @@ terms:
       - GET /v3/screening/jobs/{job_id}/applications/
     docs: guides/11-screening/01-introduction.md
 
+  eqo_attract:
+    definition: VONQ's AI ad builder. Through HAPI it writes job ads for social media channels, for example Meta (Facebook and Instagram) and TikTok, with text and a picture, for products that carry an Ad Wizard (GENERATOR) posting requirement.
+    aka: [HAPI EQO Attract, AI ad creatives, Ad Wizard]
+    note: "Covers the ad itself. Campaign settings such as budget and audience are not part of the order, and EQO Attract's lead forms are not offered through HAPI."
+    related_endpoints:
+      - GET /products/{product_id}/specs/
+      - POST /v3/smartfill/posting-requirements/
+      - GET /v3/smartfill/posting-requirements/{task_id}/
+    docs: guides/15-eqo-attract/01-introduction.md
+
   smartfill:
     definition: AI-powered endpoint that auto-fills posting requirement values or vacancy fields based on vacancy information. Async create-then-poll pattern.
     aka: [autofill, AI suggestions]

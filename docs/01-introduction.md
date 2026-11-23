@@ -47,7 +47,7 @@ HAPI is built for ATS software providers who want to embed job advertising as a 
 - **Contracts & campaigns**-let recruiters post vacancies using their own job board contracts, paid products through VONQ, or both in a single order
 - **Lifecycle management**-track posting status, receive webhook notifications, validate data before ordering, edit or cancel live campaigns
 - **Wallets & payments**-manage prepaid wallets, top-up flows, and direct charge payments
-- **AI features**-auto-suggest vacancy fields (Smartfill) and screen and rank applications (Screening)
+- **AI features**-auto-suggest vacancy fields (Smartfill), write social media job ads (HAPI EQO Attract) and screen and rank applications (Screening)
 
 ## Getting Started
 
@@ -148,6 +148,9 @@ These docs cover the REST API. HAPI Elements are production-ready, framework-agn
   - [Introduction](./guides/11-screening/01-introduction.md)-AI screening overview
   - [Jobs & Applications](./guides/11-screening/jobs-and-applications.md)-jobs, applications, dossiers
   - [Webhooks](./guides/11-screening/webhooks.md)-screening notifications
+- **HAPI EQO Attract**
+  - [Introduction](./guides/15-eqo-attract/01-introduction.md)-AI-written social media job ads
+  - [Building the Ad Form](./guides/15-eqo-attract/ad-form.md)-the recruiter experience, with screenshots
 - **Wallets & Payments**
   - [Wallets & Payments](./guides/12-wallets-and-payments.md)-wallets, top-ups, billing portal, payment widget
 

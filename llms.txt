@@ -75,6 +75,8 @@ Clone `vonq/hapi-docs`, start with this index or `docs-manifest.jsonl`, then use
 - [Screening-Introduction](docs/guides/11-screening/01-introduction.md)
 - [Screening-Jobs & Applications](docs/guides/11-screening/jobs-and-applications.md)
 - [Screening-Webhooks](docs/guides/11-screening/webhooks.md)
+- [HAPI EQO Attract-Introduction](docs/guides/15-eqo-attract/01-introduction.md)
+- [HAPI EQO Attract-Building the Ad Form](docs/guides/15-eqo-attract/ad-form.md)
 - [Wallets & Payments](docs/guides/12-wallets-and-payments.md)
 
 ## Machine-readable resources
