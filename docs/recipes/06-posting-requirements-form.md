@@ -74,7 +74,7 @@ graph LR
 | Decision | Options | What changes |
 |----------|---------|--------------|
 | Where definitions come from | Contract lines: the contract. Marketplace lines: the product specs. While creating a contract: the board details | Each source has its own options endpoint (Step 3) |
-| Prefill | Contract `posting_requirements_defaults`, Smartfill, the recruiter's previous order, or nothing | All of them only fill the form; the recruiter confirms and you validate |
+| Prefill | Contract `posting_requirements_defaults`, Smartfill, the recruiter's previous order, options marked `default`, or nothing | All of them only fill the form; the recruiter confirms and you validate |
 | Validation timing | When leaving each form, or once at checkout | Per form gives faster feedback; both end with `validate-campaign` at checkout |
 | Optional specs | Products with `product_specs.validation_optional: true` | The recruiter may skip the form for that line |
 
@@ -116,7 +116,7 @@ Use the endpoint that matches the cart line, with the facet `name` in the path:
 | Marketplace product | `POST /products/{product_id}/specs/facets/{facet name}/options/` | `{"term": "<search text>"}` |
 | While creating a contract (no contract yet) | `POST /contracts/posting-requirements/{channel_id}/{facet name}/` | `{"term": "...", "credentials": {...}}` |
 
-The response is a list of `{key, label}` options. When `parameters_source.term` names other facets, `term` is an array of their values in that order. Pass keys that contain special characters (such as `§`) through unchanged. When a parent value changes, clear its dependent fields and load their options again. See [Autocomplete](../guides/07-posting-requirements/autocomplete.md).
+The response is a list of `{key, label}` options. An option can also carry `"default": "1"`; see [Facets - Options Object](../guides/07-posting-requirements/facets.md#options-object) and Step 4. When `parameters_source.term` names other facets, `term` is an array of their values in that order. Pass keys that contain special characters (such as `§`) through unchanged. When a parent value changes, clear its dependent fields and load their options again. See [Autocomplete](../guides/07-posting-requirements/autocomplete.md).
 
 Facets with `is_data: true` produce a preview instead of options: `POST /products/{product_id}/specs/facets/{facet_name}/data/` with `{"values": {...}}`.
 
@@ -124,6 +124,7 @@ Facets with `is_data: true` produce a preview instead of options: `POST /product
 
 - **Contract defaults**: copy `posting_requirements_defaults` from the contract into the form. HAPI never applies them on its own.
 - **Smartfill**: when `settings.smartfill.posting_requirements` is on, `POST /v3/smartfill/posting-requirements/` with either `contract_id` or `product_id` (never both) and the job as `context`, then poll `GET /v3/smartfill/posting-requirements/{task_id}/` every few seconds. `prefill_data` grows as the task runs; keys already returned do not change. Fill only empty fields, submit option `key` values, show `label` values. See [Smartfill](../guides/07-posting-requirements/smartfill.md).
+- **Default option**: when an option comes with `"default": "1"`, in `options[]` or loaded through Autocomplete, pre-select it while the field has no value. The recruiter can still pick another option. See [Facets - Options Object](../guides/07-posting-requirements/facets.md#options-object).
 
 ### Step 5: Validate each form
 
@@ -170,8 +171,9 @@ Leave out hidden facets and `STATISCH` facets. See [Checkout and Order](./07-che
 |------|-----|
 | Per cart line: `productId`, `contractId` (if any) and the answers as `{name: value}` | Becomes `orderedProductsSpecs[]` |
 | For options loaded on demand: the chosen `key` and `label` | Shows the answer again without reloading options; some boards change keys over time, so match by key, then by label |
+| Per product or contract: `posting_requirements_checksum` and `posting_requirements_facets_checksum` | Shows that a stored form is out of date before you resubmit it. See [Facets-Detecting Spec Changes](../guides/07-posting-requirements/facets.md#detecting-spec-changes) |
 
-Fetch facet definitions again for every wizard session. Boards change them.
+Fetch facet definitions again for every wizard session. Boards change them. When you reuse stored answers, fetch the specs first and compare the checksums.
 
 ## Rules
 

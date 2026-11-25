@@ -238,6 +238,9 @@
               "enable_weekly_working_minutes": {
                 "type": "boolean"
               },
+              "he_replace_slider_with_text_input": {
+                "type": "boolean"
+              },
               "job_marketing_editing": {
                 "type": "boolean"
               },
@@ -1765,7 +1768,7 @@
           },
           "posting_duration_days": {
             "default": -1,
-            "description": "-1 for no expiration (used when omitted), or 7 to 365 days.",
+            "description": "-1 for no expiration (used when omitted), or 7 to 180 days.",
             "type": "integer"
           },
           "posting_requirements": {
@@ -1897,7 +1900,7 @@
           },
           "posting_duration_days": {
             "default": -1,
-            "description": "-1 for no expiration (used when omitted), or 7 to 365 days.",
+            "description": "-1 for no expiration (used when omitted), or 7 to 180 days.",
             "type": "integer"
           },
           "posting_requirements_defaults": {
@@ -2017,10 +2020,20 @@
             "readOnly": true,
             "type": "array"
           },
+          "posting_requirements_checksum": {
+            "description": "Changes when any posting requirement or option changes. Opaque value, scoped to the caller (ATS, ATS user) and to this endpoint: compare it only with the value you stored from the same call. When it changes, fetch the specs again and diff them.",
+            "readOnly": true,
+            "type": "string"
+          },
           "posting_requirements_defaults": {
             "additionalProperties": {},
             "nullable": true,
             "type": "object"
+          },
+          "posting_requirements_facets_checksum": {
+            "description": "Like `posting_requirements_checksum`, without the options: changes when a posting requirement is added, removed, renamed or changed, not when only options change. Opaque value, scoped to the caller (ATS, ATS user) and to this endpoint: compare it only with the value you stored from the same call. When it changes, fetch the specs again and diff them.",
+            "readOnly": true,
+            "type": "string"
           },
           "product": {
             "allOf": [
@@ -2046,6 +2059,8 @@
           "group",
           "igb_customer_id",
           "posting_requirements",
+          "posting_requirements_checksum",
+          "posting_requirements_facets_checksum",
           "product"
         ],
         "type": "object"
@@ -2578,6 +2593,139 @@
         },
         "required": [
           "campaign"
+        ],
+        "type": "object"
+      },
+      "CampaignsBatch": {
+        "description": "A batch's campaigns in the order they were sent, and its status derived from theirs.",
+        "properties": {
+          "batchId": {
+            "type": "string"
+          },
+          "campaigns": {
+            "items": {
+              "$ref": "#/components/schemas/CampaignsBatchCampaign"
+            },
+            "type": "array"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CampaignStatusEnum"
+          }
+        },
+        "required": [
+          "batchId",
+          "campaigns",
+          "status"
+        ],
+        "type": "object"
+      },
+      "CampaignsBatchCampaign": {
+        "properties": {
+          "campaignId": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CampaignStatusEnum"
+          }
+        },
+        "required": [
+          "campaignId",
+          "status"
+        ],
+        "type": "object"
+      },
+      "CampaignsBatchCancellation": {
+        "description": "Each campaign's answer to the single cancellation: accepted, or refused with that cancellation's error.",
+        "properties": {
+          "batchId": {
+            "type": "string"
+          },
+          "campaigns": {
+            "items": {
+              "$ref": "#/components/schemas/CampaignsBatchCancelledCampaign"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "batchId",
+          "campaigns"
+        ],
+        "type": "object"
+      },
+      "CampaignsBatchCancellationResultEnum": {
+        "description": "* `accepted` - accepted\n* `refused` - refused",
+        "enum": [
+          "accepted",
+          "refused"
+        ],
+        "type": "string"
+      },
+      "CampaignsBatchCancelledCampaign": {
+        "properties": {
+          "campaignId": {
+            "type": "string"
+          },
+          "error": {
+            "additionalProperties": {},
+            "type": "object"
+          },
+          "result": {
+            "$ref": "#/components/schemas/CampaignsBatchCancellationResultEnum"
+          }
+        },
+        "required": [
+          "campaignId",
+          "result"
+        ],
+        "type": "object"
+      },
+      "CampaignsBatchCreateRequest": {
+        "description": "The campaigns to order together, each the body of a single order.",
+        "properties": {
+          "campaigns": {
+            "description": "Each item is the body of a single `POST /campaigns/order`.",
+            "items": {
+              "additionalProperties": {},
+              "type": "object"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "campaigns"
+        ],
+        "type": "object"
+      },
+      "CampaignsBatchCreated": {
+        "description": "The created batch: its id and its campaigns' ids, in the order they were sent.",
+        "properties": {
+          "batchId": {
+            "type": "string"
+          },
+          "campaigns": {
+            "items": {
+              "$ref": "#/components/schemas/CampaignsBatchCreatedCampaign"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "batchId",
+          "campaigns"
+        ],
+        "type": "object"
+      },
+      "CampaignsBatchCreatedCampaign": {
+        "properties": {
+          "campaignId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "campaignId"
         ],
         "type": "object"
       },
@@ -4525,7 +4673,7 @@
             }
           },
           "postingDurationDays": {
-            "description": "Number of days after which the ordered product is taken offline: -1 for no expiration, or 7 to 365. Can be set only together with `contractId`.",
+            "description": "Number of days after which the ordered product is taken offline: -1 for no expiration, or 7 to 180. Can be set only together with `contractId`.",
             "example": 30,
             "type": "integer",
             "x-stoplight": {
@@ -6401,7 +6549,7 @@
             "type": "object"
           },
           "posting_duration_days": {
-            "description": "-1 for no expiration, or 7 to 365 days. Omit to keep the current value.",
+            "description": "-1 for no expiration, or 7 to 180 days. Omit to keep the current value.",
             "type": "integer"
           },
           "posting_requirements_defaults": {
@@ -6846,6 +6994,16 @@
             "readOnly": true,
             "type": "array"
           },
+          "posting_requirements_checksum": {
+            "description": "Changes when any posting requirement or option changes. Opaque value, scoped to the caller (ATS, ATS user) and to this endpoint: compare it only with the value you stored from the same call. When it changes, fetch the specs again and diff them.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "posting_requirements_facets_checksum": {
+            "description": "Like `posting_requirements_checksum`, without the options: changes when a posting requirement is added, removed, renamed or changed, not when only options change. Opaque value, scoped to the caller (ATS, ATS user) and to this endpoint: compare it only with the value you stored from the same call. When it changes, fetch the specs again and diff them.",
+            "readOnly": true,
+            "type": "string"
+          },
           "product": {
             "$ref": "#/components/schemas/ProductsSpecsProduct"
           },
@@ -6866,6 +7024,8 @@
           "logo_url",
           "name",
           "posting_requirements",
+          "posting_requirements_checksum",
+          "posting_requirements_facets_checksum",
           "product",
           "product_id",
           "type",
@@ -7076,6 +7236,16 @@
             "readOnly": true,
             "type": "array"
           },
+          "posting_requirements_checksum": {
+            "description": "Changes when any posting requirement or option changes. Opaque value, scoped to the caller (ATS, ATS user) and to this endpoint: compare it only with the value you stored from the same call. When it changes, fetch the specs again and diff them.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "posting_requirements_facets_checksum": {
+            "description": "Like `posting_requirements_checksum`, without the options: changes when a posting requirement is added, removed, renamed or changed, not when only options change. Opaque value, scoped to the caller (ATS, ATS user) and to this endpoint: compare it only with the value you stored from the same call. When it changes, fetch the specs again and diff them.",
+            "readOnly": true,
+            "type": "string"
+          },
           "product": {
             "allOf": [
               {
@@ -7110,6 +7280,8 @@
           "manual_setup_required",
           "name",
           "posting_requirements",
+          "posting_requirements_checksum",
+          "posting_requirements_facets_checksum",
           "product",
           "setup_instructions",
           "type",
@@ -7456,7 +7628,7 @@
             "type": "string"
           },
           "screened_score": {
-            "description": "Overall AI score from 0 to 250, higher is better, matching the dossier PDF. Null until a score is available.",
+            "description": "Overall AI score on a 0 to 250 scale, higher is better, as shown in the dossier PDF. Not a percentage. Null until a score is available.",
             "nullable": true,
             "readOnly": true,
             "type": "integer"
@@ -7631,7 +7803,7 @@
             "readOnly": true
           },
           "screened_score": {
-            "description": "Overall AI score from 0 to 250, higher is better, matching the dossier PDF. Null until a score is available.",
+            "description": "Overall AI score on a 0 to 250 scale, higher is better, as shown in the dossier PDF. Not a percentage. Null until a score is available.",
             "nullable": true,
             "readOnly": true,
             "type": "integer"
@@ -14581,6 +14753,175 @@
         "summary": "ATS User JWT - Generate",
         "tags": [
           "\u00bb ATS"
+        ]
+      }
+    },
+    "/v3/campaigns/batch/": {
+      "post": {
+        "description": "Orders up to 20 campaigns in one call. Each item of `campaigns` is the body of a single `POST /campaigns/order` and is checked as that endpoint checks it, except for the job boards' own validation: validate each campaign first with `POST /campaigns/validate-campaign/`.\n\nThe campaigns are created together or not at all. When any campaign is refused, none is created and `campaigns` in the response holds, at each campaign's position, `{}` for a campaign that passed and the single order's error body for a refused one.\n\nA campaign of a batch cannot be paid from a wallet (`walletId`) or order a CPA+ product.",
+        "operationId": "campaigns_batch_create",
+        "parameters": [
+          {
+            "description": "Identifies the ATS end-user. Required for Contracts functionality.",
+            "in": "header",
+            "name": "X-Customer-Id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Applies loose validation to every campaign of the batch, as `POST /campaigns/order?loose=true` does.",
+            "in": "query",
+            "name": "loose",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignsBatchCreateRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignsBatchCreateRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CampaignsBatchCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignsBatchCreated"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "description": "The batch is invalid (no campaigns, more than the maximum, or not a list of objects), or a campaign was refused. With error codes enabled, `errorDetails` lists every campaign's errors, each `path` prefixed with `campaigns.<position>`."
+          },
+          "401": {
+            "description": "Authentication is missing or invalid."
+          },
+          "403": {
+            "description": "`X-Customer-Id` is required for ordering and missing, or a campaign was refused with `403` as its single order would be. A batch answers with the highest status among its refused campaigns."
+          }
+        },
+        "security": [
+          {
+            "ATSUser-APIKey": []
+          },
+          {
+            "ATSUser-JWT": []
+          }
+        ],
+        "summary": "Campaign Batch - Create",
+        "tags": [
+          "\u00bb Campaigns"
+        ]
+      }
+    },
+    "/v3/campaigns/batch/{batch_id}/": {
+      "get": {
+        "description": "Returns a batch's campaigns in the order they were sent, each with its status, and the batch's status: `online` when any campaign is online, `offline` when all are offline, otherwise `in progress`.\n\nWith the partner token any of the partner's batches is returned; with a customer JWT, only that customer's batches.",
+        "operationId": "campaigns_batch_retrieve",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "batch_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignsBatch"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "description": "Authentication is missing or invalid."
+          },
+          "404": {
+            "description": "No batch with this id for the partner, or for the customer of the JWT."
+          }
+        },
+        "security": [
+          {
+            "Partner-APIKey": []
+          },
+          {
+            "ATSUser-JWT": []
+          }
+        ],
+        "summary": "Campaign Batch - Retrieve",
+        "tags": [
+          "\u00bb Campaigns"
+        ]
+      }
+    },
+    "/v3/campaigns/batch/{batch_id}/cancellation/": {
+      "put": {
+        "description": "Takes a batch's campaigns offline. Each campaign gets the answer `PUT /campaigns/{campaignId}/cancellation` would give it: `accepted`, or `refused` with that endpoint's error body. The online campaigns accepted are taken offline in the background; follow them with the batch's or each campaign's status.\n\nWith the partner token any of the partner's batches is cancelled; with a customer JWT, only that customer's batches.",
+        "operationId": "campaigns_batch_cancellation_update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "batch_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignsBatchCancellation"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "description": "Authentication is missing or invalid."
+          },
+          "404": {
+            "description": "No batch with this id for the partner, or for the customer of the JWT."
+          }
+        },
+        "security": [
+          {
+            "Partner-APIKey": []
+          },
+          {
+            "ATSUser-JWT": []
+          }
+        ],
+        "summary": "Campaign Batch - Take Offline",
+        "tags": [
+          "\u00bb Campaigns"
         ]
       }
     },

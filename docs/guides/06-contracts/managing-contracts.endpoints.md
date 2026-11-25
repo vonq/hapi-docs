@@ -260,7 +260,7 @@ X-Customer-Id: customer-123
 | `alias` | string | no | User-facing name for this contract. Defaults to the channel name. |
 | `credentials_validation` | string | no | Set to `"if_supported"` to validate credentials against the channel. |
 | `followed_instructions` | boolean | no | Set to `true` to confirm setup instructions were followed. Required when `manual_setup_required` is `true` on the channel. |
-| `posting_duration_days` | integer | no | Default posting duration in days (min: 7, max: 365). Pass `-1` to use the channel's default duration. |
+| `posting_duration_days` | integer | no | Default posting duration in days (min: 7, max: 180). Pass `-1` to use the channel's default duration. |
 | `credits` | integer | no | Number of credits for this contract. |
 | `expiry_date` | datetime | no | Expiration date for this contract. Must be a full ISO 8601 datetime (e.g. `2027-06-30T00:00:00Z`) - a date-only value such as `2027-06-30` is rejected. |
 | `group_id` | string (UUID) | no | Contract group to assign to. Defaults to the default group. |
@@ -459,7 +459,7 @@ Returns a paginated list of full contract objects.
 | `credentials` | object | Updated credentials |
 | `credentials_validation` | string | Set to `"if_supported"` to validate new credentials |
 | `labels` | object | Updated labels |
-| `posting_duration_days` | integer | Updated default posting duration (min: 7, max: 365; `-1` for the channel default) |
+| `posting_duration_days` | integer | Updated default posting duration (min: 7, max: 180; `-1` for the channel default) |
 | `posting_requirements_defaults` | object | Updated default posting requirement values |
 
 <!-- theme: warning -->

@@ -628,7 +628,7 @@ Content-Type: application/pdf
 | `status` | string | Current application status |
 | `screened_at` | string \| null | ISO 8601 timestamp when screening completed |
 | `screened_stage` | string \| null | Stage reached during screening |
-| `screened_score` | integer \| null | AI evaluation score from 0 to 250 (higher is better), matching the dossier PDF |
+| `screened_score` | integer \| null | AI evaluation score on a 0 to 250 scale (higher is better, not a percentage), as shown in the dossier PDF |
 | `attachments.initial_files_count` | integer | Number of files submitted |
 | `attachments.screened_files_count` | integer | Number of files in the dossier |
 | `initial_payload` | object | Candidate data as submitted |

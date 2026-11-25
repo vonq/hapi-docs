@@ -102,7 +102,7 @@ The main webhook request contains candidate data, status, and attachment metadat
 | `metadata` | object | Passthrough metadata from application creation |
 | `payload` | object | Candidate data: name, phone numbers, email addresses, attachments |
 | `payload.attachments` | array | File metadata-each entry has `type` and `filename` |
-| `payload.screening_evaluation` | object \| null | Scores from 0 to 250 (higher is better, matching the dossier PDF) and evaluation-completion flags; `null` unless both the knockout and interview stages produced a score |
+| `payload.screening_evaluation` | object \| null | Scores on a 0 to 250 scale (higher is better, not a percentage, as shown in the dossier PDF) and evaluation-completion flags; `null` unless both the knockout and interview stages produced a score |
 | `type` | string | `"payload"` for the main request, `"file"` for split file requests |
 
 ### Attachment Types

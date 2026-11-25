@@ -88,15 +88,6 @@ graph LR
 2. **Order a campaign**-submit vacancy details and selected products in a single call. See [Campaign Ordering](./guides/08-campaigns/ordering.md).
 3. **Track status**-poll the campaign or subscribe to webhooks to monitor posting progress. See [Campaign Status](./guides/08-campaigns/status.md).
 
-## Integration Options
-
-| Format | Best For | Key Benefit |
-|--------|----------|-------------|
-| **HAPI REST API** | Partners with full dev resources | Maximum customization and control |
-| **[HAPI Elements](https://docs.elements.hapi.vonq.com/)** | Faster time-to-market | Embeddable UI widgets, up to 80% faster integration |
-
-These docs cover the REST API. HAPI Elements are production-ready, framework-agnostic JavaScript components that handle product search, contract management, and campaign ordering UI out of the box-see the [HAPI Elements docs](https://docs.elements.hapi.vonq.com/) for that integration path.
-
 ## Documentation Map
 
 - **Getting Started**

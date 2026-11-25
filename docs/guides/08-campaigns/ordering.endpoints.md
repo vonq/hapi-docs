@@ -69,7 +69,7 @@ endpoints:
 | `postingRequirements` | object | Conditional | Channel-specific field values as key-value pairs. Required when the selected JP contract or JM product has posting requirements. |
 | `postingRequirementsLabels` | object | No | Human-readable labels for posting requirement values |
 | `utm` | string | No | UTM tracking parameters |
-| `postingDurationDays` | integer | No | Override posting duration (JP only): `-1` for no expiration, or 7 to 365 |
+| `postingDurationDays` | integer | No | Override posting duration (JP only): `-1` for no expiration, or 7 to 180 |
 
 **Example-JM Campaign (marketplace products only, no product-level posting requirements)**
 

@@ -119,6 +119,7 @@ Individual products can also reach a `not processed` status-a permanent failure 
 | [Vacancy Fields](./vacancy-fields.md) | Job-level fields: title, description, location, salary, and more |
 | [Validation](./validation.md) | Validate campaigns before ordering to catch errors early |
 | [Ordering](./ordering.md) | Submit campaign orders-request structure, payment, and response |
+| [Batch Ordering](./batch-ordering.md) | Order up to 20 campaigns in one call, created together or not at all |
 | [Status & Lifecycle](./status.md) | Track campaign and product status, delivery dates, and job board links |
 | [Editing](./editing.md) | Update live campaigns-editable fields and channel support |
 | [Cancellation](./cancellation.md) | Cancel entire campaigns or individual products |

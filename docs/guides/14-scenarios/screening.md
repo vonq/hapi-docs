@@ -223,7 +223,7 @@ When status is `screened_success`:
 
 | Field | Description |
 |-------|-------------|
-| `screened_score` | Integer 0–250 (higher is better), matching the dossier PDF |
+| `screened_score` | Integer on a 0 to 250 scale (higher is better, not a percentage), as shown in the dossier PDF |
 | `screened_payload` | Enriched candidate data from the AI conversation |
 
 Download the dossier PDF via the attachments endpoint:

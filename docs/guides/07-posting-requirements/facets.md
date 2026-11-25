@@ -351,6 +351,31 @@ Regex patterns include delimiters and flags as a single string. See [Facets - En
 <!-- theme: info -->
 > Client-side validation is optional-it improves UX by catching errors early. Server-side validation is always enforced on campaign ordering and validation endpoints. See [Validation](validation.md).
 
+## Detecting Spec Changes
+
+Job boards change their facets: a facet can be added, removed, renamed or made required, and option lists change. Responses that carry `posting_requirements` also carry two checksums, so you can tell when your stored copy is out of date:
+
+| Field | Changes when |
+|-------|--------------|
+| `posting_requirements_checksum` | Anything that affects what you submit changes: a facet is added, removed or renamed, its `type`, `required`, `rules`, `display_rules`, `autocomplete`, `questionnaire`, `generator` or `is_data` changes, or an option in `options` is added, removed or changed. Options of a facet with a non-null `autocomplete` come from the [autocomplete endpoint](autocomplete.md), so they are not covered. |
+| `posting_requirements_facets_checksum` | The same, without the options. Use it to tell "the facets changed" apart from "only option lists changed". |
+
+Labels, messages, `sort` and translations do not affect either checksum, so `Accept-Language` does not change them.
+
+Both are returned by `GET /products/{product_id}/specs/`, `GET /products/channels/mocs/{id}/` and the contract endpoints that include `posting_requirements` (create, retrieve, update, single and multiple; not `GET /contracts/` list).
+
+To keep a cached form current:
+
+1. Store the checksums with the facets you fetched, per product or contract.
+2. Fetch the same endpoint again on a schedule, for example daily, and before you resubmit a stored form.
+3. When a checksum differs from the one you stored, diff the new `posting_requirements` against your copy and update the form, or ask the recruiter to fill the changed facets.
+
+<!-- theme: warning -->
+> **The checksums are opaque.** A value is scoped to your account, the customer (`X-Customer-Id`) and the endpoint, because product settings can hide facets or change them for one partner. Compare a value only with the one you stored from the same call. Do not compare it across endpoints or accounts, and do not parse it.
+
+<!-- theme: info -->
+> **Unknown facet names are checked.** A `postingRequirements` key that is not a facet of the job board, such as one the board removed, is logged on validation and ordering. Your VONQ Account Manager can turn on rejection for your account: the validation then returns an error on that key, "This posting requirement does not exist for this job board. Fetch the current specs."
+
 ## Edge Cases & Gotchas
 
 <!-- theme: warning -->

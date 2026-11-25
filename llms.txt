@@ -21,6 +21,7 @@ Clone `vonq/hapi-docs`, start with this index or `docs-manifest.jsonl`, then use
 - [Recipe-Checkout and Order](docs/recipes/07-checkout-and-order.md): Wizard steps 3 and 4. Assemble the order from the job, cart and requirement answers, validate it, let the customer pay the way their account allows, and place it safely once.
 - [Recipe-Campaign Tracking](docs/recipes/08-campaign-tracking.md): Wizard step 5 and the job's campaign tab. Show per-channel status, links and clicks, keep them current with webhooks and an incremental sync, and let recruiters edit or take channels offline.
 - [Recipe-End-to-End Testing](docs/recipes/09-end-to-end-testing.md): Prove the integration before go-live. What Sandbox can and cannot test, how to run every recipe's scenarios as an automated suite, how to drive a campaign lifecycle, and what to switch for Production.
+- [Recipe-Batch Ordering](docs/recipes/10-batch-ordering.md): Promote several jobs at once. Build one order per job, validate each, place them in one call where all are created or none is, then follow and take them offline together.
 
 ## Scenarios and workflows
 
@@ -60,6 +61,7 @@ Clone `vonq/hapi-docs`, start with this index or `docs-manifest.jsonl`, then use
 - [Vacancy Fields](docs/guides/08-campaigns/vacancy-fields.md)
 - [Campaign Validation](docs/guides/08-campaigns/validation.md)
 - [Campaign Ordering](docs/guides/08-campaigns/ordering.md)
+- [Batch Ordering](docs/guides/08-campaigns/batch-ordering.md)
 - [Status & Lifecycle](docs/guides/08-campaigns/status.md)
 - [Campaign Editing](docs/guides/08-campaigns/editing.md)
 - [Campaign Cancellation](docs/guides/08-campaigns/cancellation.md)
@@ -105,6 +107,7 @@ Clone `vonq/hapi-docs`, start with this index or `docs-manifest.jsonl`, then use
 - [Facets - Endpoint Reference](docs/guides/07-posting-requirements/facets.endpoints.md)
 - [Smartfill - Endpoint Reference](docs/guides/07-posting-requirements/smartfill.endpoints.md)
 - [Validation - Endpoint Reference](docs/guides/07-posting-requirements/validation.endpoints.md)
+- [Batch Ordering - Endpoint Reference](docs/guides/08-campaigns/batch-ordering.endpoints.md)
 - [Bundles in Campaigns - Endpoint Reference](docs/guides/08-campaigns/bundles.endpoints.md)
 - [Campaign Cancellation - Endpoint Reference](docs/guides/08-campaigns/cancellation.endpoints.md)
 - [CPA+ in Campaigns - Endpoint Reference](docs/guides/08-campaigns/cpa.endpoints.md)

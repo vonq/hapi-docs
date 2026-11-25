@@ -46,7 +46,7 @@ Sandbox accepts and validates every call like Production, but it never sends an 
 | Taxonomy, product search, bundles, recommendations | Yes | `VAC-*`, `CHN-*` scenarios. Sandbox's catalog mirrors Production on a best-effort basis, with different IDs |
 | Contracts and credential forms | Yes | `CON-*` scenarios. Boards that check credentials (SEEK) need a real board account |
 | Posting requirement forms and validation | Yes | `REQ-*` scenarios with a contract-based board such as SEEK and a marketplace product with `has_product_specs: true` |
-| Validation and ordering | Yes, free of charge | `ORD-*` scenarios |
+| Validation and ordering | Yes, free of charge | `ORD-*` and `BAT-*` scenarios |
 | Status changes, webhooks, takedowns | Yes, with status simulation | `TRK-*` scenarios. Without simulation, campaigns stay `in progress` |
 | A real posting on a real board | No | Only in Production. Agree with your VONQ account manager how to verify your first live orders |
 | Direct Apply and screening candidates | No | VONQ can arrange simulations case by case |
@@ -75,7 +75,7 @@ Give each test the scenario ID as its name (`CHN-03 bundle contents resolve`), s
 |-------|------|----------|
 | Unit | Every build, no network | Job-to-vacancy mapping, order body assembly, error parsing (including positional product errors) |
 | Sandbox contract tests | Every build | All scenarios that only read or validate: `ACC-*`, `VAC-*`, `CHN-*`, `REQ-*`, and the validation-only `ORD-*` |
-| Sandbox order suite | On demand or nightly | Scenarios that create contracts or orders: `CON-*`, ordering `ORD-*`, `TRK-*` |
+| Sandbox order suite | On demand or nightly | Scenarios that create contracts or orders: `CON-*`, ordering `ORD-*`, `TRK-*`, `BAT-*` |
 | UI end-to-end | Before release | The wizard happy path, plus one failure on each step |
 
 ### Step 3: Drive a full lifecycle
