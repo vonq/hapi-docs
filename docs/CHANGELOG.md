@@ -7,6 +7,24 @@ category: resources
 
 # Changelog
 
+## 2026-11-25
+### Added
+- [Recipe: Batch Ordering](recipes/10-batch-ordering.md): promote several jobs at once from your ATS. One order per job, each validated, placed in one call where all are created or none is, then followed and taken offline with one batch id. Covers when to offer it, mapping results and errors back to jobs by position, recovering from timeouts, prefilling each job with SmartFill, copying requirement answers between jobs, and test scenarios `BAT-01` to `BAT-12`.
+
+## 2026-11-20
+### Added
+- `posting_requirements_checksum` and `posting_requirements_facets_checksum` on `GET /products/{product_id}/specs/`, `GET /products/channels/mocs/{id}/` and the contract responses. Store them with the facets you fetched and fetch the specs again on a schedule: when a checksum changes, the job board changed its posting requirements, so diff the new `posting_requirements` and update your form. The facets checksum ignores option lists. Both values are opaque and scoped to your account, customer and endpoint. See [Facets-Detecting Spec Changes](guides/07-posting-requirements/facets.md#detecting-spec-changes).
+
+### Changed
+- Validation and ordering now check `postingRequirements` keys against the job board's facets. An unknown key, such as one the board removed, is logged and the request still passes. Your VONQ Account Manager can turn on rejection for your account, so the validation returns "This posting requirement does not exist for this job board. Fetch the current specs." on that key.
+
+## 2026-11-16
+### Changed
+- **Breaking:** `posting_duration_days` on contracts and `postingDurationDays` on ordered products accept `-1` or 7 to 180 days; the maximum was 365. Job boards take postings offline after 180 days at the latest, so a longer duration was never applied. Requests above 180 return `400` (`posting_duration_days_range` on orders). Existing contracts set above 180 were lowered to 180.
+
+### Added
+- `POST /v3/campaigns/batch/`, `GET /v3/campaigns/batch/{batch_id}/` and `PUT /v3/campaigns/batch/{batch_id}/cancellation/` - order up to 20 campaigns in one call, created together or not at all, then follow and cancel them with one batch id. Each campaign is the body of a single order; validate each one first, since a batch does not run the job boards' checks. See [Batch Ordering](guides/08-campaigns/batch-ordering.md).
+
 ## 2026-11-05
 ### Added
 - [Recipes](recipes/01-introduction.md): screen-by-screen guides for implementing an ATS integration, written so a coding agent can follow them. They cover customer accounts, job to vacancy, channel selection, job board connections, the posting requirements form, checkout, campaign tracking and end-to-end testing. Each recipe lists the calls per screen, what to store, integration variants, rules, and test scenarios with stable IDs.
@@ -23,7 +41,7 @@ category: resources
 ## 2026-11-04
 ### Changed
 - Screening chats now run in the language of the job description, as the guides already stated. Jobs were previously always created in English. Applies to new jobs only: Dutch, English, French, German, Portuguese and Spanish are detected, and anything else falls back to English.
-- **Breaking:** `screened_score` and the `overall_score`, `knockout_score` and `interview_score` in `screening_evaluation` now range from 0 to 250 instead of 0 to 100, in API responses and webhooks, so they match the dossier PDF. This applies to every application, including existing ones: each value is the previous one multiplied by 2.5 and rounded to a whole number. Review any score thresholds in your integration.
+- **Breaking:** `screened_score` and the `overall_score`, `knockout_score` and `interview_score` in `screening_evaluation` now use a 0 to 250 scale instead of 0 to 100, in API responses and webhooks, so they match the dossier PDF. The scale is not a percentage. Existing applications moved to it too, so review any score thresholds in your integration.
 - Corrected the screening guides. A `screened_timeout` application can carry a score and dossier based on what was collected before the deadline. The deadline has no buffer for mid-conversation candidates. Candidates can be asked a requirement's `question`. Job events are on for new accounts.
 
 ## 2026-11-02

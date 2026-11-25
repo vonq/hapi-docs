@@ -81,7 +81,7 @@ graph LR
     back to job board"]
 ```
 
-1. **Enable Direct Apply**-When ordering a campaign, select the Direct Apply application method or fill in the questionnaire facets in the product's posting requirements. How this works varies by job board (see below).
+1. **Enable Direct Apply**-When ordering a campaign, select the Direct Apply application method or fill in the questionnaire facets in the product's posting requirements. The Direct Apply option can come with `"default": "1"`; pre-select it while the facet has no value, and let the user switch to another option (see [Posting Requirements - Enabling Direct Apply](./posting-requirements.md#enabling-direct-apply)). How this works varies by job board (see below).
 2. **Configure questionnaire** (optional)-Define custom screening questions that candidates answer on the job board. The questionnaire is one or more posting requirement facets with a stringified JSON value.
 3. **Campaign goes live**-The job is posted on the board with native apply enabled.
 4. **Candidate applies**-The candidate fills in their details, answers questionnaire questions, and uploads files-all without leaving the job board.

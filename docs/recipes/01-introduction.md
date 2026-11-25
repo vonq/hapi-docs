@@ -58,6 +58,7 @@ graph LR
 | Wizard step 2 | Channel requirements | [Posting Requirements Form](./06-posting-requirements-form.md) |
 | Wizard steps 3-4 | Review, payment, place order | [Checkout and Order](./07-checkout-and-order.md) |
 | Wizard step 5 and after | Campaign status on the job | [Campaign Tracking](./08-campaign-tracking.md) |
+| Several jobs at once | Promote selected jobs | [Batch Ordering](./10-batch-ordering.md) |
 | Before go-live | None | [End-to-End Testing](./09-end-to-end-testing.md) |
 
 Direct Apply, AI Screening, CPA+ and wallet top-ups build on this flow and are covered by their guides: [Direct Apply](../guides/10-direct-apply/01-introduction.md), [Screening](../guides/11-screening/01-introduction.md), [CPA+](../guides/09-cpa.md) and [Wallets & Payments](../guides/12-wallets-and-payments.md).

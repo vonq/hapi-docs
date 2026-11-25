@@ -128,7 +128,7 @@ Per-product configuration. Required for JP products; optional for JM products un
 
 <!-- theme: info -->
 > ### Posting Duration Override
-> For JP (contract-based) products, you can override the posting duration with `postingDurationDays`. Allowed values are `-1` (no custom expiration-the job stays up until the channel's default or until manually taken offline) or between `7` and `365`. If omitted, the duration falls back to the contract's `posting_duration_days` setting, or the channel's default if that is also unset.
+> For JP (contract-based) products, you can override the posting duration with `postingDurationDays`. Allowed values are `-1` (no custom expiration-the job stays up until the channel's default or until manually taken offline) or between `7` and `180`. If omitted, the duration falls back to the contract's `posting_duration_days` setting, or the channel's default if that is also unset.
 
 ## Labels
 

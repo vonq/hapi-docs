@@ -96,7 +96,7 @@ Key behaviors:
 
 **Application Stage**-Position in the screening funnel: `APPLIED`, `SCREENED`, `INTERVIEWED`. Independent of status.
 
-**Screening Score**-`screened_score`, an integer from 0 to 250 (higher is better), matching the score in the dossier PDF. `null` until a score is available. A `screened_timeout` application can still have one, based only on what was collected before the deadline, usually the resume.
+**Screening Score**-`screened_score`, an integer on a 0 to 250 scale (higher is better), the same score as in the dossier PDF. It is not a percentage or a match rate. `null` until a score is available. A `screened_timeout` application can still have one, based only on what was collected before the deadline, usually the resume.
 
 ## What's Next
 
